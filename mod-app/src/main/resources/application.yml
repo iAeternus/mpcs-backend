@@ -1,0 +1,23 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /api/v1.0
+
+spring:
+  application:
+    name: mpcs-backend
+  profiles:
+    active: dev
+  thymeleaf:
+    mode: HTML
+    cache: false
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}]"
+  level:
+    org:
+      ansj: WARN
