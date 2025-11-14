@@ -20,6 +20,7 @@ public interface ConfigConstant {
     String USER_COLLECTION = "user";
     String FILE_COLLECTION = "file";
     String FOLDER_COLLECTION = "folder";
+    String COMMUNITY_POST_COLLECTION = "community_post";
     String SENSITIVE_WORD_COLLECTION = "sensitive_word";
 
     String USER_ID_PREFIX = "USR";
