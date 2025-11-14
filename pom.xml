@@ -26,6 +26,7 @@
         <module>mod-user</module>
         <module>mod-folder</module>
         <module>mod-community</module>
+        <module>mod-team</module>
     </modules>
 
     <properties>

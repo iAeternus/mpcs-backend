@@ -21,6 +21,7 @@ public interface ConfigConstant {
     String FILE_COLLECTION = "file";
     String FOLDER_COLLECTION = "folder";
     String COMMUNITY_POST_COLLECTION = "community_post";
+    String TEAM_COLLECTION = "team";
     String SENSITIVE_WORD_COLLECTION = "sensitive_word";
 
     String USER_ID_PREFIX = "USR";
