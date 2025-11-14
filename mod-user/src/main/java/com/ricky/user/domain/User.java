@@ -9,6 +9,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import static com.ricky.common.constants.ConfigConstant.USER_COLLECTION;
 
+/**
+ * @brief 用户
+ */
 @Getter
 @Document(USER_COLLECTION)
 @TypeAlias(USER_COLLECTION)

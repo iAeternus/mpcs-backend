@@ -18,8 +18,9 @@ public interface ConfigConstant {
 
     String EVENT_COLLECTION = "event";
     String USER_COLLECTION = "user";
-    String SENSITIVE_WORD_COLLECTION = "sensitive_word";
     String FILE_COLLECTION = "file";
+    String FOLDER_COLLECTION = "folder";
+    String SENSITIVE_WORD_COLLECTION = "sensitive_word";
 
     String USER_ID_PREFIX = "USR";
     String SENSITIVE_WORD_ID_PREFIX = "SST";

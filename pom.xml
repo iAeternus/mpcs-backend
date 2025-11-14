@@ -24,6 +24,7 @@
         <module>mod-common</module>
         <module>mod-app</module>
         <module>mod-user</module>
+        <module>mod-folder</module>
     </modules>
 
     <properties>

@@ -11,6 +11,9 @@ import java.util.Optional;
 
 import static com.ricky.common.constants.ConfigConstant.FILE_COLLECTION;
 
+/**
+ * @brief 文件
+ */
 @Getter
 @Document(FILE_COLLECTION)
 @TypeAlias(FILE_COLLECTION)
