@@ -48,6 +48,7 @@ public enum ErrorCodeEnum {
     FILE_ALREADY_EXISTS(409),
     FILE_READ_FAILED(409),
     FILE_DELETE_FAILED(409),
+    INVALID_HASH_ALGORITHM(409),
 
     // 426
 

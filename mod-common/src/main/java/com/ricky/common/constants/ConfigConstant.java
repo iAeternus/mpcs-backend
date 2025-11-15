@@ -16,18 +16,21 @@ public interface ConfigConstant {
 
     String LOCAL_DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    String EVENT_COLLECTION = "event";
-    String USER_COLLECTION = "user";
-    String FILE_COLLECTION = "file";
-    String FOLDER_COLLECTION = "folder";
-    String COMMUNITY_POST_COLLECTION = "community_post";
-    String TEAM_COLLECTION = "team";
-    String SENSITIVE_WORD_COLLECTION = "sensitive_word";
+    String EVENT_COLLECTION = "events";
+    String USER_COLLECTION = "users";
+    String FILE_COLLECTION = "files";
+    String FOLDER_COLLECTION = "folders";
+    String COMMUNITY_POST_COLLECTION = "community_posts";
+    String TEAM_COLLECTION = "teams";
+    String SENSITIVE_WORD_COLLECTION = "sensitive_words";
 
     String USER_ID_PREFIX = "USR";
+    String FILE_ID_PREFIX = "FILE";
+    String FOLDER_ID_PREFIX = "FLD";
     String SENSITIVE_WORD_ID_PREFIX = "SST";
 
     String USER_CACHE = "user";
+    String FILE_CACHE = "file";
 
     String REDIS_DOMAIN_EVENT_CONSUMER_GROUP = "domain.event.group";
     String REDIS_WEBHOOK_CONSUMER_GROUP = "webhook.group";

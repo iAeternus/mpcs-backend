@@ -3,7 +3,6 @@ package com.ricky.common.tracing;
 import io.micrometer.tracing.ScopedSpan;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import static com.ricky.common.utils.ValidationUtil.nonNull;

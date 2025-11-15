@@ -24,6 +24,8 @@ public interface RegexConstant {
     String MOBILE_PATTERN = "^[1]([3-9])[0-9]{9}$";
     String EMAIL_PATTERN = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$";
     String PASSWORD_PATTERN = "^[A-Za-z\\d!@#$%^&*()_+]{6,32}$";
+    String PATH_PATTERN = "^/([a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*)?$";
+
     String VERIFICATION_CODE_PATTERN = "^[0-9]{6}$";
     String DATE_PATTERN = "^((19|20)\\d\\d)-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$";
     String TIME_PATTERN = "([01]?[0-9]|2[0-3]):[0-5][0-9]";

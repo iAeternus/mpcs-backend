@@ -9,14 +9,7 @@ package com.ricky.common.domain.event;
  */
 public enum DomainEventTypeEnum {
 
-    DOC_CREATED,
-    DOC_DELETED,
-    DOC_SEARCHED,
-    DOC_UPDATED,
-    CATEGORY_DISCONNECTED,
-    CATEGORY_DELETED,
-    USER_PAGE_DOCS,
-    COMMENT_CREATED,
+    FILE_UPLOADED_EVENT,
 
     // add here...
 

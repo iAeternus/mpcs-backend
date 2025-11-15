@@ -5,7 +5,6 @@ import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCust
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
 import static com.fasterxml.jackson.databind.ObjectMapper.DefaultTyping.NON_FINAL;
@@ -39,9 +38,9 @@ public class CacheConfiguration {
 //        var tagSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Tag.class);
 
         return builder -> builder.cacheDefaults(defaultCacheConfig()
-                        .prefixCacheNameWith(CACHE_PREFIX)
-                        .serializeValuesWith(fromSerializer(defaultSerializer))
-                        .entryTtl(ofDays(1)));
+                .prefixCacheNameWith(CACHE_PREFIX)
+                .serializeValuesWith(fromSerializer(defaultSerializer))
+                .entryTtl(ofDays(1)));
 //                .withCacheConfiguration(USER_CACHE, defaultCacheConfig()
 //                        .prefixCacheNameWith(CACHE_PREFIX)
 //                        .serializeValuesWith(fromSerializer(userSerializer))

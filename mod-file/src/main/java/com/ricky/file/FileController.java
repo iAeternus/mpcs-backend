@@ -1,20 +1,29 @@
 package com.ricky.file;
 
+import com.ricky.common.domain.ApiResult;
+import com.ricky.file.domain.dto.FileUploadDTO;
+import com.ricky.file.service.FileService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @CrossOrigin
 @RestController
 @Tag(name = "文档模块")
 @RequiredArgsConstructor
-@RequestMapping("/file")
+@RequestMapping("/files")
 public class FileController {
 
-    // TODO
+    private final FileService fileService;
+
+    @PostMapping
+    @Operation(summary = "普通上传")
+    public ApiResult<String> upload(@ModelAttribute @Valid FileUploadDTO dto) {
+        return ApiResult.success(fileService.upload(dto));
+    }
 
 }
