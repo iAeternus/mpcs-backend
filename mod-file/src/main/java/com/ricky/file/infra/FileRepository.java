@@ -9,4 +9,5 @@ public interface FileRepository {
 
     void save(File file);
 
+    boolean existsByHash(String hash);
 }

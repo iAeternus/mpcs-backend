@@ -1,6 +1,7 @@
 package com.ricky.file.infra.impl;
 
 import com.mongodb.client.gridfs.GridFSBucket;
+import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.UUIDGenerator;
 import com.ricky.file.domain.StorageId;
 import com.ricky.file.infra.FileStorage;
@@ -11,6 +12,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+import static com.ricky.common.exception.ErrorCodeEnum.STORE_FILE_FAILED;
+
 @Component
 @RequiredArgsConstructor
 public class GridFsFileStorage implements FileStorage {
@@ -20,8 +23,8 @@ public class GridFsFileStorage implements FileStorage {
 
     @Override
     public StorageId store(MultipartFile multipartFile) {
+        String filename = UUIDGenerator.newShortUUID();
         try {
-            String filename = UUIDGenerator.newShortUUID();
             gridFsTemplate.store(
                     multipartFile.getInputStream(),
                     filename,
@@ -29,7 +32,7 @@ public class GridFsFileStorage implements FileStorage {
             );
             return new StorageId(filename);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new MyException(STORE_FILE_FAILED, "Store file failed", "filename", filename);
         }
     }
 }

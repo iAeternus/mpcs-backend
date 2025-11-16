@@ -13,7 +13,7 @@ public class ImageMetadata extends Metadata {
     private final int width;
     private final int height;
 
-    public ImageMetadata(Long size, String mimeType, String hash, Long checksum, int width, int height) {
+    public ImageMetadata(long size, String mimeType, String hash, long checksum, int width, int height) {
         super(size, mimeType, hash, LocalDateTime.now(), LocalDateTime.now(), checksum, false, 1);
         this.width = width;
         this.height = height;

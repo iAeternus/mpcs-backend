@@ -1,6 +1,6 @@
 package com.ricky.file.domain;
 
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Value;
 
 /**
@@ -10,7 +10,9 @@ import lombok.Value;
 @Value
 public class StorageId {
 
-    @NotBlank
+    @NotNull
     String value;
+
+    public static StorageId EMPTY = new StorageId("");
 
 }

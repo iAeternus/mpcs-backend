@@ -13,7 +13,7 @@ import static com.ricky.common.domain.event.DomainEventTypeEnum.FILE_UPLOADED_EV
  * @brief 文件上传事件
  */
 @Getter
-@TypeAlias("DOC_CREATED_EVENT")
+@TypeAlias("FILE_UPLOAD_EVENT")
 @JsonTypeDefine("FILE_UPLOAD_EVENT")
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileUploadedEvent extends DomainEvent {

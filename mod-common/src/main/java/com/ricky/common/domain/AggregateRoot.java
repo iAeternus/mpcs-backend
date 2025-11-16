@@ -91,6 +91,8 @@ public abstract class AggregateRoot implements Identified {
     @Getter(AccessLevel.PRIVATE)
     private Long _version;
 
+    // TODO 以后考虑增加逻辑删除字段
+
     protected AggregateRoot() {
         this.clearEvents();
     }

@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public class GeneralMetadata extends Metadata {
 
-    public GeneralMetadata(Long size, String mimeType, String hash, Long checksum) {
+    public GeneralMetadata(long size, String mimeType, String hash, long checksum) {
         super(size, mimeType, hash, LocalDateTime.now(), LocalDateTime.now(), checksum, false, 1);
     }
 

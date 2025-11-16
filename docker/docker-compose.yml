@@ -2,16 +2,22 @@ version: '3.8'
 
 services:
   redis:
-    image: redis:latest
+    image: redis:7.2-alpine
     container_name: redis
     restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
-      - ./redis/conf/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf --requirepass 123
+      - ./redis/conf/redis.conf:/etc/redis/redis.conf
+      - ./redis/data:/data
+    command: ["redis-server", "/etc/redis/redis.conf"]
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   mongodb:
     image: mongo:latest
@@ -22,16 +28,15 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: 123456
+      MONGO_INITDB_DATABASE: mpcs-dev
     volumes:
       - ./mongo/data:/data/db
       - ./mongo/keyFile:/opt/keyfile
-    command:
-      - --replSet
-      - rs0
-      - --bind_ip_all
-      - --keyFile
-      - /opt/keyfile/keyFile
-      - --auth
+    command: |
+      --replSet rs0
+      --bind_ip_all
+      --keyFile /opt/keyfile/keyFile
+      --auth
     networks:
       - app-network
     healthcheck:

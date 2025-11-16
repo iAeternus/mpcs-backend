@@ -2,6 +2,7 @@ package com.ricky.file.service.impl;
 
 import com.ricky.common.context.ThreadLocalContext;
 import com.ricky.file.domain.File;
+import com.ricky.file.domain.FileDomainService;
 import com.ricky.file.domain.FileType;
 import com.ricky.file.domain.StorageId;
 import com.ricky.file.domain.dto.FileUploadDTO;
@@ -14,6 +15,7 @@ import com.ricky.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
@@ -22,17 +24,21 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileServiceImpl implements FileService {
 
     private final MetadataExtractorFactory metadataExtractorFactory;
+    private final FileDomainService fileDomainService;
     private final FileRepository fileRepository;
     private final FileStorage fileStorage;
 
     @Override
+    @Transactional
     public String upload(FileUploadDTO dto) {
         MultipartFile multipartFile = dto.getFile();
         FileType fileType = FileType.fromMimeType(multipartFile.getContentType());
-        // TODO 调用领域服务判重，使用hash判重
+        StorageId storageId = StorageId.EMPTY;
+        if (!fileDomainService.exists(multipartFile)) {
+             storageId = fileStorage.store(multipartFile);
+        }
         MetadataExtractor extractor = metadataExtractorFactory.getExtractor(fileType);
         Metadata metaData = extractor.extract(multipartFile); // TODO 补全策略模式
-        StorageId storageId = fileStorage.store(multipartFile);
         File file = File.create(
                 ThreadLocalContext.getContext().getUid(),
                 dto.getParentId(),

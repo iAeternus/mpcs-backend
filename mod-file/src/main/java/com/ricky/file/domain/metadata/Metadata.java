@@ -2,6 +2,7 @@ package com.ricky.file.domain.metadata;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +20,7 @@ public abstract class Metadata {
     protected final String hash; // 内容hash
     protected final LocalDateTime uploadedAt; // 上传时间
     protected final LocalDateTime lastAccessedAt; // 上次访问时间
-    protected final Long checksum; // 校验和
+    protected final long checksum; // 校验和
     protected final boolean isMultipart; // 是否分片上传
     protected final int partCount; // 分片个数，若isMultipart=false则为1
 
@@ -28,7 +29,7 @@ public abstract class Metadata {
                        String hash,
                        LocalDateTime uploadedAt,
                        LocalDateTime lastAccessedAt,
-                       Long checksum,
+                       long checksum,
                        boolean isMultipart,
                        int partCount) {
         this.size = size;

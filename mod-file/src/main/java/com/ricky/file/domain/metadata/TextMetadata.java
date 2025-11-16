@@ -13,7 +13,7 @@ public class TextMetadata extends Metadata {
     private final int wordCount;
     private final int characterCount;
 
-    public TextMetadata(Long size, String mimeType, String hash, Long checksum, int wordCount, int characterCount) {
+    public TextMetadata(long size, String mimeType, String hash, long checksum, int wordCount, int characterCount) {
         super(size, mimeType, hash, LocalDateTime.now(), LocalDateTime.now(), checksum, false, 1);
         this.wordCount = wordCount;
         this.characterCount = characterCount;

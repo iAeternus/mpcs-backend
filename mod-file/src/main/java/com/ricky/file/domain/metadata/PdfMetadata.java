@@ -12,7 +12,7 @@ public class PdfMetadata extends Metadata {
 
     private final int pageCount;
 
-    public PdfMetadata(Long size, String mimeType, String hash, Long checksum, int pageCount) {
+    public PdfMetadata(long size, String mimeType, String hash, long checksum, int pageCount) {
         super(size, mimeType, hash, LocalDateTime.now(), LocalDateTime.now(), checksum, false, 1);
         this.pageCount = pageCount;
     }
