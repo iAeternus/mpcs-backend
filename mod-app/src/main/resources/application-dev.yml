@@ -7,17 +7,18 @@ spring:
   #    read-timeout: 30s
   data:
     mongodb:
-      database: mpcs-dev
       host: 192.168.28.132
       port: 27017
       username: admin
-      password: 123456
+      password: "123456"
+      database: mpcs-dev
+      authentication-database: admin
       replica-set-name: rs0
     redis:
       database: 0
       host: 192.168.28.132
       port: 6379
-      password: 123
+      password: "123"
       timeout: 3000
       jedis:
         pool:

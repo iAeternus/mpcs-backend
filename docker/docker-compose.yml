@@ -10,11 +10,11 @@ services:
     volumes:
       - ./redis/conf/redis.conf:/etc/redis/redis.conf
       - ./redis/data:/data
-    command: ["redis-server", "/etc/redis/redis.conf"]
+    command: ["redis-server", "/etc/redis/redis.conf", "--requirepass", "123"]
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: ["CMD", "redis-cli", "-a", "123", "--raw", "incr", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -28,10 +28,10 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: 123456
-      MONGO_INITDB_DATABASE: mpcs-dev
     volumes:
       - ./mongo/data:/data/db
       - ./mongo/keyFile:/opt/keyfile
+      - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
     command: |
       --replSet rs0
       --bind_ip_all
@@ -40,7 +40,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      test: [ "CMD", "mongosh", "-u", "admin", "-p", "123456", "--eval", "db.adminCommand('ping')" ]
       interval: 30s
       timeout: 10s
       retries: 3
