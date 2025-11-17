@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import static com.ricky.common.utils.ValidationUtil.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 
 @Repository
 @RequiredArgsConstructor

@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static com.ricky.common.utils.ValidationUtil.isEmpty;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
 
 /**
  * @author Ricky

@@ -3,7 +3,7 @@ package com.ricky.common.password;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 
-import static com.ricky.common.utils.ValidationUtil.isBlank;
+import static com.ricky.common.utils.ValidationUtils.isBlank;
 
 
 /**

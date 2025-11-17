@@ -5,7 +5,7 @@ import lombok.Getter;
 
 import java.util.Map;
 
-import static com.ricky.common.utils.ValidationUtil.isNotEmpty;
+import static com.ricky.common.utils.ValidationUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**

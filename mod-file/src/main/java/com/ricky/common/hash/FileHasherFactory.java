@@ -1,7 +1,7 @@
 package com.ricky.common.hash;
 
 import com.ricky.common.exception.MyException;
-import com.ricky.common.props.FileStorageProperties;
+import com.ricky.common.properties.FileStorageProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

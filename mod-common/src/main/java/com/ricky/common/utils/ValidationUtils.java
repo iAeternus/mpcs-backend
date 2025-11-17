@@ -16,7 +16,7 @@ import static java.lang.Boolean.TRUE;
  * @version 1.0
  * @date 2024/10/24
  */
-public class ValidationUtil {
+public class ValidationUtils {
 
     // --------------------- 字符串校验相关 ---------------------
 

@@ -20,7 +20,7 @@ import static com.fasterxml.jackson.annotation.PropertyAccessor.FIELD;
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static com.ricky.common.constants.ConfigConstant.CHINA_TIME_ZONE;
-import static com.ricky.common.utils.ValidationUtil.nullIfBlank;
+import static com.ricky.common.utils.ValidationUtils.nullIfBlank;
 import static java.time.ZoneId.of;
 import static java.util.TimeZone.getTimeZone;
 

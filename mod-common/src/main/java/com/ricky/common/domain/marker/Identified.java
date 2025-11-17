@@ -4,7 +4,7 @@ package com.ricky.common.domain.marker;
 import java.io.Serializable;
 import java.util.Collection;
 
-import static com.ricky.common.utils.ValidationUtil.isEmpty;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
 
 /**
  * @author Ricky

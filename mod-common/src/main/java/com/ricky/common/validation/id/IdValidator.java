@@ -5,7 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.util.Arrays;
 
-import static com.ricky.common.utils.ValidationUtil.isBlank;
+import static com.ricky.common.utils.ValidationUtils.isBlank;
 
 
 /**

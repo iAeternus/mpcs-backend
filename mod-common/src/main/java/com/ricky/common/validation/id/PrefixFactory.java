@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-import static com.ricky.common.utils.ValidationUtil.isNull;
+import static com.ricky.common.utils.ValidationUtils.isNull;
 import static java.util.Arrays.stream;
 
 /**

@@ -6,7 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
 
-import static com.ricky.common.utils.ValidationUtil.isEmpty;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
 
 /**
  * @author Ricky

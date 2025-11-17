@@ -6,7 +6,7 @@ import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.event.DomainEvent;
 import com.ricky.common.event.publish.PublishingDomainEventDao;
 import com.ricky.common.exception.MyException;
-import com.ricky.common.utils.ValidationUtil;
+import com.ricky.common.utils.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -19,7 +19,7 @@ import java.util.*;
 import static com.google.common.collect.ImmutableMap.of;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
-import static com.ricky.common.utils.ValidationUtil.*;
+import static com.ricky.common.utils.ValidationUtils.*;
 import static java.util.Comparator.comparing;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -390,7 +390,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
     protected final void checkUserShip(AggregateRoot ar) {
         requireNonNull(ar, arTypeName() + " must not be null.");
 
-        if (!ValidationUtil.equals(ar.getUserId(), ThreadLocalContext.getContext().getUid())) {
+        if (!ValidationUtils.equals(ar.getUserId(), ThreadLocalContext.getContext().getUid())) {
             throw new MyException(AR_NOT_FOUND, "未找到资源。",
                     "id", ar.getId(), "User ID", ar.getUserId());
         }

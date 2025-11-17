@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.ricky.common.event.publish.DomainEventPublishStatus.*;
 import static com.ricky.common.event.publish.PublishingDomainEvent.Fields.*;
-import static com.ricky.common.utils.ValidationUtil.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.by;

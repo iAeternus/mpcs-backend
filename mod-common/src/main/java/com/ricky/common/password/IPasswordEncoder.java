@@ -1,7 +1,7 @@
 package com.ricky.common.password;
 
 
-import com.ricky.common.utils.ValidationUtil;
+import com.ricky.common.utils.ValidationUtils;
 
 /**
  * @author Ricky
@@ -28,7 +28,7 @@ public interface IPasswordEncoder {
      * @return true=匹配 false=不匹配
      */
     default boolean matches(CharSequence rawPassword, String encodedPassword) {
-        return ValidationUtil.equals(encode(rawPassword), encodedPassword);
+        return ValidationUtils.equals(encode(rawPassword), encodedPassword);
     }
 
 }

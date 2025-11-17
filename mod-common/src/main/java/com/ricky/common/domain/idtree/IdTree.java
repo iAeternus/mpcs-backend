@@ -20,8 +20,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
-import static com.ricky.common.utils.ValidationUtil.isEmpty;
-import static com.ricky.common.utils.ValidationUtil.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
+import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static java.util.Objects.requireNonNull;
 
 /**

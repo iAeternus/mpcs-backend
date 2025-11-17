@@ -11,7 +11,7 @@ import lombok.experimental.FieldNameConstants;
 
 import java.time.Instant;
 
-import static com.ricky.common.utils.ValidationUtil.requireNonNull;
+import static com.ricky.common.utils.ValidationUtils.requireNonNull;
 import static lombok.AccessLevel.PROTECTED;
 
 /**

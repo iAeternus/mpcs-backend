@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static com.ricky.common.utils.ValidationUtil.isEmpty;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofMinutes;
 import static java.time.Instant.now;

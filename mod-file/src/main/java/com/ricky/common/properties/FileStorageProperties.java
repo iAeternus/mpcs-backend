@@ -1,4 +1,4 @@
-package com.ricky.common.props;
+package com.ricky.common.properties;
 
 import com.ricky.common.hash.HashAlgorithm;
 import lombok.Data;

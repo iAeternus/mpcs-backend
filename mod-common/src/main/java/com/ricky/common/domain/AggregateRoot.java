@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import static com.ricky.common.utils.ValidationUtil.isNull;
-import static com.ricky.common.utils.ValidationUtil.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.isNull;
+import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static java.time.Instant.now;
 import static lombok.AccessLevel.PROTECTED;
 
