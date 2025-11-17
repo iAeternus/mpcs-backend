@@ -25,6 +25,7 @@ import static lombok.AccessLevel.PROTECTED;
  * 这里ar代指AggregateRoot
  * DomainEvent既要保证能支持MongoDB的序列化/反序列化，有要能够通过Jackson序列化/反序列化（因为要发送到Redis）<br>
  * @see JsonTypeDefine 其子类必须加@JsonTypeDefine注解才可正常序列化<br>
+ * TODO 更新
  */
 @Getter
 @Document(EVENT_COLLECTION)

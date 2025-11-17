@@ -11,7 +11,7 @@ import org.springframework.validation.annotation.Validated;
  * @version 1.0
  * @date 2025/2/26
  * @className RedisProperties
- * @desc
+ * @desc TODO 更新
  */
 @Data
 @Component
