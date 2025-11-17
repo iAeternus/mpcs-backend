@@ -1,8 +1,8 @@
 package com.ricky.common.domain;
 
 import com.ricky.common.context.ThreadLocalContext;
-import com.ricky.common.event.DomainEvent;
 import com.ricky.common.domain.marker.Identified;
+import com.ricky.common.event.DomainEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

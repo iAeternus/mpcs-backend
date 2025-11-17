@@ -35,10 +35,10 @@ public class FileServiceImpl implements FileService {
         FileType fileType = FileType.fromMimeType(multipartFile.getContentType());
         StorageId storageId = StorageId.EMPTY;
         if (!fileDomainService.exists(multipartFile)) {
-             storageId = fileStorage.store(multipartFile);
+            storageId = fileStorage.store(multipartFile);
         }
         MetadataExtractor extractor = metadataExtractorFactory.getExtractor(fileType);
-        Metadata metaData = extractor.extract(multipartFile); // TODO 补全策略模式
+        Metadata metaData = extractor.extract(multipartFile);
         File file = File.create(
                 ThreadLocalContext.getContext().getUid(),
                 dto.getParentId(),

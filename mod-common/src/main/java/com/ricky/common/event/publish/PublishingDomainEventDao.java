@@ -14,16 +14,16 @@ import java.util.List;
 public interface PublishingDomainEventDao {
 
     /**
-     * @brief 新增领域事件
      * @param events 领域事件
+     * @brief 新增领域事件
      */
     void stage(List<DomainEvent> events);
 
     /**
-     * @brief 查询ID从startId开始的limit个领域事件
      * @param startId 起始ID
-     * @param limit 个数
+     * @param limit   个数
      * @return 领域事件集合
+     * @brief 查询ID从startId开始的limit个领域事件
      */
     List<DomainEvent> stagedEvents(String startId, int limit);
 
@@ -41,7 +41,6 @@ public interface PublishingDomainEventDao {
      * @param eventId 领域事件ID
      */
     void successPublish(String eventId);
-
 
 
     /**

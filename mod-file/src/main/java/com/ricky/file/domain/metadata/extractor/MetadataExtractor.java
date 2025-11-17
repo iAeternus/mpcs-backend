@@ -16,9 +16,9 @@ public interface MetadataExtractor {
     Metadata extract(MultipartFile file);
 
     /**
-     * @brief 判断文件的contentType是否支持
      * @param file 文件
      * @return true=支持 false=不支持
+     * @brief 判断文件的contentType是否支持
      */
     boolean supports(MultipartFile file);
 

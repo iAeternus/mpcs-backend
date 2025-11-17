@@ -1,8 +1,8 @@
 package com.ricky.common.event.publish.infra;
 
 import com.ricky.common.event.DomainEvent;
-import com.ricky.common.event.publish.PublishingDomainEventDao;
 import com.ricky.common.event.publish.PublishingDomainEvent;
+import com.ricky.common.event.publish.PublishingDomainEventDao;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;

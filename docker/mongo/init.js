@@ -3,7 +3,7 @@ try {
     rs.initiate({
         _id: "rs0",
         members: [
-            { _id: 0, host: "localhost:27017" }
+            {_id: 0, host: "localhost:27017"}
         ]
     });
 } catch (e) {
@@ -31,8 +31,8 @@ try {
         user: "admin",
         pwd: "123456",
         roles: [
-            { role: "root", db: "admin" },
-            { role: "readWrite", db: "mpcs-dev" }
+            {role: "root", db: "admin"},
+            {role: "readWrite", db: "mpcs-dev"}
         ]
     });
     print("User 'admin' created successfully.");

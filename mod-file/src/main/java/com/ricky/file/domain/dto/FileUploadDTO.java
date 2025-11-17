@@ -10,10 +10,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Map;
 
 import static com.ricky.common.constants.ConfigConstant.FOLDER_ID_PREFIX;
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_MUST_NOT_BE_EMPTY;

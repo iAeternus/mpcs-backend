@@ -18,7 +18,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @version 1.0
  * @date 2025/2/26
  * @className RedisProperties
- * @desc TODO 更新
  */
 @Data
 @Component

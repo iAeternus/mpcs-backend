@@ -3,12 +3,10 @@ package com.ricky.common.hash;
 import com.ricky.common.exception.ErrorCodeEnum;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.HashUtils;
-import lombok.SneakyThrows;
 
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Map;
 
 public abstract class AbstractFileHasher {
 

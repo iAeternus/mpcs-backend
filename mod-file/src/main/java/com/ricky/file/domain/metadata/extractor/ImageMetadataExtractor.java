@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
-import static com.ricky.common.exception.ErrorCodeEnum.*;
+import static com.ricky.common.exception.ErrorCodeEnum.FILE_READ_FAILED;
 
 @Component
 @RequiredArgsConstructor
@@ -49,7 +49,7 @@ public class ImageMetadataExtractor extends AbstractMetadataExtractor {
     private Dimension extractImageDimension(MultipartFile file) throws IOException {
         InputStream inputStream = file.getInputStream();
         BufferedImage image = ImageIO.read(inputStream);
-        if(image == null) {
+        if (image == null) {
             throw new MyException(FILE_READ_FAILED, "The image file cannot be read. It may not be a valid image format",
                     "mimeType", file.getContentType(), "filename", file.getOriginalFilename());
         }
@@ -69,7 +69,6 @@ public class ImageMetadataExtractor extends AbstractMetadataExtractor {
         }
         return filename.substring(filename.lastIndexOf('.') + 1);
     }
-
 
 
     @Value

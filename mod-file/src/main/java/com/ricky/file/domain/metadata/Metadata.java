@@ -2,7 +2,6 @@ package com.ricky.file.domain.metadata;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 
