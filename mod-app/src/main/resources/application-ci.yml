@@ -1,0 +1,48 @@
+spring:
+  #  elasticsearch:
+  ##    username: elastic
+  ##    password: 123456
+  #    uris: http://${ES_HOST:192.168.28.132}:${ES_PORT:9200}
+  #    connection-timeout: 1s
+  #    read-timeout: 30s
+  data:
+    mongodb:
+      host: 192.168.28.132
+      port: 27017
+      username: admin
+      password: "123456"
+      database: mpcs-dev
+      authentication-database: admin
+      replica-set-name: rs0
+    redis:
+      database: 0
+      host: 192.168.28.132
+      port: 6379
+      password: "123"
+      timeout: 3000
+      jedis:
+        pool:
+          max-idle: 500
+          min-idle: 50
+          max-active: 2000
+          max-wait: 1000
+  servlet:
+    multipart:
+      max-file-size: 300MB
+      max-request-size: 500MB
+
+#cloud:
+#  elasticsearch:
+#    host: ${ES_HOST:192.168.28.132}
+#    port: ${ES_PORT:9200}
+
+mpcs:
+  config:
+    enable-limit-rate: false
+    base-domain-name: ci.ricky.com
+  redis:
+    domainEventStreamEnabled: false
+    domainEventStreamPrefix: DomainEvent.LOCAL
+    domainEventStreamCount: 10
+    notificationStream: Notification.LOCAL
+    webhookStream: Webhook.LOCAL

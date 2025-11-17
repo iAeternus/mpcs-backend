@@ -13,26 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TaskRunner {
 
-    /**
-     * 是否发生错误
-     */
-    private boolean hasError;
-
-    public static TaskRunner newTaskRunner() {
-        return new TaskRunner();
-    }
-
-    public void run(Runnable runnable) {
+    public static void run(Runnable runnable) {
         try {
             runnable.run();
         } catch (Throwable t) {
             log.error("Failed to run task: ", t);
-            hasError = true;
         }
-    }
-
-    public boolean hasError() {
-        return hasError;
     }
 
 }

@@ -26,34 +26,20 @@ import java.time.Duration;
 @Configuration
 public class SpringCommonConfiguration {
 
-    @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder restTemplateBuilder) {
-        return restTemplateBuilder
-                .connectTimeout(Duration.ofSeconds(10))
-                .readTimeout(Duration.ofSeconds(10))
-                .build();
-    }
-
-
-    @Bean
-    public MyObjectMapper objectMapper() {
-        return new MyObjectMapper();
-    }
-
-    // TODO mock tracer
-    @Bean
-    public Tracer tracer() {
-        return new Tracer() {
-            @Override
-            public Span nextSpan() {
-                return null;
-            }
-
-            @Override
-            public Span nextSpan(TraceContext traceContext) {
-                return null;
-            }
-        };
-    }
+//    // TODO mock tracer
+//    @Bean
+//    public Tracer tracer() {
+//        return new Tracer() {
+//            @Override
+//            public Span nextSpan() {
+//                return null;
+//            }
+//
+//            @Override
+//            public Span nextSpan(TraceContext traceContext) {
+//                return null;
+//            }
+//        };
+//    }
 
 }

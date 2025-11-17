@@ -2,7 +2,7 @@ package com.ricky.common.json;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.ricky.common.domain.event.DomainEvent;
+import com.ricky.common.event.DomainEvent;
 import org.reflections.Reflections;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

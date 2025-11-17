@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
 
     @ResponseBody
     @ExceptionHandler(MyException.class)
-    public ResponseEntity<MyError> handleMryException(MyException ex, HttpServletRequest request) {
+    public ResponseEntity<MyError> handleMyException(MyException ex, HttpServletRequest request) {
         if (WARN_CODES.contains(ex.getCode().getStatus())) {
             log.warn("Warning: {}", ex.getMessage());
         } else {

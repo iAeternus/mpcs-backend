@@ -1,13 +1,13 @@
 package com.ricky.file.domain.evt;
 
-import com.ricky.common.domain.event.DomainEvent;
+import com.ricky.common.event.DomainEvent;
 import com.ricky.common.json.JsonTypeDefine;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 
-import static com.ricky.common.domain.event.DomainEventTypeEnum.FILE_UPLOADED_EVENT;
+import static com.ricky.common.event.DomainEventType.FILE_UPLOADED_EVENT;
 
 /**
  * @brief 文件上传事件

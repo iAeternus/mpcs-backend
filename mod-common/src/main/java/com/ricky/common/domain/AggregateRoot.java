@@ -1,10 +1,11 @@
 package com.ricky.common.domain;
 
 import com.ricky.common.context.ThreadLocalContext;
-import com.ricky.common.domain.event.DomainEvent;
+import com.ricky.common.event.DomainEvent;
 import com.ricky.common.domain.marker.Identified;
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Version;
 
 import java.time.Instant;
@@ -15,6 +16,7 @@ import java.util.List;
 import static com.ricky.common.utils.ValidationUtil.isNull;
 import static com.ricky.common.utils.ValidationUtil.requireNotBlank;
 import static java.time.Instant.now;
+import static lombok.AccessLevel.PROTECTED;
 
 /**
  * @author Ricky
@@ -27,6 +29,7 @@ import static java.time.Instant.now;
  * 2. 实现类不允许有默认的setter<br>
  */
 @Getter
+@NoArgsConstructor(access = PROTECTED)
 public abstract class AggregateRoot implements Identified {
 
     /**
@@ -92,10 +95,6 @@ public abstract class AggregateRoot implements Identified {
     private Long _version;
 
     // TODO 以后考虑增加逻辑删除字段
-
-    protected AggregateRoot() {
-        this.clearEvents();
-    }
 
     protected AggregateRoot(String id) {
         requireNotBlank(id, "ID must not be blank.");
@@ -174,14 +173,6 @@ public abstract class AggregateRoot implements Identified {
     protected void raiseEvent(DomainEvent event) {
         event.setArInfo(this);
         allEvents().add(event);
-    }
-
-    /**
-     * 清除领域事件
-     * 为了方便传输和持久化，需要清除领域事件给聚合根瘦身
-     */
-    public void clearEvents() {
-        this.events = null;
     }
 
     /**

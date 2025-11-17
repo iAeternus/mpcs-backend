@@ -7,7 +7,7 @@ spring:
   application:
     name: mpcs-backend
   profiles:
-    active: dev
+    active: ci
   thymeleaf:
     mode: HTML
     cache: false

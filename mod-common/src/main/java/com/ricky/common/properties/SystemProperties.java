@@ -1,5 +1,6 @@
 package com.ricky.common.properties;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -20,5 +21,8 @@ public class SystemProperties {
      * 是否启用流控
      */
     private Boolean enableLimitRate = false;
+
+    @NotBlank
+    private String baseDomainName;
 
 }

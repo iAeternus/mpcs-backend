@@ -2,7 +2,7 @@ package com.ricky.file.infra.impl;
 
 import com.mongodb.client.gridfs.GridFSBucket;
 import com.ricky.common.exception.MyException;
-import com.ricky.common.utils.UUIDGenerator;
+import com.ricky.common.utils.UuidGenerator;
 import com.ricky.file.domain.StorageId;
 import com.ricky.file.infra.FileStorage;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class GridFsFileStorage implements FileStorage {
 
     @Override
     public StorageId store(MultipartFile multipartFile) {
-        String filename = UUIDGenerator.newShortUUID();
+        String filename = UuidGenerator.newShortUUID();
         try {
             gridFsTemplate.store(
                     multipartFile.getInputStream(),

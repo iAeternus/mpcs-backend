@@ -2,7 +2,7 @@ package com.ricky.common.domain;
 
 import com.ricky.common.context.ThreadLocalContext;
 import com.ricky.common.context.UserContext;
-import com.ricky.common.domain.event.DomainEvent;
+import com.ricky.common.event.DomainEvent;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 

@@ -3,6 +3,7 @@ package com.ricky.common.tracing;
 import io.micrometer.tracing.ScopedSpan;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import static com.ricky.common.utils.ValidationUtil.nonNull;
@@ -16,10 +17,10 @@ import static com.ricky.common.utils.ValidationUtil.nonNull;
  * @desc 链路追踪
  */
 @Component
-//@RequiredArgsConstructor
+@RequiredArgsConstructor
 public class TracingService {
 
-    private final Tracer tracer = Tracer.NOOP; // TODO
+    private final Tracer tracer = Tracer.NOOP; // TODO 找不到bean
 
     /**
      * 获取当前线程的追踪ID。
@@ -30,7 +31,7 @@ public class TracingService {
      */
     public String currentTraceId() {
         Span span = tracer.currentSpan();
-        return nonNull(span) ? span.context().traceId() : null;
+        return span != null ? span.context().traceId() : null;
     }
 
     /**

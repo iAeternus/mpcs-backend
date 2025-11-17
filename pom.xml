@@ -63,13 +63,16 @@
         <!-- 插件系统 -->
         <spring.plugin.version>3.0.0</spring.plugin.version>
 
+        <!-- 分布式锁 -->
+        <shedlock.version>4.40.0</shedlock.version>
+
         <!-- 常用工具 -->
         <lombok.version>1.18.34</lombok.version>
         <jackson.version>2.18.2</jackson.version>
         <commons.lang3.version>3.17.0</commons.lang3.version>
         <reflections.version>0.10.2</reflections.version>
         <hutool.version>5.8.40</hutool.version>
-        <micrometer.tracing.version>1.5.4</micrometer.tracing.version>
+        <micrometer.tracing.version>1.0.0</micrometer.tracing.version>
         <guava.version>31.1-jre</guava.version>
 
         <!-- Swagger -->
@@ -222,6 +225,18 @@
                 <groupId>org.springframework.plugin</groupId>
                 <artifactId>spring-plugin-core</artifactId>
                 <version>${spring.plugin.version}</version>
+            </dependency>
+
+            <!-- 分布式锁 -->
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-spring</artifactId>
+                <version>${shedlock.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.javacrumbs.shedlock</groupId>
+                <artifactId>shedlock-provider-mongo</artifactId>
+                <version>${shedlock.version}</version>
             </dependency>
 
             <!-- 常用工具 -->

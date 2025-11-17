@@ -3,9 +3,8 @@ package com.ricky.common.mongo;
 import com.google.common.collect.Maps;
 import com.ricky.common.context.ThreadLocalContext;
 import com.ricky.common.domain.AggregateRoot;
-import com.ricky.common.domain.event.DomainEvent;
-import com.ricky.common.domain.event.DomainEventDao;
-import com.ricky.common.domain.event.publish.interception.ThreadLocalDomainEventIdHolder;
+import com.ricky.common.event.DomainEvent;
+import com.ricky.common.event.publish.PublishingDomainEventDao;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.ValidationUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,8 @@ import static com.google.common.collect.ImmutableMap.of;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static com.ricky.common.utils.ValidationUtil.*;
+import static java.util.Comparator.comparing;
+import static java.util.Objects.requireNonNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -41,13 +42,13 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
     /**
      * 数据仓库管理的聚合根
      */
-    private final Map<String, Class> classMapper = Maps.newHashMap();
+    private final Map<String, Class> arClassMapper = Maps.newHashMap();
 
     @Autowired
     protected MongoTemplate mongoTemplate;
 
     @Autowired
-    protected DomainEventDao domainEventDao;
+    protected PublishingDomainEventDao publishingDomainEventDao;
 
     /**
      * 保存聚合根<br>
@@ -58,14 +59,11 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      */
     @Transactional
     public void save(AR ar) {
-        requireNonNull(ar, "AggregateRoot must not be null.");
-
-        if (isNotEmpty(ar.getEvents())) {
-            saveEvents(ar.getEvents());
-            ar.clearEvents();
-        }
+        requireNonNull(ar, arTypeName() + " must not be null.");
+        requireNotBlank(ar.getId(), arTypeName() + " ID must not be blank.");
 
         mongoTemplate.save(ar);
+        saveEvents(ar.getEvents());
     }
 
     /**
@@ -87,7 +85,6 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
         ars.forEach(ar -> {
             if (isNotEmpty(ar.getEvents())) {
                 events.addAll(ar.getEvents());
-                ar.clearEvents();
             }
             mongoTemplate.save(ar);
         });
@@ -104,14 +101,11 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      */
     @Transactional
     public void insert(AR ar) {
-        requireNonNull(ar, "AggregateRoot must not be null.");
-
-        if (isNotEmpty(ar.getEvents())) {
-            saveEvents(ar.getEvents());
-            ar.clearEvents();
-        }
+        requireNonNull(ar, arTypeName() + " must not be null.");
+        requireNotBlank(ar.getId(), arTypeName() + " ID must not be blank.");
 
         mongoTemplate.insert(ar);
+        saveEvents(ar.getEvents());
     }
 
     /**
@@ -133,7 +127,6 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
         ars.forEach(ar -> {
             if (isNotEmpty(ar.getEvents())) {
                 events.addAll(ar.getEvents());
-                ar.clearEvents();
             }
         });
 
@@ -149,14 +142,11 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      */
     @Transactional
     public void delete(AR ar) {
-        requireNonNull(ar, "AggregateRoot must not be null.");
-
-        if (isNotEmpty(ar.getEvents())) {
-            saveEvents(ar.getEvents());
-            ar.clearEvents();
-        }
+        requireNonNull(ar, arTypeName() + " must not be null.");
+        requireNotBlank(ar.getId(), arTypeName() + " ID must not be blank.");
 
         mongoTemplate.remove(ar);
+        saveEvents(ar.getEvents());
     }
 
     /**
@@ -178,13 +168,12 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
         ars.forEach(ar -> {
             if (isNotEmpty(ar.getEvents())) {
                 events.addAll(ar.getEvents());
-                ar.clearEvents();
             }
             ids.add(ar.getId());
         });
 
+        mongoTemplate.remove(query(where("_id").in(ids)), arClass());
         saveEvents(events);
-        mongoTemplate.remove(query(where("_id").in(ids)), getType());
     }
 
     /**
@@ -196,11 +185,12 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      * @return 聚合根
      */
     public AR byId(String id) {
-        requireNotBlank(id, "AggregateRoot ID must not be blank.");
+        requireNotBlank(id, arTypeName() + " ID must not be blank.");
 
-        Object ar = mongoTemplate.findById(id, getType());
+        Object ar = mongoTemplate.findById(id, arClass());
         if (isNull(ar)) {
-            throw new MyException(AR_NOT_FOUND, "未找到资源。", of("type", getType().getSimpleName(), "id", id));
+            throw new MyException(AR_NOT_FOUND, "未找到资源。",
+                    "type", arClass().getSimpleName(), "id", id);
         }
 
         return (AR) ar;
@@ -215,9 +205,9 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      * @return 聚合根
      */
     public Optional<AR> byIdOptional(String id) {
-        requireNotBlank(id, "AggregateRoot ID must not be blank.");
+        requireNotBlank(id, arTypeName() + " ID must not be blank.");
 
-        Object ar = mongoTemplate.findById(id, getType());
+        Object ar = mongoTemplate.findById(id, arClass());
         return isNull(ar) ? Optional.empty() : Optional.of((AR) ar);
     }
 
@@ -230,7 +220,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      * @return 聚合根
      */
     public AR byIdAndCheckUserShip(String id) {
-        requireNotBlank(id, "AggregateRoot ID must not be blank.");
+        requireNotBlank(id, arTypeName() + " ID must not be blank.");
 
         AR ar = byId(id);
         checkUserShip(ar);
@@ -251,7 +241,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
             return Collections.emptyList();
         }
 
-        List<AR> ars = mongoTemplate.find(query(where("_id").in(ids)), getType());
+        List<AR> ars = mongoTemplate.find(query(where("_id").in(ids)), arClass());
         checkSameUser(ars);
         return List.copyOf(ars);
     }
@@ -296,7 +286,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
             Set<String> originalIds = new HashSet<>(ids);
             originalIds.removeAll(fetchedIds);
             throw new MyException(AR_NOT_FOUND_ALL, "未找到所有资源。",
-                    of("type", getType().getSimpleName(), "missingIds", originalIds));
+                    of("type", arClass().getSimpleName(), "missingIds", originalIds));
         }
         return List.copyOf(ars);
     }
@@ -320,12 +310,15 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
     }
 
     /**
-     * 查询聚合根的个数
+     * 查询与userId关联的聚合根个数
      *
      * @return 个数
      */
-    public long count() {
-        return mongoTemplate.count(new Query(), getType());
+    public long count(String userId) {
+        requireNotBlank(userId, "User ID must not be blank.");
+
+        Query query = query(where("userId").is(userId));
+        return mongoTemplate.count(query, arClass());
     }
 
     /**
@@ -335,10 +328,10 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      * @return true=存在 false=不存在
      */
     public boolean exists(String arId) {
-        requireNotBlank(arId, "AggregateRoot ID must not be blank.");
+        requireNotBlank(arId, arTypeName() + " ID must not be blank.");
 
         Query query = query(where("_id").is(arId));
-        return mongoTemplate.exists(query, getType());
+        return mongoTemplate.exists(query, arClass());
     }
 
     /**
@@ -348,8 +341,8 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      */
     private void saveEvents(List<DomainEvent> events) {
         if (isNotEmpty(events)) {
-            domainEventDao.insert(events);
-            ThreadLocalDomainEventIdHolder.addEvents(events);
+            List<DomainEvent> orderedEvents = events.stream().sorted(comparing(DomainEvent::getRaisedAt)).toList();
+            publishingDomainEventDao.stage(orderedEvents);
         }
     }
 
@@ -372,16 +365,20 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      *
      * @return 当前数据仓库管理的聚合根的Class
      */
-    private Class getType() {
+    private Class arClass() {
         String className = getClass().getSimpleName();
 
-        if (!classMapper.containsKey(className)) {
+        if (!arClassMapper.containsKey(className)) {
             Type genericSuperclass = getClass().getGenericSuperclass();
             Type[] actualTypeArguments = ((ParameterizedType) genericSuperclass).getActualTypeArguments();
-            classMapper.put(className, (Class) actualTypeArguments[0]);
+            arClassMapper.put(className, (Class) actualTypeArguments[0]);
         }
 
-        return classMapper.get(className);
+        return arClassMapper.get(className);
+    }
+
+    private String arTypeName() {
+        return arClass().getSimpleName();
     }
 
     /**
@@ -391,10 +388,11 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      * @param ar 聚合根
      */
     protected final void checkUserShip(AggregateRoot ar) {
-        requireNonNull(ar, "AggregateRoot must not be null.");
+        requireNonNull(ar, arTypeName() + " must not be null.");
 
         if (!ValidationUtil.equals(ar.getUserId(), ThreadLocalContext.getContext().getUid())) {
-            throw new MyException(AR_NOT_FOUND, "未找到资源。", of("id", ar.getId(), "User ID", ar.getUserId()));
+            throw new MyException(AR_NOT_FOUND, "未找到资源。",
+                    "id", ar.getId(), "User ID", ar.getUserId());
         }
     }
 

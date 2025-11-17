@@ -16,13 +16,16 @@ public interface ConfigConstant {
 
     String LOCAL_DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    String EVENT_COLLECTION = "events";
     String USER_COLLECTION = "users";
     String FILE_COLLECTION = "files";
     String FOLDER_COLLECTION = "folders";
     String COMMUNITY_POST_COLLECTION = "community_posts";
     String TEAM_COLLECTION = "teams";
     String SENSITIVE_WORD_COLLECTION = "sensitive_words";
+    String SHEDLOCK_COLLECTION = "shedlock";
+
+    String PUBLISHING_DOMAIN_EVENT_COLLECTION = "publishing_domain_event";
+    String CONSUMING_DOMAIN_EVENT_COLLECTION = "consuming_domain_event";
 
     String USER_ID_PREFIX = "USR";
     String FILE_ID_PREFIX = "FILE";
