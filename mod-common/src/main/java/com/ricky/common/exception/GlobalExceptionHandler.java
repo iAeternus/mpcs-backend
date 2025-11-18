@@ -32,6 +32,7 @@ import static org.springframework.http.HttpStatus.valueOf;
 @ControllerAdvice
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
+
     private static final List<Integer> WARN_CODES = List.of(400, 401, 403, 426, 429);
     private final TracingService tracingService;
 

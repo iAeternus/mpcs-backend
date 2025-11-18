@@ -1,7 +1,6 @@
 package com.ricky.file;
 
-import com.ricky.common.domain.ApiResult;
-import com.ricky.file.domain.dto.FileUploadDTO;
+import com.ricky.file.domain.dto.FileUploadCommand;
 import com.ricky.file.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,8 +21,8 @@ public class FileController {
 
     @PostMapping
     @Operation(summary = "普通上传")
-    public ApiResult<String> upload(@ModelAttribute @Valid FileUploadDTO dto) {
-        return ApiResult.success(fileService.upload(dto));
+    public String upload(@ModelAttribute @Valid FileUploadCommand dto) {
+        return fileService.upload(dto);
     }
 
 }

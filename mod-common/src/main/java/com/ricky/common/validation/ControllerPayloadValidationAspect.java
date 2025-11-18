@@ -1,6 +1,6 @@
 package com.ricky.common.validation;
 
-import com.ricky.common.domain.marker.DTO;
+import com.ricky.common.domain.marker.Command;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -23,7 +23,8 @@ public class ControllerPayloadValidationAspect {
     }
 
     @Pointcut("@annotation(org.springframework.web.bind.annotation.PostMapping) || " +
-            "@annotation(org.springframework.web.bind.annotation.PutMapping)")
+            "@annotation(org.springframework.web.bind.annotation.PutMapping) ||" +
+            "@annotation(org.springframework.web.bind.annotation.DeleteMapping)")
     public void methodPointcut() {
     }
 
@@ -31,8 +32,8 @@ public class ControllerPayloadValidationAspect {
     public void correctCommand(JoinPoint joinPoint) {
         Object[] args = joinPoint.getArgs();
         for (Object arg : args) {
-            if (arg instanceof DTO dto) {
-                dto.correctAndValidate();
+            if (arg instanceof Command command) {
+                command.correctAndValidate();
             }
         }
     }

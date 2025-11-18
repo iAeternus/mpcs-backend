@@ -1,6 +1,7 @@
 package com.ricky.folder.domain;
 
 import com.ricky.common.domain.AggregateRoot;
+import com.ricky.common.utils.SnowflakeIdGenerator;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import static com.ricky.common.constants.ConfigConstant.FOLDER_COLLECTION;
+import static com.ricky.common.constants.ConfigConstant.FOLDER_ID_PREFIX;
 
 /**
  * @brief 文件夹
@@ -23,6 +25,8 @@ public class Folder extends AggregateRoot {
     private String parentId; // 父文件夹ID
     private String folderName;
 
-    // TODO
+    public static String newFolderId() {
+        return FOLDER_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
+    }
 
 }

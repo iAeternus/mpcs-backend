@@ -1,6 +1,6 @@
 package com.ricky.file.domain.dto;
 
-import com.ricky.common.domain.marker.DTO;
+import com.ricky.common.domain.marker.Command;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.path.Path;
@@ -20,7 +20,7 @@ import static com.ricky.common.utils.ValidationUtils.isBlank;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class FileUploadDTO implements DTO {
+public class FileUploadCommand implements Command {
 
     @NotNull
     MultipartFile file;

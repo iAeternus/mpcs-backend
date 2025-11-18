@@ -46,3 +46,6 @@ mpcs:
     domainEventStreamCount: 10
     notificationStream: Notification.LOCAL
     webhookStream: Webhook.LOCAL
+  file:
+    hash:
+      algorithm: SHA256

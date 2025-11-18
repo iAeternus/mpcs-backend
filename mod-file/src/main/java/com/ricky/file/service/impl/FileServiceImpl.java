@@ -3,9 +3,9 @@ package com.ricky.file.service.impl;
 import com.ricky.common.context.ThreadLocalContext;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileDomainService;
-import com.ricky.file.domain.FileType;
 import com.ricky.file.domain.StorageId;
-import com.ricky.file.domain.dto.FileUploadDTO;
+import com.ricky.file.domain.dto.FileUploadCommand;
+import com.ricky.file.domain.metadata.FileType;
 import com.ricky.file.domain.metadata.Metadata;
 import com.ricky.file.domain.metadata.extractor.MetadataExtractor;
 import com.ricky.file.domain.metadata.extractor.MetadataExtractorFactory;
@@ -30,9 +30,9 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    public String upload(FileUploadDTO dto) {
+    public String upload(FileUploadCommand dto) {
         MultipartFile multipartFile = dto.getFile();
-        FileType fileType = FileType.fromMimeType(multipartFile.getContentType());
+        FileType fileType = FileType.fromContentType(multipartFile.getContentType());
         StorageId storageId = StorageId.EMPTY;
         if (!fileDomainService.exists(multipartFile)) {
             storageId = fileStorage.store(multipartFile);

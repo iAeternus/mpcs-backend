@@ -1,6 +1,6 @@
 package com.ricky.common.domain.page;
 
-import com.ricky.common.domain.marker.DTO;
+import com.ricky.common.domain.marker.Command;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -24,7 +24,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 @Getter
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PageDTO implements DTO {
+public class PageCommand implements Command {
 
     /**
      * 页号

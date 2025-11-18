@@ -23,7 +23,7 @@ public class GridFsFileStorage implements FileStorage {
 
     @Override
     public StorageId store(MultipartFile multipartFile) {
-        String filename = UuidGenerator.newShortUUID();
+        String filename = UuidGenerator.newShortUuid();
         try {
             gridFsTemplate.store(
                     multipartFile.getInputStream(),

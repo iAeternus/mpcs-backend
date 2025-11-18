@@ -1,6 +1,6 @@
 package com.ricky.file.domain.metadata.extractor;
 
-import com.ricky.file.domain.FileType;
+import com.ricky.file.domain.metadata.FileType;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;

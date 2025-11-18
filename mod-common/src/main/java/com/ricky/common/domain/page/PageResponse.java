@@ -1,6 +1,6 @@
 package com.ricky.common.domain.page;
 
-import com.ricky.common.domain.marker.VO;
+import com.ricky.common.domain.marker.Response;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +18,7 @@ import java.util.List;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PageVO<T> implements VO {
+public class PageResponse<T> implements Response {
 
     /**
      * 总数量

@@ -20,4 +20,4 @@ logging:
     level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}]"
   level:
     org:
-      ansj: WARN
+      ansj: DEBUG  # TODO 这里配置不了日志级别
