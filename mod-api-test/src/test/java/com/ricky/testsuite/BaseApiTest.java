@@ -4,8 +4,10 @@ import com.ricky.MpcsBackendApplication;
 import com.ricky.common.context.ThreadLocalContext;
 import com.ricky.common.context.UserContext;
 import com.ricky.common.event.publish.PublishingDomainEventDao;
+import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.password.IPasswordEncoder;
 import com.ricky.file.infra.FileRepository;
+import com.ricky.file.infra.impl.GridFsFileStorage;
 import com.ricky.user.domain.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +29,10 @@ public class BaseApiTest {
     protected WebApplicationContext webApplicationContext;
 
     @Autowired
-    protected SetupApi setupApi;
+    protected SetUpService setUpService;
+
+    @Autowired
+    protected TearDownService tearDownService;
 
     @Autowired
     protected PublishingDomainEventDao publishingDomainEventDao;
@@ -37,6 +42,12 @@ public class BaseApiTest {
 
     @Autowired
     protected FileRepository fileRepository;
+
+    @Autowired
+    protected GridFsFileStorage gridFsFileStorage;
+
+    @Autowired
+    protected FileHasherFactory fileHasherFactory;
 
     // add here...
 

@@ -15,7 +15,7 @@ import static lombok.AccessLevel.PRIVATE;
 public abstract class Metadata {
 
     protected final long size;
-    protected final String mimeType;
+    protected final String mimeType; // TODO 改成枚举
     protected final String hash; // 内容hash
     protected final LocalDateTime uploadedAt; // 上传时间
     protected final LocalDateTime lastAccessedAt; // 上次访问时间

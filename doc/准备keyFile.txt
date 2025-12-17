@@ -1,0 +1,4 @@
+sudo rm -f ./keyFile
+sudo openssl rand -base64 756 > keyFile
+sudo chmod 400 keyFile
+sudo chown 999:999 keyFile

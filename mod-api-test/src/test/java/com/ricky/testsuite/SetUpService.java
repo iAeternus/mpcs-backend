@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @Component
-public class SetupApi {
+public class SetUpService {
 
     /**
      * @param path 相对于测试资源目录下的文件路径，在其中要指定文件名和扩展名，例如 data/test_file.txt

@@ -23,4 +23,15 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
         Query query = Query.query(Criteria.where("metadata.hash").is(hash));
         return mongoTemplate.exists(query, File.class);
     }
+
+    @Override
+    public File cachedById(String fileId) {
+        requireNotBlank(fileId, "File ID must not be blank");
+        return cachedFileRepository.cachedById(fileId);
+    }
+
+    @Override
+    public File byId(String id) {
+        return super.byId(id);
+    }
 }

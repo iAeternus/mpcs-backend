@@ -10,40 +10,107 @@ services:
     volumes:
       - ./redis/conf/redis.conf:/etc/redis/redis.conf
       - ./redis/data:/data
-    command: [ "redis-server", "/etc/redis/redis.conf", "--requirepass", "123" ]
+    command: [ "redis-server", "/etc/redis/redis.conf", "--requirepass", "123456" ]
     networks:
       - app-network
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "123", "--raw", "incr", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "123456", "--raw", "incr", "ping" ]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  mongodb:
+  mongo1:
     image: mongo:latest
-    container_name: mongo
     restart: unless-stopped
-    ports:
-      - "27017:27017"
+    container_name: mongodb1
+    command: --replSet app --bind_ip_all --keyFile /data/mongodb/keyFile
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: 123456
+      TZ: 'Asia/Shanghai'
+      MONGO_INITDB_ROOT_USERNAME: 'admin'
+      MONGO_INITDB_ROOT_PASSWORD: '123456'
+    ports:
+      - "27020:27017"  # 宿主机:容器端口
     volumes:
-      - ./mongo/data:/data/db
-      - ./mongo/keyFile:/opt/keyfile
-      - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
-    command: |
-      --replSet rs0
-      --bind_ip_all
-      --keyFile /opt/keyfile/keyFile
-      --auth
+      - ./data1:/data/db
+      - ./keyFile:/data/mongodb/keyFile
+    networks:
+      app-network:
+        aliases:
+          - mongo1.local  # 网络别名，容器间通信使用
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  mongo2:
+    image: mongo:latest
+    restart: unless-stopped
+    container_name: mongodb2
+    command: --replSet app --bind_ip_all --keyFile /data/mongodb/keyFile
+    environment:
+      TZ: 'Asia/Shanghai'
+      MONGO_INITDB_ROOT_USERNAME: 'admin'
+      MONGO_INITDB_ROOT_PASSWORD: '123456'
+    ports:
+      - "27018:27017"  # 宿主机:容器端口
+    volumes:
+      - ./data2:/data/db
+      - ./keyFile:/data/mongodb/keyFile
+    networks:
+      app-network:
+        aliases:
+          - mongo2.local  # 网络别名，容器间通信使用
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  mongo3:
+    image: mongo:latest
+    restart: unless-stopped
+    container_name: mongodb3
+    command: --replSet app --bind_ip_all --keyFile /data/mongodb/keyFile
+    environment:
+      TZ: 'Asia/Shanghai'
+      MONGO_INITDB_ROOT_USERNAME: 'admin'
+      MONGO_INITDB_ROOT_PASSWORD: '123456'
+    ports:
+      - "27019:27017"  # 宿主机:容器端口
+    volumes:
+      - ./data3:/data/db
+      - ./keyFile:/data/mongodb/keyFile
+    networks:
+      app-network:
+        aliases:
+          - mongo3.local  # 网络别名，容器间通信使用
+    healthcheck:
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  mongo-init:
+    image: mongo:latest
+    container_name: mongo-init
+    restart: "no"  # 只运行一次
+    depends_on:
+      mongo1:
+        condition: service_healthy
+      mongo2:
+        condition: service_healthy
+      mongo3:
+        condition: service_healthy
+    volumes:
+      - ./init-script.sh:/init-script.sh
+      - ./keyFile:/data/mongodb/keyFile
+    entrypoint: [ "sh", "/init-script.sh" ]
     networks:
       - app-network
-    healthcheck:
-      test: [ "CMD", "mongosh", "-u", "admin", "-p", "123456", "--eval", "db.adminCommand('ping')" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 networks:
   app-network:

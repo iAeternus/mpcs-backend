@@ -1,5 +1,6 @@
 package com.ricky.common.event.consume;
 
+import com.ricky.common.event.DomainEvent;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
@@ -22,7 +23,7 @@ import static lombok.AccessLevel.PRIVATE;
 @NoArgsConstructor(access = PRIVATE)
 @Document(CONSUMING_DOMAIN_EVENT_COLLECTION)
 @TypeAlias("CONSUMING_DOMAIN_EVENT")
-public class ConsumingDomainEvent<T> {
+public class ConsumingDomainEvent<T extends DomainEvent> {
 
     private String eventId; // 领域事件ID
     private String type; // 领域事件类型
