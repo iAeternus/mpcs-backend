@@ -1,35 +1,32 @@
 package com.ricky.file;
 
 
-import com.ricky.common.utils.MyObjectMapper;
-import com.ricky.file.domain.dto.FileUploadCommand;
-import com.ricky.testsuite.ApiTest;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.test.web.servlet.MockMvc;
+import com.ricky.BaseApiTest;
+import com.ricky.file.domain.dto.resp.FileUploadResponse;
+import io.restassured.response.Response;
 
-@Component
+import java.io.File;
+
 public class FileApi {
 
     private static final String ROOT_URL = "/files";
 
-    @Autowired
-    private MyObjectMapper objectMapper;
-
-    public ApiTest.ResponseExecutor uploadRaw(MockMvc mockMvc, String token, FileUploadCommand command) {
-        return new ApiTest(mockMvc, objectMapper)
-                .post(ROOT_URL)
-                .bearerToken(token)
-                .file(command.getFile())
-                .param("parentId", command.getParentId())
-                .param("path", command.getPath())
-                .execute();
+    public static Response uploadRaw(String token, File file, String parentId, String path) {
+        return BaseApiTest.given(token)
+                .contentType("multipart/form-data")
+                .multiPart("file", file)
+                .multiPart("parentId", parentId)
+                .multiPart("path", path)
+                .when()
+                .post(ROOT_URL);
     }
 
-    public String upload(MockMvc mockMvc, String token, FileUploadCommand command) {
-        return uploadRaw(mockMvc, token, command)
-                .expectStatus(200)
-                .as(String.class);
+    public static FileUploadResponse upload(String token, File file, String parentId, String path) {
+        return uploadRaw(token, file, parentId, path)
+                .then()
+                .statusCode(201)
+                .extract()
+                .as(FileUploadResponse.class);
     }
 
 }

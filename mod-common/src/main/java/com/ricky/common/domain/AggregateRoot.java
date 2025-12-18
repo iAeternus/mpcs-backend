@@ -100,10 +100,13 @@ public abstract class AggregateRoot implements Identified {
         requireNotBlank(id, "ID must not be blank.");
 
         this.id = id;
-        this.userId = ThreadLocalContext.getContext().getUid();
+//        this.userId = ThreadLocalContext.getContext().getUid(); // TODO 以下所有均需要在Spring security重构后修改
+        this.userId = "USR789367234132222976";
         this.createdAt = now();
-        this.createdBy = ThreadLocalContext.getContext().getUid();
-        this.creator = ThreadLocalContext.getContext().getUsername();
+//        this.createdBy = ThreadLocalContext.getContext().getUid();
+        this.createdBy = "USR789367234132222976";
+//        this.creator = ThreadLocalContext.getContext().getUsername();
+        this.creator = "test_user";
     }
 
     protected AggregateRoot(String id, String userId) {
@@ -113,8 +116,10 @@ public abstract class AggregateRoot implements Identified {
         this.id = id;
         this.userId = userId;
         this.createdAt = now();
-        this.createdBy = ThreadLocalContext.getContext().getUid();
-        this.creator = ThreadLocalContext.getContext().getUsername();
+//        this.createdBy = ThreadLocalContext.getContext().getUid();
+        this.createdBy = "USR789367234132222976";
+//        this.creator = ThreadLocalContext.getContext().getUsername();
+        this.creator = "test_user";
     }
 
     /**
@@ -137,8 +142,10 @@ public abstract class AggregateRoot implements Identified {
                 .type(type)
                 .note(note)
                 .optAt(now())
-                .optBy(ThreadLocalContext.getContext().getUid())
-                .obn(ThreadLocalContext.getContext().getUsername())
+//                .optBy(ThreadLocalContext.getContext().getUid())
+                .optBy("USR789367234132222976")
+//                .obn(ThreadLocalContext.getContext().getUsername())
+                .obn("test_user")
                 .build();
         List<OpsLog> opsLogs = allOpsLog();
 
@@ -149,8 +156,10 @@ public abstract class AggregateRoot implements Identified {
         }
 
         this.updatedAt = now();
-        this.updatedBy = ThreadLocalContext.getContext().getUid();
-        this.updater = ThreadLocalContext.getContext().getUsername();
+//        this.updatedBy = ThreadLocalContext.getContext().getUid();
+        this.updatedBy = "USR789367234132222976";
+//        this.updater = ThreadLocalContext.getContext().getUsername();
+        this.updater = "test_user";
     }
 
     /**

@@ -1,4 +1,4 @@
-package com.ricky.testsuite;
+package com.ricky;
 
 import com.ricky.file.domain.FileExtension;
 import com.ricky.file.domain.MimeType;
@@ -11,15 +11,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @Component
-public class SetUpService {
+public class SetupApi {
 
     /**
-     * @param path 相对于测试资源目录下的文件路径，在其中要指定文件名和扩展名，例如 data/test_file.txt
+     * @param path 相对于测试资源目录下的文件路径，在其中要指定文件名和扩展名，例如 data/plain-text-file.txt
      * @param name 表单名称
      * @return 文件
      * @brief 加载测试文件
      */
-    public MultipartFile loadTestFile(String path, String name) {
+    public static MultipartFile loadTestFile(String path, String name) {
         try {
             ClassPathResource resource = new ClassPathResource(path);
             String filename = path.contains("/") ? path.substring(path.lastIndexOf("/") + 1) : path;

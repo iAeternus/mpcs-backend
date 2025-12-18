@@ -1,95 +1,84 @@
 package com.ricky.file;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
+import com.ricky.BaseApiTest;
 import com.ricky.common.utils.ChecksumUtils;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileStatus;
-import com.ricky.file.domain.StorageId;
-import com.ricky.file.domain.dto.FileUploadCommand;
+import com.ricky.file.domain.dto.resp.FileUploadResponse;
 import com.ricky.folder.domain.Folder;
-import com.ricky.testsuite.BaseApiTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 
+import static com.ricky.common.exception.ErrorCodeEnum.REQUEST_VALIDATION_FAILED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Transactional
 class FileControllerTest extends BaseApiTest {
 
-    @Autowired
-    private FileApi fileApi;
-
     @Test
     void should_upload_file() throws IOException {
         // Given
-        MultipartFile multipartFile = setUpService.loadTestFile("test_file.txt", "file");
-        FileUploadCommand command = FileUploadCommand.builder()
-                .file(multipartFile)
-                .parentId(Folder.newFolderId())
-                .path("/test")
-                .build();
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        String parentId = Folder.newFolderId();
+        String path = "/test";
 
         // When
-        String fileId = fileApi.upload(mockMvc, "", command);
+        FileUploadResponse resp = FileApi.upload("", file, parentId, path);
 
         // Then
-        File file = fileRepository.byId(fileId);
-        assertEquals(FileStatus.NORMAL, file.getStatus());
-        assertEquals(command.getParentId(), file.getParentId());
-        assertEquals(command.getPath(), file.getPath());
+        File dbFile = fileRepository.byId(resp.getFileId());
+        assertEquals(FileStatus.NORMAL, dbFile.getStatus());
+        assertEquals(parentId, dbFile.getParentId());
+        assertEquals(path, dbFile.getPath());
 
-        assertEquals(command.getFile().getSize(), file.getMetadata().getSize());
-        assertEquals(command.getFile().getContentType(), file.getMetadata().getMimeType());
-        assertEquals(fileHasherFactory.getFileHasher().hash(multipartFile.getInputStream()), file.getMetadata().getHash());
-        assertEquals(ChecksumUtils.crc32(multipartFile.getInputStream()), file.getMetadata().getChecksum());
+        InputStream inputStream = Files.newInputStream(file.toPath());
+        assertEquals(fileHasherFactory.getFileHasher().hash(inputStream), dbFile.getMetadata().getHash());
+        assertEquals(ChecksumUtils.crc32(inputStream), dbFile.getMetadata().getChecksum());
 
-        GridFSFile gridFSFile = gridFsFileStorage.findFile(file.getStorageId());
-        assertEquals(file.getStorageId().getValue(), gridFSFile.getFilename());
+        GridFSFile gridFSFile = gridFsFileStorage.findFile(dbFile.getStorageId());
+        assertEquals(dbFile.getStorageId().getValue(), gridFSFile.getFilename());
 
         // Finally
-        tearDownService.deleteFileFromGridFs(file.getStorageId());
+        gridFsFileStorage.delete(dbFile.getStorageId());
     }
 
     @Test
-    void should_upload_file_if_hash_already_exist() {
+    void should_upload_file_if_hash_already_exist() throws IOException {
         // Given
-        MultipartFile multipartFile = setUpService.loadTestFile("test_file.txt", "file");
-        StorageId storageId = gridFsFileStorage.store(multipartFile);// 先上传文件，抢占 storageId
-        FileUploadCommand command = FileUploadCommand.builder()
-                .file(multipartFile)
-                .parentId(Folder.newFolderId())
-                .path("/test")
-                .build();
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
 
         // When
-        String fileId = fileApi.upload(mockMvc, "", command);
+        FileUploadResponse resp = FileApi.upload("", file, Folder.newFolderId(), "/test"); // 先上传文件，抢占 storageId
+        FileUploadResponse resp2 = FileApi.upload("", file, Folder.newFolderId(), "/test");
 
         // Then
-        File file = fileRepository.byId(fileId);
-        assertEquals(file.getStorageId(), storageId); // 两条记录指向同一个 storageId
+        File dbFile = fileRepository.byId(resp.getFileId());
+        File dbFile2 = fileRepository.byId(resp2.getFileId());
+        assertEquals(dbFile.getStorageId(), dbFile2.getStorageId()); // 两条记录指向同一个 storageId
 
         // Finally
-        tearDownService.deleteFileFromGridFs(file.getStorageId());
+        gridFsFileStorage.delete(dbFile.getStorageId());
+        gridFsFileStorage.delete(dbFile2.getStorageId());
     }
 
     @Test
-    void should_fail_to_upload_if_path_is_invalid() {
+    void should_fail_to_upload_if_path_is_invalid() throws IOException {
         // Given
-        MultipartFile multipartFile = setUpService.loadTestFile("test_file.txt", "file");
-        FileUploadCommand command = FileUploadCommand.builder()
-                .file(multipartFile)
-                .parentId(Folder.newFolderId())
-                .path("test") // 非法的路径
-                .build();
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        String parentId = Folder.newFolderId();
+        String path = "test"; // 非法的路径
 
-        // When
-        fileApi.uploadRaw(mockMvc, "", command)
-                .expectStatus(400)
-                .expectUserMessage("请求数据验证失败。");
+        // When & Then
+        assertError(() -> FileApi.uploadRaw("", file, parentId, path), REQUEST_VALIDATION_FAILED);
     }
 
 }

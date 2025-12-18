@@ -70,7 +70,8 @@ public abstract class DomainEvent {
 
         this.id = newEventId();
         this.type = type;
-        this.raisedBy = ThreadLocalContext.getContext().getUid();
+//        this.raisedBy = ThreadLocalContext.getContext().getUid(); // TODO 需要在Spring security重构后修改
+        this.raisedBy = "USR789367234132222976";
         this.raisedAt = Instant.now();
     }
 

@@ -13,6 +13,7 @@ public interface ConfigConstant {
 
     String AUTHORIZATION = "Authorization";
     String BEARER = "Bearer ";
+    String AUTH_COOKIE_NAME = "mpcstoken";
 
     String LOCAL_DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
