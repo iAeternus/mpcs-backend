@@ -4,6 +4,7 @@ import com.mongodb.client.gridfs.model.GridFSFile;
 import com.ricky.common.utils.ChecksumUtils;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileStatus;
+import com.ricky.file.domain.StorageId;
 import com.ricky.file.domain.dto.FileUploadCommand;
 import com.ricky.folder.domain.Folder;
 import com.ricky.testsuite.BaseApiTest;
@@ -51,6 +52,44 @@ class FileControllerTest extends BaseApiTest {
 
         // Finally
         tearDownService.deleteFileFromGridFs(file.getStorageId());
+    }
+
+    @Test
+    void should_upload_file_if_hash_already_exist() {
+        // Given
+        MultipartFile multipartFile = setUpService.loadTestFile("test_file.txt", "file");
+        StorageId storageId = gridFsFileStorage.store(multipartFile);// 先上传文件，抢占 storageId
+        FileUploadCommand command = FileUploadCommand.builder()
+                .file(multipartFile)
+                .parentId(Folder.newFolderId())
+                .path("/test")
+                .build();
+
+        // When
+        String fileId = fileApi.upload(mockMvc, "", command);
+
+        // Then
+        File file = fileRepository.byId(fileId);
+        assertEquals(file.getStorageId(), storageId); // 两条记录指向同一个 storageId
+
+        // Finally
+        tearDownService.deleteFileFromGridFs(file.getStorageId());
+    }
+
+    @Test
+    void should_fail_to_upload_if_path_is_invalid() {
+        // Given
+        MultipartFile multipartFile = setUpService.loadTestFile("test_file.txt", "file");
+        FileUploadCommand command = FileUploadCommand.builder()
+                .file(multipartFile)
+                .parentId(Folder.newFolderId())
+                .path("test") // 非法的路径
+                .build();
+
+        // When
+        fileApi.uploadRaw(mockMvc, "", command)
+                .expectStatus(400)
+                .expectUserMessage("请求数据验证失败。");
     }
 
 }

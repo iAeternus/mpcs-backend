@@ -32,13 +32,19 @@ public class FileServiceImpl implements FileService {
     @Transactional
     public String upload(FileUploadCommand dto) {
         MultipartFile multipartFile = dto.getFile();
+
+        // 提取元数据
         FileType fileType = FileType.fromContentType(multipartFile.getContentType());
+        MetadataExtractor extractor = metadataExtractorFactory.getExtractor(fileType);
+        Metadata metaData = extractor.extract(multipartFile);
+
+        // 存储文件内容
         StorageId storageId = StorageId.EMPTY;
         if (!fileDomainService.exists(multipartFile)) {
             storageId = fileStorage.store(multipartFile);
         }
-        MetadataExtractor extractor = metadataExtractorFactory.getExtractor(fileType);
-        Metadata metaData = extractor.extract(multipartFile);
+
+        // 落库
         File file = File.create(
                 ThreadLocalContext.getContext().getUid(),
                 dto.getParentId(),
@@ -48,6 +54,7 @@ public class FileServiceImpl implements FileService {
                 dto.getPath()
         );
         fileRepository.save(file);
+
         log.info("File[{}] upload complete", file.getId());
         return file.getId();
     }

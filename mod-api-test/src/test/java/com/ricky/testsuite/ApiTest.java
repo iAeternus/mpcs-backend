@@ -2,6 +2,7 @@ package com.ricky.testsuite;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpMethod;
@@ -16,10 +17,14 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * 轻量化 Api 测试工具：支持 multipart、JSON、表单、Query、Headers、Token、泛型反序列化等
@@ -238,6 +243,12 @@ public class ApiTest {
             return this;
         }
 
+        public ResponseExecutor expectUserMessage(String expectMessage) {
+            JsonNode jsonBody = parseJson();
+            assertEquals(expectMessage, jsonBody.get("userMessage").asText(), "业务消息不符预期");
+            return this;
+        }
+
         public String asString() {
             try {
                 return result.getResponse().getContentAsString();
@@ -264,6 +275,17 @@ public class ApiTest {
                 return objectMapper.readValue(result.getResponse().getContentAsString(), typeRef);
             } catch (Exception e) {
                 throw new ApiTestException("泛型反序列化失败", e);
+            }
+        }
+
+        private JsonNode parseJson() {
+            try {
+                String content = result.getResponse().getContentAsString(UTF_8);
+                return content.isEmpty() ?
+                        objectMapper.createObjectNode() :
+                        objectMapper.readTree(content);
+            } catch (UnsupportedEncodingException | JsonProcessingException e) {
+                throw new RuntimeException(e);
             }
         }
     }
