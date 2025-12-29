@@ -1,7 +1,12 @@
 package com.ricky.common.utils;
 
+import com.ricky.common.constants.RegexConstants;
+
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+
+import static java.util.regex.Pattern.matches;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class CommonUtils {
 
@@ -30,6 +35,34 @@ public class CommonUtils {
             return (Class<?>) actualTypeArgument;
         }
         return null;
+    }
+
+    public static boolean isMobileNumber(String value) {
+        return matches(RegexConstants.MOBILE_PATTERN, value);
+    }
+
+    public static boolean isEmail(String value) {
+        return matches(RegexConstants.EMAIL_PATTERN, value);
+    }
+
+    public static String maskMobileOrEmail(String mobileOrEmail) {
+        if (isBlank(mobileOrEmail)) {
+            return mobileOrEmail;
+        }
+
+        if (isMobileNumber(mobileOrEmail)) {
+            return mobileOrEmail.replaceAll("(\\w{3})\\w*(\\w{4})", "$1****$2");
+        }
+
+        return mobileOrEmail.replaceAll("(^[^@]{3}|(?!^)\\G)[^@]", "$1*");
+    }
+
+    public static String maskMobile(String mobile) {
+        if (isBlank(mobile)) {
+            return mobile;
+        }
+
+        return mobile.replaceAll("(\\w{3})\\w*(\\w{4})", "$1****$2");
     }
 
 }

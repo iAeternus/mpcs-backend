@@ -2,7 +2,6 @@ package com.ricky.file.domain;
 
 import com.ricky.common.hash.AbstractFileHasher;
 import com.ricky.common.hash.FileHasherFactory;
-import com.ricky.file.infra.FileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;

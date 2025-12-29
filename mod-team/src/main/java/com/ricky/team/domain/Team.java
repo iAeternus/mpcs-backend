@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
 
-import static com.ricky.common.constants.ConfigConstant.TEAM_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.TEAM_COLLECTION;
 
 /**
  * @brief 团队

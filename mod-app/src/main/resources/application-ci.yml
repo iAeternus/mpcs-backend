@@ -7,7 +7,7 @@ spring:
   #    read-timeout: 30s
   data:
     mongodb:
-#      uri: mongodb://admin:123456@localhost:27020,localhost:27018,localhost:27019/mpcs-dev?replicaSet=app&authSource=admin
+      #      uri: mongodb://admin:123456@localhost:27020,localhost:27018,localhost:27019/mpcs-dev?replicaSet=app&authSource=admin
       uri: mongodb://admin:123456@localhost:27018/mpcs-dev?authSource=admin
       database: mpcs-dev
     redis:
@@ -36,6 +36,11 @@ mpcs:
   config:
     enable-limit-rate: false
     base-domain-name: ci.ricky.com
+  jwt:
+    issuer: mry-local-issuer
+    secret: EHnbNd1KxkXceo9v
+    expire: 720
+    aheadAutoRefresh: 60
   redis:
     domainEventStreamEnabled: false
     domainEventStreamPrefix: DomainEvent.LOCAL
@@ -45,3 +50,7 @@ mpcs:
   file:
     hash:
       algorithm: SHA256
+  common:
+    httpsEnabled: false
+    baseDomainName: mpcs.com  # TODO
+    limitRate: false

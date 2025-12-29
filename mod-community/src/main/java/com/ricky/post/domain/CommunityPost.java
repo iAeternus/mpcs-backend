@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import static com.ricky.common.constants.ConfigConstant.COMMUNITY_POST_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.COMMUNITY_POST_COLLECTION;
 
 /**
  * @brief 社区文件发布记录

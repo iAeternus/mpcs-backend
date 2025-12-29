@@ -1,5 +1,6 @@
 package com.ricky.file.service.impl;
 
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileDomainService;
@@ -9,8 +10,8 @@ import com.ricky.file.domain.metadata.FileType;
 import com.ricky.file.domain.metadata.Metadata;
 import com.ricky.file.domain.metadata.extractor.MetadataExtractor;
 import com.ricky.file.domain.metadata.extractor.MetadataExtractorFactory;
-import com.ricky.file.infra.FileRepository;
-import com.ricky.file.infra.FileStorage;
+import com.ricky.file.domain.FileRepository;
+import com.ricky.file.domain.FileStorage;
 import com.ricky.file.service.FileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +34,7 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    public FileUploadResponse upload(MultipartFile multipartFile, String parentId, String path) {
+    public FileUploadResponse upload(MultipartFile multipartFile, String parentId, String path, UserContext userContext) {
         if (isBlank(multipartFile.getOriginalFilename())) {
             throw new MyException(FILE_ORIGINAL_NAME_MUST_NOT_BE_BLANK,
                     "文件原始名称不能为空", "filename", multipartFile.getName());
@@ -52,13 +53,13 @@ public class FileServiceImpl implements FileService {
 
         // 落库
         File file = File.create(
-//                ThreadLocalContext.getContext().getUid(), // TODO
-                "USR789367234132222976", // TODO
+                userContext.getUid(),
                 parentId,
                 storageId,
                 multipartFile.getOriginalFilename(),
                 metaData,
-                path
+                path,
+                userContext
         );
         fileRepository.save(file);
 

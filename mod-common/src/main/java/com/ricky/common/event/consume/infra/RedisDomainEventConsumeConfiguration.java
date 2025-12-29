@@ -21,7 +21,7 @@ import org.springframework.data.redis.stream.StreamMessageListenerContainer;
 import org.springframework.data.redis.stream.StreamMessageListenerContainer.StreamMessageListenerContainerOptions;
 import org.springframework.util.ErrorHandler;
 
-import static com.ricky.common.constants.ConfigConstant.REDIS_DOMAIN_EVENT_CONSUMER_GROUP;
+import static com.ricky.common.constants.ConfigConstants.REDIS_DOMAIN_EVENT_CONSUMER_GROUP;
 import static org.springframework.data.redis.connection.stream.Consumer.from;
 import static org.springframework.data.redis.connection.stream.ReadOffset.lastConsumed;
 import static org.springframework.data.redis.connection.stream.StreamOffset.create;

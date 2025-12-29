@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.util.regex.Pattern;
 
 import static com.mongodb.assertions.Assertions.assertFalse;
-import static com.ricky.common.constants.RegexConstant.PATH_PATTERN;
+import static com.ricky.common.constants.RegexConstants.PATH_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PathValidatorTest {

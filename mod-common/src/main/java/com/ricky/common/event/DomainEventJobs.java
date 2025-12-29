@@ -11,8 +11,8 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-import static com.ricky.common.constants.ConfigConstant.CONSUMING_DOMAIN_EVENT_COLLECTION;
-import static com.ricky.common.constants.ConfigConstant.PUBLISHING_DOMAIN_EVENT_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.CONSUMING_DOMAIN_EVENT_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.PUBLISHING_DOMAIN_EVENT_COLLECTION;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static org.springframework.data.mongodb.core.query.Criteria.where;

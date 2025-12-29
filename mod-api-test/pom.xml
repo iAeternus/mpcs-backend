@@ -68,6 +68,11 @@
             <artifactId>rest-assured</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.apifan.common</groupId>
+            <artifactId>common-random</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

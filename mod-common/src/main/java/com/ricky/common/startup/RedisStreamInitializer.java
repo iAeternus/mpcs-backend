@@ -8,7 +8,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StreamOperations;
 import org.springframework.stereotype.Component;
 
-import static com.ricky.common.constants.ConfigConstant.*;
+import static com.ricky.common.constants.ConfigConstants.*;
 
 /**
  * @brief Redis流初始化

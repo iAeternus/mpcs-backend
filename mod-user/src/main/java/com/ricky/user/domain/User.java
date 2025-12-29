@@ -1,15 +1,22 @@
 package com.ricky.user.domain;
 
 import com.ricky.common.domain.AggregateRoot;
+import com.ricky.common.domain.user.Role;
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.ricky.user.domain.evt.UserCreatedEvent;
+import lombok.*;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import static com.ricky.common.constants.ConfigConstant.USER_COLLECTION;
-import static com.ricky.common.constants.ConfigConstant.USER_ID_PREFIX;
+import java.time.LocalDate;
+import java.util.List;
+
+import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.USER_ID_PREFIX;
+import static java.time.LocalDate.now;
+import static lombok.AccessLevel.PRIVATE;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * @brief 用户
@@ -21,12 +28,67 @@ import static com.ricky.common.constants.ConfigConstant.USER_ID_PREFIX;
 public class User extends AggregateRoot {
 
     private String username;
-    private String email;
-    private String passwordHash;
+    private String mobile; // 手机号，全局唯一，与email不能同时为空
+    private String email; // 邮箱，全局唯一，与mobile不能同时为空
+    private String password;
     private String avatarUrl;
+    private Role role;
+    private boolean mobileIdentified; // 是否已验证手机号
+    private FailedLoginCount failedLoginCount; // 登录失败次数
+
+    public User(String mobile, String email, String password, UserContext userContext) {
+        super(userContext.getUid(), userContext);
+        this.username = userContext.getUsername();
+        this.role = Role.NORMAL_USER;
+        this.mobile = mobile;
+        if (isNotBlank(this.mobile)) {
+            this.mobileIdentified = true;
+        }
+        this.email = email;
+        this.password = password;
+        this.failedLoginCount = FailedLoginCount.init();
+        this.raiseEvent(new UserCreatedEvent(this.getId(), userContext));
+        this.addOpsLog("注册", userContext);
+    }
 
     public static String newUserId() {
         return USER_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
     }
 
+    public void checkActive() {
+        // TODO
+    }
+
+    public void useSms() {
+        // TODO
+    }
+
+    @Getter
+    @Builder
+    @EqualsAndHashCode
+    @AllArgsConstructor(access = PRIVATE)
+    public static class FailedLoginCount {
+        private static final int MAX_ALLOWED_FAILED_LOGIN_PER_DAY = 30;
+
+        private LocalDate date;
+        private int count;
+
+        public static FailedLoginCount init() {
+            return FailedLoginCount.builder().date(LocalDate.now()).count(0).build();
+        }
+
+        private void recordFailedLogin() {
+            LocalDate now = LocalDate.now();
+            if (now.equals(date)) {
+                count++;
+            } else {
+                this.date = now;
+                this.count = 0;
+            }
+        }
+
+        private boolean isLocked() {
+            return now().equals(date) && this.count >= MAX_ALLOWED_FAILED_LOGIN_PER_DAY;
+        }
+    }
 }

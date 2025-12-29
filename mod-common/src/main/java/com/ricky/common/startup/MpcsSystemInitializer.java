@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
 
-import static com.ricky.common.constants.ConfigConstant.*;
+import static com.ricky.common.constants.ConfigConstants.*;
 import static java.util.Locale.CHINESE;
 import static java.util.TimeZone.getTimeZone;
 import static java.util.TimeZone.setDefault;

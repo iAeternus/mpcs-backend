@@ -1,0 +1,26 @@
+package com.ricky.user.domain.evt;
+
+import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.event.DomainEvent;
+import com.ricky.common.json.JsonTypeDefine;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.TypeAlias;
+
+import static com.ricky.common.event.DomainEventType.USER_CREATED;
+import static lombok.AccessLevel.PRIVATE;
+
+@Getter
+@TypeAlias("USER_CREATED_EVENT")
+@JsonTypeDefine("USER_CREATED_EVENT")
+@NoArgsConstructor(access = PRIVATE)
+public class UserCreatedEvent extends DomainEvent {
+
+    private String userId;
+
+    public UserCreatedEvent(String memberId, UserContext userContext) {
+        super(USER_CREATED, userContext);
+        this.userId = memberId;
+    }
+
+}

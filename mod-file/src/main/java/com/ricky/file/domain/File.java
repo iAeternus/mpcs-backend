@@ -1,7 +1,7 @@
 package com.ricky.file.domain;
 
 import com.ricky.common.domain.AggregateRoot;
-import com.ricky.common.domain.OpsLogTypeEnum;
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.file.domain.evt.FileUploadedEvent;
 import com.ricky.file.domain.metadata.Metadata;
@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import static com.ricky.common.constants.ConfigConstant.FILE_COLLECTION;
-import static com.ricky.common.constants.ConfigConstant.FILE_ID_PREFIX;
+import static com.ricky.common.constants.ConfigConstants.FILE_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 
 /**
  * @brief 文件
@@ -32,8 +32,8 @@ public class File extends AggregateRoot {
     private String path; // 存储路径，暂时只支持绝对路径
     private FileStatus status;
 
-    private File(String ownerId, String parentId, StorageId storageId, String filename, Metadata metaData, String path) {
-        super(newFileId());
+    private File(String ownerId, String parentId, StorageId storageId, String filename, Metadata metaData, String path, UserContext userContext) {
+        super(newFileId(), userContext);
         this.ownerId = ownerId;
         this.teamId = null;
         this.parentId = parentId;
@@ -42,17 +42,18 @@ public class File extends AggregateRoot {
         this.metadata = metaData;
         this.path = path;
         this.status = FileStatus.NORMAL;
-        addOpsLog(OpsLogTypeEnum.CREATE, "Create File");
+        addOpsLog("Create", userContext);
     }
 
-    public static File create(String ownerId, String parentId, StorageId storageId, String filename, Metadata metaData, String path) {
-        File file = new File(ownerId, parentId, storageId, filename, metaData, path);
+    public static File create(String ownerId, String parentId, StorageId storageId, String filename, Metadata metaData, String path, UserContext userContext) {
+        File file = new File(ownerId, parentId, storageId, filename, metaData, path, userContext);
         file.raiseEvent(new FileUploadedEvent(
                 file.getId(),
                 file.filename,
                 file.metadata.getHash(),
                 file.metadata.getSize(),
-                file.metadata.getMimeType()
+                file.metadata.getMimeType(),
+                userContext
         ));
         return file;
     }

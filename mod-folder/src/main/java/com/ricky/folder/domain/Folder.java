@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import static com.ricky.common.constants.ConfigConstant.FOLDER_COLLECTION;
-import static com.ricky.common.constants.ConfigConstant.FOLDER_ID_PREFIX;
+import static com.ricky.common.constants.ConfigConstants.FOLDER_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.FOLDER_ID_PREFIX;
 
 /**
  * @brief 文件夹

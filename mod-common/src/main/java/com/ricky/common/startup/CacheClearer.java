@@ -6,8 +6,8 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Component;
 
-import static com.ricky.common.constants.ConfigConstant.FILE_CACHE;
-import static com.ricky.common.constants.ConfigConstant.USER_CACHE;
+import static com.ricky.common.constants.ConfigConstants.FILE_CACHE;
+import static com.ricky.common.constants.ConfigConstants.USER_CACHE;
 
 /**
  * @author Ricky

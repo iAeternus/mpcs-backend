@@ -1,5 +1,6 @@
 package com.ricky.file.domain.evt;
 
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.event.DomainEvent;
 import com.ricky.common.json.JsonTypeDefine;
 import lombok.AccessLevel;
@@ -24,8 +25,8 @@ public class FileUploadedEvent extends DomainEvent {
     Long size;
     String mimeType;
 
-    public FileUploadedEvent(String fileId, String filename, String hash, Long size, String mimeType) {
-        super(FILE_UPLOADED_EVENT);
+    public FileUploadedEvent(String fileId, String filename, String hash, Long size, String mimeType, UserContext userContext) {
+        super(FILE_UPLOADED_EVENT, userContext);
         this.fileId = fileId;
         this.filename = filename;
         this.hash = hash;

@@ -84,4 +84,8 @@ public class MyError implements Serializable {
         this.data = data;
     }
 
+    public ErrorResponse toErrorResponse() {
+        return ErrorResponse.builder().error(this).build();
+    }
+
 }

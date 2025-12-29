@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 
-import static com.ricky.common.constants.ConfigConstant.CONSUMING_DOMAIN_EVENT_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.CONSUMING_DOMAIN_EVENT_COLLECTION;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static java.util.Objects.requireNonNull;
 import static lombok.AccessLevel.PRIVATE;

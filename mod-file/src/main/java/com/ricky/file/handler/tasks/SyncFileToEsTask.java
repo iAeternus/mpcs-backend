@@ -1,12 +1,12 @@
 package com.ricky.file.handler.tasks;
 
-import com.ricky.common.domain.task.RepeatableTask;
+import com.ricky.common.domain.task.RetryableTask;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class SyncFileToEsTask implements RepeatableTask {
+public class SyncFileToEsTask implements RetryableTask {
 
     public void run(String fileId, String filename, String hash, Long size, String mimeType) {
         // TODO 建立ES索引

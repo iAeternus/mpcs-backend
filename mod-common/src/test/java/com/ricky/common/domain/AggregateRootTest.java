@@ -1,9 +1,10 @@
 package com.ricky.common.domain;
 
-import com.ricky.common.context.ThreadLocalContext;
-import com.ricky.common.context.UserContext;
+import com.ricky.common.constants.ConfigConstants;
+import com.ricky.common.domain.user.Role;
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.event.DomainEvent;
-import org.junit.jupiter.api.AfterAll;
+import com.ricky.common.utils.SnowflakeIdGenerator;
 import org.junit.jupiter.api.Test;
 
 import java.util.stream.IntStream;
@@ -14,16 +15,10 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AggregateRootTest {
 
-    private static final UserContext TEST_USER = UserContext.of("USR" + newSnowflakeId(), "test username");
-
-    static {
-        ThreadLocalContext.setContext(TEST_USER);
-    }
-
-    @AfterAll
-    static void tearDown() {
-        ThreadLocalContext.removeContext();
-    }
+    private static final UserContext TEST_USER = UserContext.of(
+            ConfigConstants.USER_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId(),
+            "username",
+            Role.SYS_ADMIN);
 
     @Test
     public void should_create() {
@@ -58,7 +53,7 @@ class AggregateRootTest {
         String id = "Test" + newSnowflakeId();
         TestAggregate aggregate = new TestAggregate(id);
         String opsLog = "Hello ops logs";
-        aggregate.addOpsLog(opsLog);
+        aggregate.addOpsLog(opsLog, TEST_USER);
         assertEquals(opsLog, aggregate.getOpsLogs().get(0).getNote());
     }
 
@@ -67,9 +62,9 @@ class AggregateRootTest {
         String id = "Test" + newSnowflakeId();
         TestAggregate aggregate = new TestAggregate(id);
         String opsLog = "Hello ops logs";
-        IntStream.rangeClosed(0, MAX_OPS_LOG_SIZE).forEach(i -> aggregate.addOpsLog(opsLog));
+        IntStream.rangeClosed(0, MAX_OPS_LOG_SIZE).forEach(i -> aggregate.addOpsLog(opsLog, TEST_USER));
         String lastLog = "last ops log";
-        aggregate.addOpsLog(lastLog);
+        aggregate.addOpsLog(lastLog, TEST_USER);
         assertEquals(MAX_OPS_LOG_SIZE, aggregate.getOpsLogs().size());
         assertEquals(lastLog, aggregate.getOpsLogs().getLast().getNote());
     }
@@ -77,7 +72,7 @@ class AggregateRootTest {
     static class TestAggregate extends AggregateRoot {
 
         public TestAggregate(String id) {
-            super(id);
+            super(id, TEST_USER);
         }
     }
 

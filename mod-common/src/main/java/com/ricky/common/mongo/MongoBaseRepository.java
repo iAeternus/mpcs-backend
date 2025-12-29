@@ -1,8 +1,8 @@
 package com.ricky.common.mongo;
 
 import com.google.common.collect.Maps;
-import com.ricky.common.context.ThreadLocalContext;
 import com.ricky.common.domain.AggregateRoot;
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.event.DomainEvent;
 import com.ricky.common.event.publish.PublishingDomainEventDao;
 import com.ricky.common.exception.MyException;
@@ -16,7 +16,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
 
-import static com.google.common.collect.ImmutableMap.of;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static com.ricky.common.utils.ValidationUtils.*;
@@ -219,11 +218,12 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      * @param id 聚合根ID
      * @return 聚合根
      */
-    public AR byIdAndCheckUserShip(String id) {
+    public AR byIdAndCheckUserShip(String id, UserContext userContext) {
         requireNotBlank(id, arTypeName() + " ID must not be blank.");
+        requireNonNull(userContext, "UserContext must not be null.");
 
         AR ar = byId(id);
-        checkUserShip(ar);
+        checkUserShip(ar, userContext);
         return ar;
     }
 
@@ -254,13 +254,14 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      * @param ids 聚合根ID集合
      * @return 聚合根集合
      */
-    public List<AR> byIdsAndCheckUserShip(Set<String> ids) {
+    public List<AR> byIdsAndCheckUserShip(Set<String> ids, UserContext userContext) {
+        requireNonNull(userContext, "UserContext must not be null.");
         if (isEmpty(ids)) {
             return Collections.emptyList();
         }
 
         List<AR> ars = byIds(ids);
-        ars.forEach(this::checkUserShip);
+        ars.forEach(ar -> checkUserShip(ar, userContext));
         return List.copyOf(ars);
     }
 
@@ -286,7 +287,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
             Set<String> originalIds = new HashSet<>(ids);
             originalIds.removeAll(fetchedIds);
             throw new MyException(AR_NOT_FOUND_ALL, "未找到所有资源。",
-                    of("type", arClass().getSimpleName(), "missingIds", originalIds));
+                    "type", arClass().getSimpleName(), "missingIds", originalIds);
         }
         return List.copyOf(ars);
     }
@@ -299,13 +300,14 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      * @param ids 聚合根ID集合
      * @return 聚合根集合
      */
-    public List<AR> byIdsAllAndCheckUserShip(Set<String> ids) {
+    public List<AR> byIdsAllAndCheckUserShip(Set<String> ids, UserContext userContext) {
+        requireNonNull(userContext, "UserContext must not be null.");
         if (isEmpty(ids)) {
             return Collections.emptyList();
         }
 
         List<AR> ars = byIdsAll(ids);
-        ars.forEach(this::checkUserShip);
+        ars.forEach(ar -> checkUserShip(ar, userContext));
         return List.copyOf(ars);
     }
 
@@ -387,10 +389,10 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      *
      * @param ar 聚合根
      */
-    protected final void checkUserShip(AggregateRoot ar) {
+    protected final void checkUserShip(AggregateRoot ar, UserContext userContext) {
         requireNonNull(ar, arTypeName() + " must not be null.");
 
-        if (!ValidationUtils.equals(ar.getUserId(), ThreadLocalContext.getContext().getUid())) {
+        if (!ValidationUtils.equals(ar.getUserId(), userContext.getUid())) {
             throw new MyException(AR_NOT_FOUND, "未找到资源。",
                     "id", ar.getId(), "User ID", ar.getUserId());
         }

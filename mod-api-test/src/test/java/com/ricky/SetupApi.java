@@ -2,6 +2,12 @@ package com.ricky;
 
 import com.ricky.file.domain.FileExtension;
 import com.ricky.file.domain.MimeType;
+import com.ricky.user.UserApi;
+import com.ricky.user.domain.dto.cmd.RegisterCommand;
+import com.ricky.user.domain.dto.resp.RegisterResponse;
+import com.ricky.verification.VerificationCodeApi;
+import com.ricky.verification.domain.VerificationCodeRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
@@ -10,8 +16,42 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
+import static com.ricky.RandomTestFixture.rUsername;
+
 @Component
+@RequiredArgsConstructor
 public class SetupApi {
+
+    private final VerificationCodeRepository verificationCodeRepository;
+
+    public RegisterResponse register(String mobileOrEmail, String password) {
+        return register(rUsername(), mobileOrEmail, password);
+    }
+
+    public RegisterResponse register(String username, String mobileOrEmail, String password) {
+        String verificationCodeId = VerificationCodeApi.createVerificationCodeForRegister(mobileOrEmail);
+        String code = verificationCodeRepository.byId(verificationCodeId).getCode();
+
+        RegisterCommand command = RegisterCommand.builder()
+                .mobileOrEmail(mobileOrEmail)
+                .verification(code)
+                .password(password)
+                .username(username)
+                .agreement(true)
+                .build();
+
+        return UserApi.register(command);
+    }
+
+//    public LoginResponse registerWithLogin(String mobileOrEmail, String password) {
+//        RegisterResponse response = register(mobileOrEmail, password);
+//        String jwt = LoginApi.loginWithMobileOrEmail(mobileOrEmail, password);
+//        return new LoginResponse(response.getTenantId(), response.getMemberId(), jwt);
+//    }
+//
+//    public LoginResponse registerWithLogin() {
+//        return registerWithLogin(rMobile(), rPassword());
+//    }
 
     /**
      * @param path 相对于测试资源目录下的文件路径，在其中要指定文件名和扩展名，例如 data/plain-text-file.txt
@@ -36,5 +76,4 @@ public class SetupApi {
             throw new RuntimeException("无法读取测试文件: " + path, e);
         }
     }
-
 }

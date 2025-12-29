@@ -5,7 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.util.regex.Pattern;
 
-import static com.ricky.common.constants.RegexConstant.PASSWORD_PATTERN;
+import static com.ricky.common.constants.RegexConstants.PASSWORD_PATTERN;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
 
 /**

@@ -1,7 +1,5 @@
 package com.ricky;
 
-import com.ricky.common.context.ThreadLocalContext;
-import com.ricky.common.context.UserContext;
 import com.ricky.common.event.DomainEvent;
 import com.ricky.common.event.DomainEventType;
 import com.ricky.common.event.consume.ConsumingDomainEventDao;
@@ -11,10 +9,13 @@ import com.ricky.common.exception.ErrorCodeEnum;
 import com.ricky.common.exception.MyError;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.password.IPasswordEncoder;
+import com.ricky.common.properties.CommonProperties;
 import com.ricky.common.utils.MyObjectMapper;
-import com.ricky.file.infra.FileRepository;
-import com.ricky.file.infra.impl.GridFsFileStorage;
-import com.ricky.user.domain.User;
+import com.ricky.file.domain.FileRepository;
+import com.ricky.file.infra.GridFsFileStorage;
+import com.ricky.security.jwt.JwtService;
+import com.ricky.user.domain.UserRepository;
+import com.ricky.verification.domain.VerificationCodeRepository;
 import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.config.EncoderConfig;
@@ -36,8 +37,8 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.function.Supplier;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
-import static com.ricky.common.constants.ConfigConstant.AUTHORIZATION;
-import static com.ricky.common.constants.ConfigConstant.AUTH_COOKIE_NAME;
+import static com.ricky.common.constants.ConfigConstants.AUTHORIZATION;
+import static com.ricky.common.constants.ConfigConstants.AUTH_COOKIE_NAME;
 import static io.restassured.config.RestAssuredConfig.config;
 import static io.restassured.http.ContentType.JSON;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -55,8 +56,8 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @SpringBootTest(classes = MpcsBackendApplication.class, webEnvironment = RANDOM_PORT)
 public abstract class BaseApiTest {
 
-//    @Autowired
-//    protected CommonProperties commonProperties;
+    @Autowired
+    protected CommonProperties commonProperties;
 
     @Autowired
     protected MongoTemplate mongoTemplate;
@@ -76,19 +77,25 @@ public abstract class BaseApiTest {
     protected ConsumingDomainEventDao<DomainEvent> consumingDomainEventDao;
 
     @Autowired
-    protected FileRepository fileRepository;
-
-    @Autowired
     protected FileHasherFactory fileHasherFactory;
 
     @Autowired
     protected GridFsFileStorage gridFsFileStorage;
 
-//    @Autowired
-//    protected JwtService jwtService;
+    @Autowired
+    protected JwtService jwtService;
 
     @Autowired
     protected IPasswordEncoder passwordEncoder;
+
+    @Autowired
+    protected FileRepository fileRepository;
+
+    @Autowired
+    protected VerificationCodeRepository verificationCodeRepository;
+
+    @Autowired
+    protected UserRepository userRepository;
 
     @LocalServerPort
     protected int port;
@@ -132,14 +139,10 @@ public abstract class BaseApiTest {
                 .setContentType(JSON)
                 .setAccept(JSON)
                 .build();
-        // TODO 后面使用 Spring security 要删掉这里
-        ThreadLocalContext.setContext(UserContext.of(User.newUserId(), "test_username"));
     }
 
     @AfterEach
     public void cleanUp() {
-        // TODO 后面使用 Spring security 要删掉这里
-        ThreadLocalContext.removeContext();
     }
 
     public static void assertError(Supplier<Response> apiCall, ErrorCodeEnum expectedCode) {

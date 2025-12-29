@@ -4,6 +4,7 @@ import com.ricky.common.domain.AggregateRootType;
 import lombok.Getter;
 
 import static com.ricky.common.domain.AggregateRootType.FILE;
+import static com.ricky.common.domain.AggregateRootType.USER;
 
 /**
  * @author Ricky
@@ -16,6 +17,7 @@ import static com.ricky.common.domain.AggregateRootType.FILE;
 public enum DomainEventType {
 
     FILE_UPLOADED_EVENT(FILE),
+    USER_CREATED(USER)
     // add here...
     ;
 

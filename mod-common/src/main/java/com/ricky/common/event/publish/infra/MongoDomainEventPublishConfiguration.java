@@ -15,7 +15,7 @@ import org.springframework.data.mongodb.core.messaging.DefaultMessageListenerCon
 import org.springframework.data.mongodb.core.messaging.MessageListener;
 import org.springframework.data.mongodb.core.messaging.MessageListenerContainer;
 
-import static com.ricky.common.constants.ConfigConstant.PUBLISHING_DOMAIN_EVENT_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.PUBLISHING_DOMAIN_EVENT_COLLECTION;
 
 @Configuration
 @NonCiProfile

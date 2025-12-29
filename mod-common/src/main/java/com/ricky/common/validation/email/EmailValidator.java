@@ -5,7 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.util.regex.Pattern;
 
-import static com.ricky.common.constants.RegexConstant.EMAIL_PATTERN;
+import static com.ricky.common.constants.RegexConstants.EMAIL_PATTERN;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 

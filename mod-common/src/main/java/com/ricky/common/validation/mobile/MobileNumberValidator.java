@@ -5,7 +5,7 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.util.regex.Pattern;
 
-import static com.ricky.common.constants.RegexConstant.MOBILE_PATTERN;
+import static com.ricky.common.constants.RegexConstants.MOBILE_PATTERN;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
 
 /**

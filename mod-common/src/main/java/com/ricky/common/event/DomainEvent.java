@@ -1,8 +1,8 @@
 package com.ricky.common.event;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.ricky.common.context.ThreadLocalContext;
 import com.ricky.common.domain.AggregateRoot;
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.json.JsonTypeDefine;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import lombok.Getter;
@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import static com.ricky.common.utils.ValidationUtils.requireNonNull;
 import static lombok.AccessLevel.PROTECTED;
@@ -65,13 +66,13 @@ public abstract class DomainEvent {
      */
     private Instant raisedAt;
 
-    protected DomainEvent(DomainEventType type) {
+    protected DomainEvent(DomainEventType type, UserContext userContext) {
         requireNonNull(type, "Domain event type must not be null.");
+        Objects.requireNonNull(userContext, "UserContext must not be null.");
 
         this.id = newEventId();
         this.type = type;
-//        this.raisedBy = ThreadLocalContext.getContext().getUid(); // TODO 需要在Spring security重构后修改
-        this.raisedBy = "USR789367234132222976";
+        this.raisedBy = userContext.getUid();
         this.raisedAt = Instant.now();
     }
 

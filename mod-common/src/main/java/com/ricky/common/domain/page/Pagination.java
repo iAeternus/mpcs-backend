@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import static com.ricky.common.constants.ConfigConstant.*;
+import static com.ricky.common.constants.ConfigConstants.*;
 import static com.ricky.common.exception.MyException.requestValidationException;
 
 @Getter

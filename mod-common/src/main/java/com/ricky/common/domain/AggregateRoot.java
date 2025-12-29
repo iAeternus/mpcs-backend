@@ -1,11 +1,12 @@
 package com.ricky.common.domain;
 
-import com.ricky.common.context.ThreadLocalContext;
 import com.ricky.common.domain.marker.Identified;
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.event.DomainEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
 
 import java.time.Instant;
@@ -78,8 +79,10 @@ public abstract class AggregateRoot implements Identified {
     private String updater;
 
     /**
-     * 领域事件列表，用于临时存放完成某个业务流程中所发出的事件，会被BaseRepository保存到事件表中
+     * 领域事件列表，用于临时存放完成某个业务流程中所发出的事件，会被BaseRepository保存到事件表中<br>
+     * 不会落库在聚合根表中
      */
+    @Transient
     private List<DomainEvent> events;
 
     /**
@@ -96,59 +99,41 @@ public abstract class AggregateRoot implements Identified {
 
     // TODO 以后考虑增加逻辑删除字段
 
-    protected AggregateRoot(String id) {
+    protected AggregateRoot(String id, UserContext userContext) {
         requireNotBlank(id, "ID must not be blank.");
 
         this.id = id;
-//        this.userId = ThreadLocalContext.getContext().getUid(); // TODO 以下所有均需要在Spring security重构后修改
-        this.userId = "USR789367234132222976";
+        this.userId = userContext.getUid();
         this.createdAt = now();
-//        this.createdBy = ThreadLocalContext.getContext().getUid();
-        this.createdBy = "USR789367234132222976";
-//        this.creator = ThreadLocalContext.getContext().getUsername();
-        this.creator = "test_user";
+        this.createdBy = userContext.getUid();
+        this.creator = userContext.getUsername();
     }
 
-    protected AggregateRoot(String id, String userId) {
+    protected AggregateRoot(String id, String userId, UserContext userContext) {
         requireNotBlank(id, "AR ID must not be blank.");
         requireNotBlank(userId, "User ID must not be blank.");
 
         this.id = id;
         this.userId = userId;
         this.createdAt = now();
-//        this.createdBy = ThreadLocalContext.getContext().getUid();
-        this.createdBy = "USR789367234132222976";
-//        this.creator = ThreadLocalContext.getContext().getUsername();
-        this.creator = "test_user";
-    }
-
-    /**
-     * 添加操作日志，默认无类型
-     *
-     * @param note 记录
-     */
-    protected void addOpsLog(String note) {
-        addOpsLog(OpsLogTypeEnum.NONE, note);
+        this.createdBy = userContext.getUid();
+        this.creator = userContext.getUsername();
     }
 
     /**
      * 添加操作日志
      *
-     * @param type 操作类型
      * @param note 记录
      */
-    protected void addOpsLog(OpsLogTypeEnum type, String note) {
+    protected void addOpsLog(String note, UserContext userContext) {
+        if (!userContext.isLoggedIn()) return;
         OpsLog log = OpsLog.builder()
-                .type(type)
                 .note(note)
                 .optAt(now())
-//                .optBy(ThreadLocalContext.getContext().getUid())
-                .optBy("USR789367234132222976")
-//                .obn(ThreadLocalContext.getContext().getUsername())
-                .obn("test_user")
+                .optBy(userContext.getUid())
+                .obn(userContext.getUsername())
                 .build();
-        List<OpsLog> opsLogs = allOpsLog();
-
+        List<OpsLog> opsLogs = allOpsLogs();
         opsLogs.add(log);
         // 最多保留最近MAX_OPS_LOG_SIZE条
         if (opsLogs.size() > MAX_OPS_LOG_SIZE) {
@@ -156,10 +141,8 @@ public abstract class AggregateRoot implements Identified {
         }
 
         this.updatedAt = now();
-//        this.updatedBy = ThreadLocalContext.getContext().getUid();
-        this.updatedBy = "USR789367234132222976";
-//        this.updater = ThreadLocalContext.getContext().getUsername();
-        this.updater = "test_user";
+        this.updatedBy = userContext.getUid();
+        this.updater = userContext.getUsername();
     }
 
     /**
@@ -167,7 +150,7 @@ public abstract class AggregateRoot implements Identified {
      *
      * @return 操作日志集合，如果没有则返回空集合
      */
-    private List<OpsLog> allOpsLog() {
+    private List<OpsLog> allOpsLogs() {
         if (isNull(opsLogs)) {
             this.opsLogs = new LinkedList<>();
         }
