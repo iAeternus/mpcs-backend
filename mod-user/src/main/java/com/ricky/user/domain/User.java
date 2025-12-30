@@ -3,6 +3,7 @@ package com.ricky.user.domain;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.Role;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.user.domain.evt.UserCreatedEvent;
 import lombok.*;
@@ -10,10 +11,11 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.util.Map;
 
 import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.USER_ID_PREFIX;
+import static com.ricky.common.exception.ErrorCodeEnum.USER_ALREADY_LOCKED;
 import static java.time.LocalDate.now;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -56,11 +58,17 @@ public class User extends AggregateRoot {
     }
 
     public void checkActive() {
-        // TODO
+        if (this.failedLoginCount.isLocked()) {
+            throw new MyException(USER_ALREADY_LOCKED, "当前用户已经被锁定，次日零点系统将自动解锁。", "userId", this.getId());
+        }
     }
 
     public void useSms() {
         // TODO
+    }
+
+    public void recordFailedLogin() {
+        this.failedLoginCount.recordFailedLogin();
     }
 
     @Getter

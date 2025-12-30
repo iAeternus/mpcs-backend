@@ -2,6 +2,7 @@ package com.ricky.file.service.impl;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
+import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileDomainService;
 import com.ricky.file.domain.StorageId;
@@ -19,8 +20,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_ORIGINAL_NAME_MUST_NOT_BE_BLANK;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
 
 @Slf4j
 @Service
@@ -31,6 +35,7 @@ public class FileServiceImpl implements FileService {
     private final FileDomainService fileDomainService;
     private final FileRepository fileRepository;
     private final FileStorage fileStorage;
+    private final FileHasherFactory fileHasherFactory;
 
     @Override
     @Transactional
@@ -46,10 +51,8 @@ public class FileServiceImpl implements FileService {
         Metadata metaData = extractor.extract(multipartFile);
 
         // 存储文件内容
-        StorageId storageId = StorageId.EMPTY;
-        if (!fileDomainService.exists(multipartFile)) {
-            storageId = fileStorage.store(multipartFile);
-        }
+        List<File> files = fileDomainService.listByFileHash(multipartFile);
+        StorageId storageId = isEmpty(files) ? fileStorage.store(multipartFile) : files.get(0).getStorageId();
 
         // 落库
         File file = File.create(

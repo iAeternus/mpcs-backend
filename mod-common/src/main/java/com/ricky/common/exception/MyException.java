@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.util.Map;
 
+import static com.ricky.common.exception.ErrorCodeEnum.AUTHENTICATION_FAILED;
 import static com.ricky.common.utils.ValidationUtils.isNotEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -172,7 +173,11 @@ public class MyException extends RuntimeException {
      * @return 认证异常
      */
     public static MyException authenticationException() {
-        return new MyException(ErrorCodeEnum.AUTHENTICATION_FAILED, "登录失败。");
+        return new MyException(AUTHENTICATION_FAILED, "登录失败。");
+    }
+
+    public static MyException authenticationException(String userMessage, Map<String, Object> data) {
+        return new MyException(AUTHENTICATION_FAILED, userMessage, data);
     }
 
     /**

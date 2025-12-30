@@ -6,6 +6,7 @@ import com.ricky.common.event.consume.ConsumingDomainEventDao;
 import com.ricky.common.event.publish.PublishingDomainEvent;
 import com.ricky.common.event.publish.PublishingDomainEventDao;
 import com.ricky.common.exception.ErrorCodeEnum;
+import com.ricky.common.exception.ErrorResponse;
 import com.ricky.common.exception.MyError;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.password.IPasswordEncoder;
@@ -13,7 +14,7 @@ import com.ricky.common.properties.CommonProperties;
 import com.ricky.common.utils.MyObjectMapper;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.file.infra.GridFsFileStorage;
-import com.ricky.security.jwt.JwtService;
+import com.ricky.common.security.jwt.JwtService;
 import com.ricky.user.domain.UserRepository;
 import com.ricky.verification.domain.VerificationCodeRepository;
 import io.restassured.RestAssured;
@@ -146,7 +147,7 @@ public abstract class BaseApiTest {
     }
 
     public static void assertError(Supplier<Response> apiCall, ErrorCodeEnum expectedCode) {
-        MyError error = apiCall.get().then().statusCode(expectedCode.getStatus()).extract().as(MyError.class);
+        MyError error = apiCall.get().then().statusCode(expectedCode.getStatus()).extract().as(ErrorResponse.class).getError();
         assertEquals(expectedCode, error.getCode());
     }
 

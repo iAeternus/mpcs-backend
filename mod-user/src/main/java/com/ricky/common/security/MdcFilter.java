@@ -1,4 +1,4 @@
-package com.ricky.security;
+package com.ricky.common.security;
 
 import com.ricky.common.domain.user.UserContext;
 import jakarta.servlet.FilterChain;

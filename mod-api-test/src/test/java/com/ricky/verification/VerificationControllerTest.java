@@ -20,7 +20,7 @@ import static com.ricky.verification.domain.VerificationCodeType.LOGIN;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.junit.jupiter.api.Assertions.*;
 
-class VerificationControllerApiTest extends BaseApiTest {
+class VerificationControllerTest extends BaseApiTest {
 
     @Test
     public void should_create_verification_code_for_register() {

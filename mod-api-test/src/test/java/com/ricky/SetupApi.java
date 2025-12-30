@@ -1,7 +1,9 @@
 package com.ricky;
 
+import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.FileExtension;
 import com.ricky.file.domain.MimeType;
+import com.ricky.login.LoginApi;
 import com.ricky.user.UserApi;
 import com.ricky.user.domain.dto.cmd.RegisterCommand;
 import com.ricky.user.domain.dto.resp.RegisterResponse;
@@ -16,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 
-import static com.ricky.RandomTestFixture.rUsername;
+import static com.ricky.RandomTestFixture.*;
 
 @Component
 @RequiredArgsConstructor
@@ -43,15 +45,18 @@ public class SetupApi {
         return UserApi.register(command);
     }
 
-//    public LoginResponse registerWithLogin(String mobileOrEmail, String password) {
-//        RegisterResponse response = register(mobileOrEmail, password);
-//        String jwt = LoginApi.loginWithMobileOrEmail(mobileOrEmail, password);
-//        return new LoginResponse(response.getTenantId(), response.getMemberId(), jwt);
-//    }
-//
-//    public LoginResponse registerWithLogin() {
-//        return registerWithLogin(rMobile(), rPassword());
-//    }
+    public LoginResponse registerWithLogin(String mobileOrEmail, String password) {
+        RegisterResponse response = register(mobileOrEmail, password);
+        String jwt = LoginApi.loginWithMobileOrEmail(mobileOrEmail, password);
+        return LoginResponse.builder()
+                .userId(response.getUserId())
+                .jwt(jwt)
+                .build();
+    }
+
+    public LoginResponse registerWithLogin() {
+        return registerWithLogin(rMobile(), rPassword());
+    }
 
     /**
      * @param path 相对于测试资源目录下的文件路径，在其中要指定文件名和扩展名，例如 data/plain-text-file.txt

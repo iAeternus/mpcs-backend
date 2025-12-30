@@ -2,16 +2,20 @@ package com.ricky.user.service.impl;
 
 import com.ricky.common.domain.user.Role;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.password.IPasswordEncoder;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserDomainService;
+import com.ricky.login.domain.dto.cmd.MobileOrEmailLoginCommand;
 import com.ricky.user.domain.dto.cmd.RegisterCommand;
+import com.ricky.login.domain.dto.cmd.VerificationCodeLoginCommand;
 import com.ricky.user.domain.dto.resp.RegisterResponse;
 import com.ricky.user.domain.UserRepository;
 import com.ricky.user.service.UserService;
 import com.ricky.verification.domain.VerificationCodeChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +28,7 @@ public class UserServiceImpl implements UserService {
 
     private final RateLimiter rateLimiter;
     private final VerificationCodeChecker verificationCodeChecker;
+    private final IPasswordEncoder passwordEncoder;
     private final UserDomainService userDomainService;
     private final UserRepository userRepository;
 
@@ -36,9 +41,10 @@ public class UserServiceImpl implements UserService {
         verificationCodeChecker.check(mobileOrEmail, command.getVerification(), REGISTER);
 
         UserContext userContext = UserContext.of(User.newUserId(), command.getUsername(), Role.NORMAL_USER);
+        String encodedPassword = passwordEncoder.encode(command.getPassword());
         User user = userDomainService.register(
                 mobileOrEmail,
-                command.getPassword(),
+                encodedPassword,
                 command.getUsername(),
                 userContext);
 

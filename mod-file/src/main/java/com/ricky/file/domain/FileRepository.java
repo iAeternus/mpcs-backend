@@ -1,5 +1,7 @@
 package com.ricky.file.domain;
 
+import java.util.List;
+
 /**
  * @brief 文件聚合根资源库
  */
@@ -12,4 +14,6 @@ public interface FileRepository {
     File cachedById(String fileId);
 
     File byId(String fileId);
+
+    List<File> listByFileHash(String hash);
 }

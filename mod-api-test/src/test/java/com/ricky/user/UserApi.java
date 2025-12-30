@@ -3,6 +3,8 @@ package com.ricky.user;
 import com.ricky.BaseApiTest;
 import com.ricky.user.domain.dto.cmd.RegisterCommand;
 import com.ricky.user.domain.dto.resp.RegisterResponse;
+import com.ricky.user.domain.dto.resp.UserInfoResponse;
+import com.ricky.user.domain.dto.resp.UserProfileResponse;
 import io.restassured.response.Response;
 
 public class UserApi {
@@ -24,4 +26,27 @@ public class UserApi {
                 .post(ROOT_URL + "/registration");
     }
 
+    public static UserInfoResponse myUserInfo(String jwt) {
+        return BaseApiTest.given(jwt)
+                .when()
+                .get(ROOT_URL + "/me/info")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(UserInfoResponse.class);
+    }
+
+    public static UserProfileResponse myProfile(String jwt) {
+        return myProfileRaw(jwt)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(UserProfileResponse.class);
+    }
+
+    public static Response myProfileRaw(String jwt) {
+        return BaseApiTest.given(jwt)
+                .when()
+                .get(ROOT_URL + "/me");
+    }
 }

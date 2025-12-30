@@ -1,4 +1,4 @@
-package com.ricky.security.jwt;
+package com.ricky.common.security.jwt;
 
 import com.ricky.common.properties.CommonProperties;
 import com.ricky.common.properties.JwtProperties;

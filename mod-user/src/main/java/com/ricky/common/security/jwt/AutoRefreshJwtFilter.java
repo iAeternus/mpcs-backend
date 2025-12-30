@@ -1,8 +1,8 @@
-package com.ricky.security.jwt;
+package com.ricky.common.security.jwt;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.security.IpJwtCookieUpdater;
-import com.ricky.security.MpcsAuthenticationToken;
+import com.ricky.common.security.IpJwtCookieUpdater;
+import com.ricky.common.security.MpcsAuthenticationToken;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;

@@ -37,8 +37,8 @@ mpcs:
     enable-limit-rate: false
     base-domain-name: ci.ricky.com
   jwt:
-    issuer: mry-local-issuer
-    secret: EHnbNd1KxkXceo9v
+    issuer: mpcs-local-issuer
+    secret: ckxGdnjP6bGmQyrGJaW32s8CtxyGVgeK
     expire: 720
     aheadAutoRefresh: 60
   redis:

@@ -28,7 +28,6 @@
         <module>mod-community</module>
         <module>mod-team</module>
         <module>mod-api-test</module>
-        <module>mod-security</module>
     </modules>
 
     <properties>
@@ -76,7 +75,7 @@
         <hutool.version>5.8.40</hutool.version>
         <micrometer.tracing.version>1.0.0</micrometer.tracing.version>
         <guava.version>31.1-jre</guava.version>
-        <jjwt.version>0.9.1</jjwt.version>
+        <jjwt.version>0.12.5</jjwt.version>
 
         <!-- Swagger -->
         <swagger.version>2.2.38</swagger.version>

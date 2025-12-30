@@ -1,4 +1,4 @@
-package com.ricky.security.jwt;
+package com.ricky.common.security.jwt;
 
 import com.ricky.common.exception.MyError;
 import com.ricky.common.exception.MyException;
@@ -28,14 +28,14 @@ import static org.springframework.web.util.WebUtils.getCookie;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
     private final MyObjectMapper objectMapper;
-    private final TracingService mryTracingService;
+    private final TracingService tracingService;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
                                    MyObjectMapper objectMapper,
-                                   TracingService mryTracingService) {
+                                   TracingService tracingService) {
         this.authenticationManager = authenticationManager;
         this.objectMapper = objectMapper;
-        this.mryTracingService = mryTracingService;
+        this.tracingService = tracingService;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.setStatus(status);
                 response.setContentType(APPLICATION_JSON_VALUE);
                 response.setCharacterEncoding(UTF_8);
-                String traceId = mryTracingService.currentTraceId();
+                String traceId = tracingService.currentTraceId();
                 MyError error = new MyError(ex.getCode(),
                         status,
                         ex.getUserMessage(),
@@ -74,7 +74,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 writer.flush();
                 return;
             }
-        } catch (Throwable t) { // 其他异常继续执行，之后的MryAuthenticationEntryPoint会捕捉到了
+        } catch (Throwable t) { // 其他异常继续执行，之后的MpcsAuthenticationEntryPoint会捕捉到
             SecurityContextHolder.clearContext();
         }
 

@@ -75,7 +75,7 @@ public class UserControllerTest extends BaseApiTest {
                 .build();
 
         UserApi.register(command); // 先注册以占用手机号
-        assertError(() -> UserApi.registerRaw(command), MEMBER_WITH_MOBILE_OR_EMAIL_ALREADY_EXISTS);
+        assertError(() -> UserApi.registerRaw(command), USER_WITH_MOBILE_OR_EMAIL_ALREADY_EXISTS);
     }
 
 
@@ -96,7 +96,7 @@ public class UserControllerTest extends BaseApiTest {
                 .build();
 
         UserApi.register(command); // 先注册以占用邮箱
-        assertError(() -> UserApi.registerRaw(command), MEMBER_WITH_MOBILE_OR_EMAIL_ALREADY_EXISTS);
+        assertError(() -> UserApi.registerRaw(command), USER_WITH_MOBILE_OR_EMAIL_ALREADY_EXISTS);
     }
 
     @Test

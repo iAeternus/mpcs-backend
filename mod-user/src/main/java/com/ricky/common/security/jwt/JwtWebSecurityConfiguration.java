@@ -1,10 +1,10 @@
-package com.ricky.security.jwt;
+package com.ricky.common.security.jwt;
 
 import com.ricky.common.properties.JwtProperties;
 import com.ricky.common.tracing.TracingService;
 import com.ricky.common.utils.MyObjectMapper;
-import com.ricky.security.IpJwtCookieUpdater;
-import com.ricky.security.MdcFilter;
+import com.ricky.common.security.IpJwtCookieUpdater;
+import com.ricky.common.security.MdcFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,12 +42,12 @@ public class JwtWebSecurityConfiguration {
         ProviderManager authenticationManager = new ProviderManager(this.jwtAuthenticationProvider);
         http.authorizeHttpRequests(registry -> registry
                         .requestMatchers(POST, "/user/registration").permitAll()
-                        .requestMatchers(POST, "/user/login").permitAll()
-                        .requestMatchers(DELETE, "/user/logout").permitAll()
+                        .requestMatchers(POST, "/login").permitAll()
+                        .requestMatchers(POST, "/verification-code-login").permitAll()
+                        .requestMatchers(DELETE, "/logout").permitAll()
                         .requestMatchers(POST, "/verification-codes/for-register").permitAll()
                         .requestMatchers(POST, "/verification-codes/for-login").permitAll()
                         .requestMatchers(POST, "/verification-codes/for-find-back-password").permitAll()
-//                        .requestMatchers(POST, "/verification-code-login").permitAll()
                         .requestMatchers("/about",
                                 "/favicon.ico",
                                 "/error").permitAll()

@@ -31,7 +31,7 @@
         </dependency>
         <dependency>
             <groupId>com.ricky</groupId>
-            <artifactId>mod-security</artifactId>
+            <artifactId>mod-user</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
