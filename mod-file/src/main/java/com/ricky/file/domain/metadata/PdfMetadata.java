@@ -1,8 +1,7 @@
 package com.ricky.file.domain.metadata;
 
+import com.ricky.file.domain.MimeType;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 /**
  * @brief PDF元数据
@@ -10,15 +9,16 @@ import java.time.LocalDateTime;
 @Getter
 public class PdfMetadata extends Metadata {
 
-    private final int pageCount;
-
-    public PdfMetadata(long size, String mimeType, String hash, long checksum, int pageCount) {
-        super(size, mimeType, hash, LocalDateTime.now(), LocalDateTime.now(), checksum, false, 1);
-        this.pageCount = pageCount;
+    public PdfMetadata(long size,
+                       MimeType mimeType,
+                       String hash,
+                       boolean multipart,
+                       int partCount) {
+        super(size, mimeType, hash, multipart, partCount);
     }
 
     @Override
     public String summary() {
-        return String.format("Pdf[%d pages]", pageCount);
+        return "PDF";
     }
 }

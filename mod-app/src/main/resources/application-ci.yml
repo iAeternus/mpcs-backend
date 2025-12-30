@@ -50,6 +50,10 @@ mpcs:
   file:
     hash:
       algorithm: SHA256
+    upload:
+      chunk-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\mod-api-test\\src\\test\\resources\\chunk-path"
+      chunk-size: 1048576  # 1MB
+      buffer-size: 1048576  # 1MB
   common:
     httpsEnabled: false
     baseDomainName: mpcs.com  # TODO

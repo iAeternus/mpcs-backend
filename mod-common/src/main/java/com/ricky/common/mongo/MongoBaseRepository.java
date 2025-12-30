@@ -160,7 +160,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
         if (isEmpty(ars)) {
             return;
         }
-        checkSameUser(ars);
+//        checkSameUser(ars); // TODO 生产环境最好加上
 
         List<DomainEvent> events = new ArrayList<>();
         Set<String> ids = new HashSet<>();
@@ -357,7 +357,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
         Set<String> uids = ars.stream().map(AR::getUserId).collect(toImmutableSet());
         if (uids.size() > 1) {
             Set<String> allArIds = ars.stream().map(AggregateRoot::getId).collect(toImmutableSet());
-            throw new MyException(SYSTEM_ERROR, "All AggregateRoots should belong to the same tenant.", "arIds", allArIds);
+            throw new MyException(SYSTEM_ERROR, "All AggregateRoots should belong to the same user.", "arIds", allArIds);
         }
     }
 

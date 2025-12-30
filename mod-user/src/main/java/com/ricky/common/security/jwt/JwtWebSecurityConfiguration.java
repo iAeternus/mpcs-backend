@@ -35,7 +35,7 @@ public class JwtWebSecurityConfiguration {
     private final IpJwtCookieUpdater ipJwtCookieUpdater;
     private final JwtProperties jwtProperties;
     private final MyObjectMapper objectMapper;
-    private final TracingService mryTracingService;
+    private final TracingService tracingService;
 
     @Bean
     public SecurityFilterChain jwtFilterChain(HttpSecurity http) throws Exception {
@@ -54,7 +54,7 @@ public class JwtWebSecurityConfiguration {
                         .anyRequest().authenticated())
                 .authenticationManager(authenticationManager)
                 .exceptionHandling(it -> it.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint))
-                .addFilterAfter(new JwtAuthenticationFilter(authenticationManager, objectMapper, mryTracingService), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JwtAuthenticationFilter(authenticationManager, objectMapper, tracingService), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AutoRefreshJwtFilter(jwtService,
                                 jwtCookieFactory,
                                 ipJwtCookieUpdater,

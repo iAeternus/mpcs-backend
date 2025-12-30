@@ -23,15 +23,13 @@ public class FileUploadedEvent extends DomainEvent {
     String filename;
     String hash;
     Long size;
-    String mimeType;
 
-    public FileUploadedEvent(String fileId, String filename, String hash, Long size, String mimeType, UserContext userContext) {
+    public FileUploadedEvent(String fileId, String filename, String hash, Long size, UserContext userContext) {
         super(FILE_UPLOADED_EVENT, userContext);
         this.fileId = fileId;
         this.filename = filename;
         this.hash = hash;
         this.size = size;
-        this.mimeType = mimeType;
     }
 
 }

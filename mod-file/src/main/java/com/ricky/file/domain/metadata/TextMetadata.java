@@ -1,8 +1,7 @@
 package com.ricky.file.domain.metadata;
 
+import com.ricky.file.domain.MimeType;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
 
 /**
  * @brief 文本文件元数据
@@ -10,17 +9,16 @@ import java.time.LocalDateTime;
 @Getter
 public class TextMetadata extends Metadata {
 
-    private final int wordCount;
-    private final int characterCount;
-
-    public TextMetadata(long size, String mimeType, String hash, long checksum, int wordCount, int characterCount) {
-        super(size, mimeType, hash, LocalDateTime.now(), LocalDateTime.now(), checksum, false, 1);
-        this.wordCount = wordCount;
-        this.characterCount = characterCount;
+    public TextMetadata(long size,
+                        MimeType mimeType,
+                        String hash,
+                        boolean multipart,
+                        int partCount) {
+        super(size, mimeType, hash, multipart, partCount);
     }
 
     @Override
     public String summary() {
-        return String.format("Text[%d word, %d character]", wordCount, characterCount);
+        return "Text";
     }
 }

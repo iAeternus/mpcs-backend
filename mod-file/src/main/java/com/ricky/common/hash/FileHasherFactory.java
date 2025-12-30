@@ -1,7 +1,7 @@
 package com.ricky.common.hash;
 
 import com.ricky.common.exception.MyException;
-import com.ricky.common.properties.FileStorageProperties;
+import com.ricky.common.properties.FileProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,11 +13,11 @@ import static com.ricky.common.exception.ErrorCodeEnum.INVALID_HASH_ALGORITHM;
 @Component
 public class FileHasherFactory {
 
-    private final FileStorageProperties properties;
+    private final FileProperties properties;
     private final Map<HashAlgorithm, AbstractFileHasher> hashers;
 
     @Autowired
-    public FileHasherFactory(FileStorageProperties properties,
+    public FileHasherFactory(FileProperties properties,
                              Md5FileHasher md5Hasher,
                              Sha256FileHasher sha256Hasher,
                              Sha512FileHasher sha512Hasher) {

@@ -1,5 +1,6 @@
 package com.ricky.file.domain.metadata;
 
+import com.ricky.file.domain.MimeType;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -13,8 +14,14 @@ public class ImageMetadata extends Metadata {
     private final int width;
     private final int height;
 
-    public ImageMetadata(long size, String mimeType, String hash, long checksum, int width, int height) {
-        super(size, mimeType, hash, LocalDateTime.now(), LocalDateTime.now(), checksum, false, 1);
+    public ImageMetadata(long size,
+                         MimeType mimeType,
+                         String hash,
+                         boolean multipart,
+                         int partCount,
+                         int width,
+                         int height) {
+        super(size, mimeType, hash, multipart, partCount);
         this.width = width;
         this.height = height;
     }

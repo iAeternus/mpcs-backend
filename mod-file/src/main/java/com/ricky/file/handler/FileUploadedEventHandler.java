@@ -21,8 +21,7 @@ public class FileUploadedEventHandler extends AbstractDomainEventHandler<FileUpl
                 event.getFileId(),
                 event.getFilename(),
                 event.getHash(),
-                event.getSize(),
-                event.getMimeType()
+                event.getSize()
         ));
     }
 }

@@ -4,7 +4,6 @@ import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.file.domain.evt.FileUploadedEvent;
-import com.ricky.file.domain.metadata.Metadata;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +14,10 @@ import static com.ricky.common.constants.ConfigConstants.FILE_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 
 /**
- * @brief 文件
+ * @brief 文件 <br>
+ * 同一个hash值或storageId的文件在GridFs中保证唯一，多个文件可能对应一个hash值，
+ * 这些文件可能分属不同用户，但是只要有一个用户修改了文件，系统立即认为hash值不同，则存储新文件，
+ * 于是不会发生冲突
  */
 @Getter
 @TypeAlias("file")
@@ -28,31 +30,32 @@ public class File extends AggregateRoot {
     private String parentId; // 父文件夹ID，根目录也是文件夹
     private StorageId storageId; // 文件内容存储ID
     private String filename;
-    private Metadata metadata;
+    private long size; // 文件大小，单位：byte
+    private String hash; // 文件hash值
     private String path; // 存储路径，暂时只支持绝对路径
     private FileStatus status;
 
-    private File(String ownerId, String parentId, StorageId storageId, String filename, Metadata metaData, String path, UserContext userContext) {
+    private File(String ownerId, String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {
         super(newFileId(), userContext);
         this.ownerId = ownerId;
         this.teamId = null;
         this.parentId = parentId;
         this.storageId = storageId;
         this.filename = filename;
-        this.metadata = metaData;
+        this.size = size;
+        this.hash = hash;
         this.path = path;
         this.status = FileStatus.NORMAL;
         addOpsLog("Create", userContext);
     }
 
-    public static File create(String ownerId, String parentId, StorageId storageId, String filename, Metadata metaData, String path, UserContext userContext) {
-        File file = new File(ownerId, parentId, storageId, filename, metaData, path, userContext);
+    public static File create(String ownerId, String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {
+        File file = new File(ownerId, parentId, storageId, filename, size, hash, path, userContext);
         file.raiseEvent(new FileUploadedEvent(
                 file.getId(),
                 file.filename,
-                file.metadata.getHash(),
-                file.metadata.getSize(),
-                file.metadata.getMimeType(),
+                file.getHash(),
+                file.getSize(),
                 userContext
         ));
         return file;

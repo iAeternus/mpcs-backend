@@ -1,5 +1,6 @@
 package com.ricky.file.domain.metadata;
 
+import com.ricky.file.domain.MimeType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,39 +11,33 @@ import static lombok.AccessLevel.PRIVATE;
 /**
  * @brief 文件元数据
  */
+@Deprecated
 @Getter
 @NoArgsConstructor(access = PRIVATE, force = true)
 public abstract class Metadata {
 
     protected final long size;
-    protected final String mimeType; // TODO 改成枚举
+    protected final MimeType mimeType;
     protected final String hash; // 内容hash
     protected final LocalDateTime uploadedAt; // 上传时间
-    protected final LocalDateTime lastAccessedAt; // 上次访问时间
-    protected final long checksum; // 校验和
-    protected final boolean isMultipart; // 是否分片上传
+    protected final boolean multipart; // 是否分片上传
     protected final int partCount; // 分片个数，若isMultipart=false则为1
 
     protected Metadata(long size,
-                       String mimeType,
+                       MimeType mimeType,
                        String hash,
-                       LocalDateTime uploadedAt,
-                       LocalDateTime lastAccessedAt,
-                       long checksum,
-                       boolean isMultipart,
+                       boolean multipart,
                        int partCount) {
         this.size = size;
         this.mimeType = mimeType;
         this.hash = hash;
-        this.uploadedAt = uploadedAt;
-        this.lastAccessedAt = lastAccessedAt;
-        this.checksum = checksum;
-        this.isMultipart = isMultipart;
+        this.multipart = multipart;
         this.partCount = partCount;
+        this.uploadedAt = LocalDateTime.now();
     }
 
     /**
-     * 元数据描述方法
+     * 人类可读摘要
      */
     public abstract String summary();
 

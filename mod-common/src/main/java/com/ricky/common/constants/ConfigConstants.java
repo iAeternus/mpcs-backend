@@ -25,7 +25,8 @@ public interface ConfigConstants {
     String TEAM_COLLECTION = "teams";
     String SENSITIVE_WORD_COLLECTION = "sensitive_words";
     String SHEDLOCK_COLLECTION = "shedlock";
-    String VERIFICATION_COLLECTION = "verification";
+    String VERIFICATION_COLLECTION = "verifications";
+    String UPLOAD_SESSION_COLLECTION = "upload_sessions";
 
     String PUBLISHING_DOMAIN_EVENT_COLLECTION = "publishing_domain_event";
     String CONSUMING_DOMAIN_EVENT_COLLECTION = "consuming_domain_event";
@@ -35,9 +36,11 @@ public interface ConfigConstants {
     String FOLDER_ID_PREFIX = "FLD";
     String SENSITIVE_WORD_ID_PREFIX = "SST";
     String VERIFICATION_ID_PREFIX = "VRC";
+    String UPLOAD_SESSION_ID_PREFIX = "UPL";
 
     String USER_CACHE = "user";
     String FILE_CACHE = "file";
+    String UPLOAD_SESSION_CACHE = "upload_session";
 
     String REDIS_DOMAIN_EVENT_CONSUMER_GROUP = "domain.event.group";
     String REDIS_WEBHOOK_CONSUMER_GROUP = "webhook.group";

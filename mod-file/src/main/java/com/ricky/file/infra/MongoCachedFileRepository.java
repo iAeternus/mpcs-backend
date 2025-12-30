@@ -22,7 +22,7 @@ public class MongoCachedFileRepository extends MongoBaseRepository<File> {
     }
 
     @Caching(evict = {@CacheEvict(value = FILE_CACHE, key = "#fileId")})
-    public void evictDocCache(String fileId) {
+    public void evictFileCache(String fileId) {
         requireNotBlank(fileId, "File ID must not be blank.");
         log.info("Evicted cache for File[{}].", fileId);
     }

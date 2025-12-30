@@ -22,7 +22,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @RequiredArgsConstructor
 public class MpcsAccessDeniedHandler implements AccessDeniedHandler {
     private final MyObjectMapper objectMapper;
-    private final TracingService mryTracingService;
+    private final TracingService tracingService;
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException {
@@ -31,7 +31,7 @@ public class MpcsAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(UTF_8);
 
-        String traceId = mryTracingService.currentTraceId();
+        String traceId = tracingService.currentTraceId();
         MyError error = new MyError(ACCESS_DENIED, 403, "Access denied.", request.getRequestURI(), traceId, null);
         PrintWriter writer = response.getWriter();
         writer.print(objectMapper.writeValueAsString(error.toErrorResponse()));

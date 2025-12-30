@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Repository
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
     @Override
     public boolean existsByHash(String hash) {
         requireNotBlank(hash, "File hash must not be blank");
-        Query query = Query.query(Criteria.where("metadata.hash").is(hash));
+        Query query = query(where("hash").is(hash));
         return mongoTemplate.exists(query, File.class);
     }
 
@@ -39,7 +41,13 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
     @Override
     public List<File> listByFileHash(String hash) {
         requireNotBlank(hash, "File hash must not be blank");
-        Query query = Query.query(Criteria.where("metadata.hash").is(hash));
+        Query query = query(where("hash").is(hash));
         return mongoTemplate.find(query, File.class);
+    }
+
+    @Override
+    public void delete(List<File> files) {
+        super.delete(files);
+        cachedFileRepository.evictAll();
     }
 }

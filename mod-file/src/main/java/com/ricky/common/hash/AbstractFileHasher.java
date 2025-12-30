@@ -1,14 +1,26 @@
 package com.ricky.common.hash;
 
-import com.ricky.common.exception.ErrorCodeEnum;
 import com.ricky.common.exception.MyException;
-import com.ricky.common.utils.HashUtils;
+import com.ricky.common.utils.FileUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import static com.ricky.common.exception.ErrorCodeEnum.FILE_READ_FAILED;
+import static com.ricky.common.exception.ErrorCodeEnum.INVALID_HASH_ALGORITHM;
+
 public abstract class AbstractFileHasher {
+
+    public String hash(MultipartFile file) {
+        try {
+            return hash(file.getInputStream());
+        } catch (IOException e) {
+            throw new MyException(FILE_READ_FAILED, "File read failed", "file", file);
+        }
+    }
 
     /**
      * @param input 文件输入流
@@ -18,9 +30,9 @@ public abstract class AbstractFileHasher {
     public String hash(InputStream input) {
         try {
             MessageDigest md = MessageDigest.getInstance(algorithm().getName());
-            return HashUtils.calcHash(input, md);
+            return FileUtils.calcHash(input, md);
         } catch (NoSuchAlgorithmException e) {
-            throw new MyException(ErrorCodeEnum.INVALID_HASH_ALGORITHM, "Invalid hash algorithm", "algorithm", algorithm().getName());
+            throw new MyException(INVALID_HASH_ALGORITHM, "Invalid hash algorithm", "algorithm", algorithm().getName());
         }
     }
 

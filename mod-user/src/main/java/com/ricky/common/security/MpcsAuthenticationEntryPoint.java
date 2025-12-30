@@ -22,7 +22,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @RequiredArgsConstructor
 public class MpcsAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private final MyObjectMapper objectMapper;
-    private final TracingService mryTracingService;
+    private final TracingService tracingService;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
@@ -30,7 +30,7 @@ public class MpcsAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(401);
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setCharacterEncoding(UTF_8);
-        String traceId = mryTracingService.currentTraceId();
+        String traceId = tracingService.currentTraceId();
         MyError error = new MyError(AUTHENTICATION_FAILED, 401, "Authentication failed.", request.getRequestURI(), traceId, null);
 
         PrintWriter writer = response.getWriter();

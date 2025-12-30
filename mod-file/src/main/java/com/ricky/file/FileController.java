@@ -29,14 +29,4 @@ public class FileController {
 
     private final FileService fileService;
 
-    @ResponseStatus(CREATED)
-    @Operation(summary = "普通上传")
-    @PostMapping(consumes = MULTIPART_FORM_DATA_VALUE)
-    public FileUploadResponse upload(@RequestParam("file") @NotNull MultipartFile file,
-                                     @RequestParam("parentId") @Id(pre = FOLDER_ID_PREFIX) @NotBlank String parentId,
-                                     @RequestParam("path") @Path @NotBlank String path,
-                                     @AuthenticationPrincipal UserContext userContext) {
-        return fileService.upload(file, parentId, path, userContext);
-    }
-
 }

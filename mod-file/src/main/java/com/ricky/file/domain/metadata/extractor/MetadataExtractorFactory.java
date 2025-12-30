@@ -24,4 +24,8 @@ public class MetadataExtractorFactory {
         return extractors.getOrDefault(fileType, extractors.get(FileType.UNKNOWN));
     }
 
+    public MetadataExtractor getExtractorByFilename(String filename) {
+        return null; // TODO
+    }
+
 }

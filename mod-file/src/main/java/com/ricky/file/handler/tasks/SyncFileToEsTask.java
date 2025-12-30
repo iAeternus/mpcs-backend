@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class SyncFileToEsTask implements RetryableTask {
 
-    public void run(String fileId, String filename, String hash, Long size, String mimeType) {
+    public void run(String fileId, String filename, String hash, Long size) {
         // TODO 建立ES索引
     }
 }

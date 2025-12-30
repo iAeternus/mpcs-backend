@@ -1,5 +1,7 @@
 package com.ricky.file.domain;
 
+import com.google.common.collect.ImmutableList;
+
 import java.util.List;
 
 /**
@@ -16,4 +18,6 @@ public interface FileRepository {
     File byId(String fileId);
 
     List<File> listByFileHash(String hash);
+
+    void delete(List<File> files);
 }

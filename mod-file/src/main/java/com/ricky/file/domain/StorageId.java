@@ -13,6 +13,4 @@ public class StorageId {
     @NotNull
     String value;
 
-    public static StorageId EMPTY = new StorageId("");
-
 }

@@ -11,9 +11,10 @@ import com.ricky.common.exception.MyError;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.password.IPasswordEncoder;
 import com.ricky.common.properties.CommonProperties;
+import com.ricky.common.properties.FileProperties;
 import com.ricky.common.utils.MyObjectMapper;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.file.infra.GridFsFileStorage;
+import com.ricky.file.domain.FileStorage;
 import com.ricky.common.security.jwt.JwtService;
 import com.ricky.user.domain.UserRepository;
 import com.ricky.verification.domain.VerificationCodeRepository;
@@ -61,6 +62,9 @@ public abstract class BaseApiTest {
     protected CommonProperties commonProperties;
 
     @Autowired
+    protected FileProperties fileProperties;
+
+    @Autowired
     protected MongoTemplate mongoTemplate;
 
     @Autowired
@@ -81,7 +85,7 @@ public abstract class BaseApiTest {
     protected FileHasherFactory fileHasherFactory;
 
     @Autowired
-    protected GridFsFileStorage gridFsFileStorage;
+    protected FileStorage fileStorage;
 
     @Autowired
     protected JwtService jwtService;

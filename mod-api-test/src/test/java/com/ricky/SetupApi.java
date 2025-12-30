@@ -1,7 +1,11 @@
 package com.ricky;
 
 import com.ricky.common.domain.dto.resp.LoginResponse;
+import com.ricky.common.hash.FileHasherFactory;
+import com.ricky.common.utils.UuidGenerator;
 import com.ricky.file.domain.FileExtension;
+import com.ricky.file.domain.FileRepository;
+import com.ricky.file.domain.FileStorage;
 import com.ricky.file.domain.MimeType;
 import com.ricky.login.LoginApi;
 import com.ricky.user.UserApi;
@@ -16,8 +20,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.util.List;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.RandomTestFixture.*;
 
 @Component
@@ -25,6 +34,9 @@ import static com.ricky.RandomTestFixture.*;
 public class SetupApi {
 
     private final VerificationCodeRepository verificationCodeRepository;
+    private final FileHasherFactory fileHasherFactory;
+    private final FileRepository fileRepository;
+    private final FileStorage fileStorage;
 
     public RegisterResponse register(String mobileOrEmail, String password) {
         return register(rUsername(), mobileOrEmail, password);
@@ -56,6 +68,19 @@ public class SetupApi {
 
     public LoginResponse registerWithLogin() {
         return registerWithLogin(rMobile(), rPassword());
+    }
+
+    public String deleteFileWithSameHash(File file) throws IOException {
+        String fileHash;
+        try (InputStream in = Files.newInputStream(file.toPath())) {
+            fileHash = fileHasherFactory.getFileHasher().hash(in);
+        }
+
+        List<com.ricky.file.domain.File> files = fileRepository.listByFileHash(fileHash);
+        fileStorage.delete(files.stream().map(com.ricky.file.domain.File::getStorageId).collect(toImmutableList()));
+        fileRepository.delete(files);
+
+        return fileHash;
     }
 
     /**
