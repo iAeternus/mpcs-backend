@@ -29,16 +29,8 @@ public class FileController {
 
     private final FileService fileService;
 
-//    @PostMapping
-//    @Operation(summary = "普通上传")
-//    @ResponseStatus(CREATED)
-//    public String upload(@ModelAttribute @Valid FileUploadCommand dto) {
-//        return fileService.upload(dto);
-//    }
-
-
-    @Operation(summary = "普通上传")
     @ResponseStatus(CREATED)
+    @Operation(summary = "普通上传")
     @PostMapping(consumes = MULTIPART_FORM_DATA_VALUE)
     public FileUploadResponse upload(@RequestParam("file") @NotNull MultipartFile file,
                                      @RequestParam("parentId") @Id(pre = FOLDER_ID_PREFIX) @NotBlank String parentId,
