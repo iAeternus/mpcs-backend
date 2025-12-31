@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 
-import static com.ricky.common.event.DomainEventType.FILE_UPLOADED_EVENT;
+import static com.ricky.common.event.DomainEventType.FILE_UPLOADED;
 
 /**
  * @brief 文件上传事件
@@ -25,7 +25,7 @@ public class FileUploadedEvent extends DomainEvent {
     Long size;
 
     public FileUploadedEvent(String fileId, String filename, String hash, Long size, UserContext userContext) {
-        super(FILE_UPLOADED_EVENT, userContext);
+        super(FILE_UPLOADED, userContext);
         this.fileId = fileId;
         this.filename = filename;
         this.hash = hash;

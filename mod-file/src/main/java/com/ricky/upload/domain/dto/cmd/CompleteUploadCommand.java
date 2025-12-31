@@ -31,7 +31,7 @@ public class CompleteUploadCommand implements Command {
     String filename;
 
     @NotBlank
-    String fileHash;
+    String fileHash; // 整文件 hash
 
     @Positive
     long totalSize;
@@ -48,7 +48,6 @@ public class CompleteUploadCommand implements Command {
      */
     @Nullable
     StorageId storageId;
-
 
     public boolean isFastUpload() {
         return uploadId == null && storageId != null;

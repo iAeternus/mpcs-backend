@@ -14,7 +14,6 @@ public class FileFactory {
                        String hash,
                        UserContext userContext) {
         return File.create(
-                userContext.getUid(),
                 parentId,
                 storageId,
                 file.getOriginalFilename(),
@@ -31,7 +30,6 @@ public class FileFactory {
                        StoredFile storedFile,
                        UserContext userContext) {
         return File.create(
-                userContext.getUid(),
                 parentId,
                 storedFile.getStorageId(),
                 filename,
@@ -50,7 +48,6 @@ public class FileFactory {
                        long totalSize,
                        UserContext userContext) {
         return File.create(
-                userContext.getUid(),
                 parentId,
                 storageId,
                 filename,

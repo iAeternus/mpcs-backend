@@ -26,7 +26,7 @@ public class MongoUploadSessionRepository extends MongoBaseRepository<UploadSess
         requireNotBlank(ownerId, "OwnerId must not be blank");
 
         Query query = query(where("fileHash").is(fileHash).and("ownerId").is(ownerId));
-        UploadSession uploadSession = mongoTemplate.findOne(query, UploadSession.class);// TODO imm 这里查找出来的是否唯一？
+        UploadSession uploadSession = mongoTemplate.findOne(query, UploadSession.class); // TODO imm 这里查找出来的是否唯一？
         return isNull(uploadSession) ? Optional.empty() : Optional.of(uploadSession);
     }
 

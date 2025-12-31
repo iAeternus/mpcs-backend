@@ -7,8 +7,7 @@ spring:
   #    read-timeout: 30s
   data:
     mongodb:
-      #      uri: mongodb://admin:123456@localhost:27020,localhost:27018,localhost:27019/mpcs-dev?replicaSet=app&authSource=admin
-      uri: mongodb://admin:123456@localhost:27018/mpcs-dev?authSource=admin
+      uri: mongodb://admin:123456@localhost:27019/mpcs-dev?authSource=admin
       database: mpcs-dev
     redis:
       database: 0
@@ -40,13 +39,12 @@ mpcs:
     issuer: mpcs-local-issuer
     secret: ckxGdnjP6bGmQyrGJaW32s8CtxyGVgeK
     expire: 720
-    aheadAutoRefresh: 60
+    ahead-auto-refresh: 60
   redis:
-    domainEventStreamEnabled: false
-    domainEventStreamPrefix: DomainEvent.LOCAL
-    domainEventStreamCount: 10
-    notificationStream: Notification.LOCAL
-    webhookStream: Webhook.LOCAL
+    domain-event-stream-prefix: DomainEvent.LOCAL
+    domain-event-stream-count: 10
+    notification-stream: Notification.LOCAL
+    webhook-stream: Webhook.LOCAL
   file:
     hash:
       algorithm: SHA256
@@ -55,6 +53,6 @@ mpcs:
       chunk-size: 1048576  # 1MB
       buffer-size: 1048576  # 1MB
   common:
-    httpsEnabled: false
-    baseDomainName: mpcs.com  # TODO
-    limitRate: false
+    https-enabled: false
+    base-domain-name: mpcs.com  # TODO
+    limit-rate: false

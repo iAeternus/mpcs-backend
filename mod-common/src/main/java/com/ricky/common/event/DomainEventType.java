@@ -3,8 +3,7 @@ package com.ricky.common.event;
 import com.ricky.common.domain.AggregateRootType;
 import lombok.Getter;
 
-import static com.ricky.common.domain.AggregateRootType.FILE;
-import static com.ricky.common.domain.AggregateRootType.USER;
+import static com.ricky.common.domain.AggregateRootType.*;
 
 /**
  * @author Ricky
@@ -16,8 +15,13 @@ import static com.ricky.common.domain.AggregateRootType.USER;
 @Getter
 public enum DomainEventType {
 
-    FILE_UPLOADED_EVENT(FILE),
-    USER_CREATED(USER)
+    FILE_UPLOADED(FILE),
+    FILE_DELETED(FILE),
+    USER_CREATED(USER),
+    FOLDER_HIERARCHY_CHANGED(FOLDER),
+    FOLDER_CREATED(FOLDER),
+    FOLDER_RENAMED(FOLDER),
+    FOLDER_DELETED(FOLDER),
     // add here...
     ;
 

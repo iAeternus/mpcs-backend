@@ -1,6 +1,7 @@
 package com.ricky.user;
 
 import com.ricky.BaseApiTest;
+import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.dto.cmd.RegisterCommand;
 import com.ricky.user.domain.dto.resp.RegisterResponse;
@@ -18,12 +19,14 @@ public class UserControllerTest extends BaseApiTest {
 
     @Test
     public void should_register_with_mobile() {
+        // Given
         String username = rUsername();
         String mobile = rMobile();
 
         String verificationCodeId = VerificationCodeApi.createVerificationCodeForRegister(mobile);
         String verificationCode = verificationCodeRepository.byId(verificationCodeId).getCode();
 
+        // When
         RegisterResponse response = UserApi.register(RegisterCommand.builder()
                 .mobileOrEmail(mobile)
                 .verification(verificationCode)
@@ -32,19 +35,25 @@ public class UserControllerTest extends BaseApiTest {
                 .agreement(true)
                 .build());
 
+        // Then
         User user = userRepository.byId(response.getUserId());
         assertNotNull(user);
         assertEquals(username, user.getUsername());
+
+        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(user.getId());
+        assertEquals(user.getId(), hierarchy.getUserId());
     }
 
     @Test
     public void should_register_with_email() {
+        // Given
         String username = rUsername();
         String email = rEmail();
 
         String verificationCodeId = VerificationCodeApi.createVerificationCodeForRegister(email);
         String verificationCode = verificationCodeRepository.byId(verificationCodeId).getCode();
 
+        // When
         RegisterResponse response = UserApi.register(RegisterCommand.builder()
                 .mobileOrEmail(email)
                 .verification(verificationCode)
@@ -53,6 +62,7 @@ public class UserControllerTest extends BaseApiTest {
                 .agreement(true)
                 .build());
 
+        // Then
         User user = userRepository.byId(response.getUserId());
         assertNotNull(user);
         assertEquals(username, user.getUsername());
@@ -60,6 +70,7 @@ public class UserControllerTest extends BaseApiTest {
 
     @Test
     public void should_fail_to_register_if_mobile_already_exists() {
+        // Given
         String username = rUsername();
         String mobile = rMobile();
 
@@ -75,12 +86,15 @@ public class UserControllerTest extends BaseApiTest {
                 .build();
 
         UserApi.register(command); // 先注册以占用手机号
+
+        // When & Then
         assertError(() -> UserApi.registerRaw(command), USER_WITH_MOBILE_OR_EMAIL_ALREADY_EXISTS);
     }
 
 
     @Test
     public void should_fail_to_register_if_email_already_exists() {
+        // Given
         String username = rUsername();
         String email = rEmail();
 
@@ -96,11 +110,14 @@ public class UserControllerTest extends BaseApiTest {
                 .build();
 
         UserApi.register(command); // 先注册以占用邮箱
+
+        // When & Then
         assertError(() -> UserApi.registerRaw(command), USER_WITH_MOBILE_OR_EMAIL_ALREADY_EXISTS);
     }
 
     @Test
     public void should_fail_to_register_if_verification_not_valid() {
+        // Given
         String username = rUsername();
         String email = rEmail();
 
@@ -112,11 +129,13 @@ public class UserControllerTest extends BaseApiTest {
                 .agreement(true)
                 .build();
 
+        // When & Then
         assertError(() -> UserApi.registerRaw(command), VERIFICATION_CODE_CHECK_FAILED);
     }
 
     @Test
     public void should_fail_to_register_if_not_agree_agreement() {
+        // Given
         String username = rUsername();
         String email = rEmail();
 
@@ -128,17 +147,20 @@ public class UserControllerTest extends BaseApiTest {
                 .agreement(false)
                 .build();
 
+        // When & Then
         assertError(() -> UserApi.registerRaw(command), MUST_SIGN_AGREEMENT);
     }
 
     @Test
     public void should_raise_tenant_created_event_after_register() {
+        // Given
         String username = rUsername();
         String mobile = rMobile();
 
         String verificationCodeId = VerificationCodeApi.createVerificationCodeForRegister(mobile);
         String verificationCode = verificationCodeRepository.byId(verificationCodeId).getCode();
 
+        // When
         RegisterResponse response = UserApi.register(RegisterCommand.builder()
                 .mobileOrEmail(mobile)
                 .verification(verificationCode)
@@ -147,6 +169,7 @@ public class UserControllerTest extends BaseApiTest {
                 .agreement(true)
                 .build());
 
+        // Then
         UserCreatedEvent evt = latestEventFor(response.getUserId(), USER_CREATED, UserCreatedEvent.class);
         assertEquals(response.getUserId(), evt.getUserId());
     }

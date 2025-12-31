@@ -3,6 +3,7 @@ package com.ricky.file.domain;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
+import com.ricky.file.domain.evt.FileDeletedEvent;
 import com.ricky.file.domain.evt.FileUploadedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -25,8 +26,6 @@ import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class File extends AggregateRoot {
 
-    private String ownerId;
-    private String teamId; // 若属于团队则记录团队ID
     private String parentId; // 父文件夹ID，根目录也是文件夹
     private StorageId storageId; // 文件内容存储ID
     private String filename;
@@ -35,10 +34,8 @@ public class File extends AggregateRoot {
     private String path; // 存储路径，暂时只支持绝对路径
     private FileStatus status;
 
-    private File(String ownerId, String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {
+    private File(String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {
         super(newFileId(), userContext);
-        this.ownerId = ownerId;
-        this.teamId = null;
         this.parentId = parentId;
         this.storageId = storageId;
         this.filename = filename;
@@ -49,8 +46,8 @@ public class File extends AggregateRoot {
         addOpsLog("Create", userContext);
     }
 
-    public static File create(String ownerId, String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {
-        File file = new File(ownerId, parentId, storageId, filename, size, hash, path, userContext);
+    public static File create(String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {
+        File file = new File(parentId, storageId, filename, size, hash, path, userContext);
         file.raiseEvent(new FileUploadedEvent(
                 file.getId(),
                 file.filename,
@@ -63,6 +60,10 @@ public class File extends AggregateRoot {
 
     public static String newFileId() {
         return FILE_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
+    }
+
+    public void onDelete(UserContext userContext) {
+        raiseEvent(new FileDeletedEvent(this.getId(), userContext));
     }
 
 }

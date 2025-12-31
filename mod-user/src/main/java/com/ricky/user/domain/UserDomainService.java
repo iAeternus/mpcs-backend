@@ -18,7 +18,7 @@ public class UserDomainService {
     private final UserRepository userRepository;
     private final UserFactory userFactory;
 
-    public User register(String mobileOrEmail, String password, String username, UserContext userContext) {
+    public CreateUserResult register(String mobileOrEmail, String password, String username, UserContext userContext) {
         if (userRepository.existsByMobileOrEmail(mobileOrEmail)) {
             throw new MyException(USER_WITH_MOBILE_OR_EMAIL_ALREADY_EXISTS, "注册失败，手机号或邮箱已被占用。",
                     "mobileOrEmail", maskMobileOrEmail(mobileOrEmail));

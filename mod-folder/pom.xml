@@ -20,13 +20,17 @@
     <dependencies>
         <dependency>
             <groupId>com.ricky</groupId>
-            <artifactId>mod-common</artifactId>
+            <artifactId>mod-file</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
         </dependency>
     </dependencies>
 

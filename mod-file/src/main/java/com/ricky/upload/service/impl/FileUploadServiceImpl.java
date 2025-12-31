@@ -5,7 +5,6 @@ import com.ricky.common.exception.MyException;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.common.ratelimit.RateLimiter;
-import com.ricky.common.utils.FileUtils;
 import com.ricky.file.domain.*;
 import com.ricky.file.domain.dto.resp.FileUploadResponse;
 import com.ricky.upload.domain.UploadChunkCleaner;
@@ -55,10 +54,9 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         // 存储文件内容
         String hash = fileHasherFactory.getFileHasher().hash(multipartFile);
-        StorageId storageId = fileRepository.listByFileHash(hash)
+        StorageId storageId = fileRepository.cachedByFileHash(hash)
                 .stream()
                 .findFirst()
-                .map(File::getStorageId)
                 .orElseGet(() -> fileStorage.store(multipartFile));
 
         // 落库聚合根
@@ -77,9 +75,9 @@ public class FileUploadServiceImpl implements FileUploadService {
         rateLimiter.applyFor("Upload:InitUpload", 10);
 
         // 秒传判断
-        List<File> dbFiles = fileRepository.listByFileHash(command.getFileHash());
-        if (isNotEmpty(dbFiles)) { // 文件已存在
-            StorageId storageId = dbFiles.get(0).getStorageId();
+        List<StorageId> storageIds = fileRepository.cachedByFileHash(command.getFileHash());
+        if (isNotEmpty(storageIds)) { // 文件已存在
+            StorageId storageId = storageIds.get(0);
             return InitUploadResponse.fastUploaded(storageId);
         }
 
@@ -147,23 +145,22 @@ public class FileUploadServiceImpl implements FileUploadService {
         }
 
         // 分片路径
-        UploadSession session = uploadSessionRepository.byId(command.getUploadId());
-        session.checkAllChunksUploaded();
+        uploadSession.checkAllChunksUploaded();
 
-        Path chunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), session.getId());
-        StoredFile storedFile = fileStorage.mergeChunksAndStore(session, chunkDir);
+        Path chunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), uploadSession.getId());
+        StoredFile storedFile = fileStorage.mergeChunksAndStore(uploadSession, chunkDir);
 
         File file = fileFactory.create(
                 command.getParentId(),
                 command.getPath(),
-                session.getFilename(),
+                uploadSession.getFilename(),
                 storedFile,
                 userContext
         );
         fileRepository.save(file);
 
-        session.complete(userContext);
-        uploadSessionRepository.save(session);
+        uploadSession.complete(userContext);
+        uploadSessionRepository.save(uploadSession);
 
         // 事务commit成功时，清理分片目录
         uploadChunkCleaner.cleanAfterCommit(uploadSession.getId());

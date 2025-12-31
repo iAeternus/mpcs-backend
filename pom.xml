@@ -71,6 +71,7 @@
         <lombok.version>1.18.34</lombok.version>
         <jackson.version>2.18.2</jackson.version>
         <commons.lang3.version>3.17.0</commons.lang3.version>
+        <commons.collections4.version>4.4</commons.collections4.version>
         <reflections.version>0.10.2</reflections.version>
         <hutool.version>5.8.40</hutool.version>
         <micrometer.tracing.version>1.0.0</micrometer.tracing.version>
@@ -259,6 +260,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons.collections4.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.reflections</groupId>

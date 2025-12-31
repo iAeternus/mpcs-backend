@@ -3,13 +3,15 @@ package com.ricky.file.infra;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
+import com.ricky.file.domain.StorageId;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Set;
 
+import static com.ricky.common.constants.ConfigConstants.FILE_COLLECTION;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -39,6 +41,12 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
     }
 
     @Override
+    public List<StorageId> cachedByFileHash(String hash) {
+        requireNotBlank(hash, "File hash must not be blank");
+        return cachedFileRepository.cachedByFileHash(hash);
+    }
+
+    @Override
     public List<File> listByFileHash(String hash) {
         requireNotBlank(hash, "File hash must not be blank");
         Query query = query(where("hash").is(hash));
@@ -49,5 +57,10 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
     public void delete(List<File> files) {
         super.delete(files);
         cachedFileRepository.evictAll();
+    }
+
+    @Override
+    public List<File> byIds(Set<String> ids) {
+        return super.byIds(ids);
     }
 }

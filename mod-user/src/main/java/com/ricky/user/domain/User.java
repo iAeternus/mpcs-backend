@@ -38,7 +38,7 @@ public class User extends AggregateRoot {
     private boolean mobileIdentified; // 是否已验证手机号
     private FailedLoginCount failedLoginCount; // 登录失败次数
 
-    public User(String mobile, String email, String password, UserContext userContext) {
+    private User(String mobile, String email, String password, UserContext userContext) {
         super(userContext.getUid(), userContext);
         this.username = userContext.getUsername();
         this.role = Role.NORMAL_USER;
@@ -49,8 +49,13 @@ public class User extends AggregateRoot {
         this.email = email;
         this.password = password;
         this.failedLoginCount = FailedLoginCount.init();
-        this.raiseEvent(new UserCreatedEvent(this.getId(), userContext));
         this.addOpsLog("注册", userContext);
+    }
+
+    public static User create(String mobile, String email, String password, UserContext userContext) {
+        User user = new User(mobile, email, password, userContext);
+        user.raiseEvent(new UserCreatedEvent(user.getId(), userContext));
+        return user;
     }
 
     public static String newUserId() {

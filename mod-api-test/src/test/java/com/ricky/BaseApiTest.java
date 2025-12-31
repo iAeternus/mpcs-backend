@@ -16,6 +16,8 @@ import com.ricky.common.utils.MyObjectMapper;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.file.domain.FileStorage;
 import com.ricky.common.security.jwt.JwtService;
+import com.ricky.folder.domain.FolderRepository;
+import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import com.ricky.user.domain.UserRepository;
 import com.ricky.verification.domain.VerificationCodeRepository;
 import io.restassured.RestAssured;
@@ -101,6 +103,12 @@ public abstract class BaseApiTest {
 
     @Autowired
     protected UserRepository userRepository;
+
+    @Autowired
+    protected FolderRepository folderRepository;
+
+    @Autowired
+    protected FolderHierarchyRepository folderHierarchyRepository;
 
     @LocalServerPort
     protected int port;

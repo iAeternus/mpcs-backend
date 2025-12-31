@@ -48,5 +48,8 @@ public class RandomTestFixture {
         return "https://www." + RandomStringUtils.secure().nextAlphabetic(10) + ".com";
     }
 
+    public static String rFolderName() {
+        return RandomStringUtils.secure().nextAlphabetic(6) + "文件夹";
+    }
 
 }

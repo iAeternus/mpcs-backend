@@ -6,9 +6,9 @@ import com.ricky.login.domain.dto.cmd.VerificationCodeLoginCommand;
 import jakarta.validation.Valid;
 
 public interface LoginService {
-    String loginWithMobileOrEmail(@Valid MobileOrEmailLoginCommand command);
+    String loginWithMobileOrEmail(MobileOrEmailLoginCommand command);
 
-    String loginWithVerificationCode(@Valid VerificationCodeLoginCommand command);
+    String loginWithVerificationCode(VerificationCodeLoginCommand command);
 
     String refreshToken(UserContext userContext);
 }

@@ -4,6 +4,9 @@ import com.ricky.common.domain.user.Role;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.password.IPasswordEncoder;
 import com.ricky.common.ratelimit.RateLimiter;
+import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
+import com.ricky.user.domain.CreateUserResult;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserDomainService;
 import com.ricky.login.domain.dto.cmd.MobileOrEmailLoginCommand;
@@ -31,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final IPasswordEncoder passwordEncoder;
     private final UserDomainService userDomainService;
     private final UserRepository userRepository;
+    private final FolderHierarchyRepository folderHierarchyRepository;
 
     @Override
     @Transactional
@@ -42,13 +46,17 @@ public class UserServiceImpl implements UserService {
 
         UserContext userContext = UserContext.of(User.newUserId(), command.getUsername(), Role.NORMAL_USER);
         String encodedPassword = passwordEncoder.encode(command.getPassword());
-        User user = userDomainService.register(
+        CreateUserResult result = userDomainService.register(
                 mobileOrEmail,
                 encodedPassword,
                 command.getUsername(),
                 userContext);
 
+        User user = result.getUser();
+        FolderHierarchy hierarchy = result.getFolderHierarchy();
+
         userRepository.save(user);
+        folderHierarchyRepository.save(hierarchy);
         log.info("Registered user[{}]", user.getId());
 
         return RegisterResponse.builder().userId(user.getId()).build();

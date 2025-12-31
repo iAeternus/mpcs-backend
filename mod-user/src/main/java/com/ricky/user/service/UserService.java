@@ -5,5 +5,5 @@ import com.ricky.user.domain.dto.resp.RegisterResponse;
 import jakarta.validation.Valid;
 
 public interface UserService {
-    RegisterResponse register(@Valid RegisterCommand command);
+    RegisterResponse register(RegisterCommand command);
 }
