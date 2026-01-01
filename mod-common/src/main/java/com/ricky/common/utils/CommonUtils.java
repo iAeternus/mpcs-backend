@@ -5,7 +5,6 @@ import com.ricky.common.constants.RegexConstants;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-import static com.ricky.common.constants.ConfigConstants.FOLDER_HIERARCHY_CACHE;
 import static java.util.regex.Pattern.matches;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 

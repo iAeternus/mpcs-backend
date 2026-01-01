@@ -9,7 +9,6 @@ import com.ricky.upload.domain.dto.cmd.InitUploadCommand;
 import com.ricky.upload.domain.dto.resp.InitUploadResponse;
 import com.ricky.upload.domain.dto.resp.UploadChunkResponse;
 import io.restassured.response.Response;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

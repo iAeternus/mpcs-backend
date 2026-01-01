@@ -3,8 +3,6 @@ package com.ricky.file.domain.metadata;
 import com.ricky.file.domain.MimeType;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
-
 /**
  * @brief 图片元数据
  */

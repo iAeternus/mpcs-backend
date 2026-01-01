@@ -22,13 +22,13 @@ import static com.ricky.verification.domain.VerificationCodeType.*;
 @Service
 @RequiredArgsConstructor
 public class VerificationCodeServiceImpl implements VerificationCodeService {
-    
+
     private final RateLimiter rateLimiter;
     private final UserRepository userRepository;
     private final VerificationCodeFactory verificationCodeFactory;
     private final VerificationCodeRepository verificationCodeRepository;
     private final VerificationCodeSender verificationCodeSender;
-    
+
     @Transactional
     public String createVerificationCodeForRegister(CreateRegisterVerificationCodeCommand command) {
         String mobileOrEmail = command.getMobileOrEmail();

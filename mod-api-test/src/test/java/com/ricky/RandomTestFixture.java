@@ -1,7 +1,5 @@
 package com.ricky;
 
-import com.apifan.common.random.source.AreaSource;
-import com.apifan.common.random.source.OtherSource;
 import com.apifan.common.random.source.PersonInfoSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;

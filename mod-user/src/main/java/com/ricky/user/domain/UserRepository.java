@@ -1,7 +1,5 @@
 package com.ricky.user.domain;
 
-import com.ricky.common.domain.idtree.IdTree;
-
 import java.util.Optional;
 
 public interface UserRepository {

@@ -11,7 +11,6 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.USER_ID_PREFIX;

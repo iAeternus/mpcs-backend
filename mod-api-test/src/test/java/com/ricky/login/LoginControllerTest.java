@@ -11,7 +11,6 @@ import com.ricky.user.domain.dto.resp.UserInfoResponse;
 import com.ricky.verification.VerificationCodeApi;
 import com.ricky.verification.domain.VerificationCode;
 import com.ricky.verification.domain.dto.cmd.CreateLoginVerificationCodeCommand;
-import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;

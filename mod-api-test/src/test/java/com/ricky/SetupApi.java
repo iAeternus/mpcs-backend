@@ -2,7 +2,8 @@ package com.ricky;
 
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.hash.FileHasherFactory;
-import com.ricky.file.domain.*;
+import com.ricky.file.domain.File;
+import com.ricky.file.domain.FileRepository;
 import com.ricky.login.LoginApi;
 import com.ricky.upload.domain.FileStorage;
 import com.ricky.user.UserApi;

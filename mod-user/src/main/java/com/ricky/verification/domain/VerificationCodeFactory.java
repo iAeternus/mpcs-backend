@@ -11,9 +11,7 @@ import java.util.Optional;
 
 import static com.ricky.common.exception.ErrorCodeEnum.TOO_MANY_VERIFICATION_CODE_FOR_TODAY;
 import static com.ricky.common.exception.ErrorCodeEnum.VERIFICATION_CODE_ALREADY_SENT;
-import static com.ricky.common.utils.CommonUtils.isMobileNumber;
 import static com.ricky.common.utils.CommonUtils.maskMobileOrEmail;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Component

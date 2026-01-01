@@ -2,7 +2,6 @@ package com.ricky.verification.service;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.verification.domain.dto.cmd.*;
-import jakarta.validation.Valid;
 
 public interface VerificationCodeService {
     String createVerificationCodeForRegister(CreateRegisterVerificationCodeCommand command);

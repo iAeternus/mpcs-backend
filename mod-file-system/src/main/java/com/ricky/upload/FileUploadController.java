@@ -1,6 +1,5 @@
 package com.ricky.upload;
 
-import com.ricky.common.constants.ConfigConstants;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.index.NonNegIndex;

@@ -2,7 +2,6 @@ package com.ricky.file.domain.metadata.extractor;
 
 import com.ricky.file.domain.metadata.FileType;
 import com.ricky.file.domain.metadata.Metadata;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 元数据提取策略接口

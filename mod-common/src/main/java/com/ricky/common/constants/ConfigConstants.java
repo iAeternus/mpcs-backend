@@ -62,7 +62,7 @@ public interface ConfigConstants {
     int MAX_DESC_LENGTH = 128;
     int MAX_PAGE_SIZE = 500;
     int MAX_COMMENT_HIERARCHY_LEVEL = 6;
-    int MAX_FOLDER_HIERARCHY_LEVEL =5;
+    int MAX_FOLDER_HIERARCHY_LEVEL = 5;
 
     int MIN_PAGE_INDEX = 1;
     int MAX_PAGE_INDEX = 10000;

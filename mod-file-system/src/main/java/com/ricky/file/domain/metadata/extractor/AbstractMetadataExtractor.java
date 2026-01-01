@@ -1,14 +1,8 @@
 package com.ricky.file.domain.metadata.extractor;
 
 import com.ricky.common.exception.MyException;
-import com.ricky.file.domain.MimeType;
-import com.ricky.file.domain.metadata.FileType;
 import com.ricky.file.domain.metadata.Metadata;
 
-import java.util.Arrays;
-import java.util.Set;
-
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.exception.ErrorCodeEnum.EXTRACT_METADATA_FAILED;
 
 public abstract class AbstractMetadataExtractor implements MetadataExtractor {

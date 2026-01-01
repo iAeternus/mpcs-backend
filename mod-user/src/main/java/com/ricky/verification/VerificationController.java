@@ -52,7 +52,7 @@ public class VerificationController {
     @Operation(summary = "为修改手机号生成验证码")
     @PostMapping(value = "/for-change-mobile")
     public IdResponse createVerificationCodeForChangeMobile(@RequestBody @Valid CreateChangeMobileVerificationCodeCommand command,
-                                                          @AuthenticationPrincipal UserContext userContext) {
+                                                            @AuthenticationPrincipal UserContext userContext) {
         String verificationCodeId = verificationCodeService.createVerificationCodeForChangeMobile(command, userContext);
         return returnId(verificationCodeId);
     }
@@ -61,7 +61,7 @@ public class VerificationController {
     @Operation(summary = "为手机号认证生成验证码")
     @PostMapping(value = "/for-identify-mobile")
     public IdResponse createVerificationCodeForIdentifyMobile(@RequestBody @Valid IdentifyMobileVerificationCodeCommand command,
-                                                            @AuthenticationPrincipal UserContext userContext) {
+                                                              @AuthenticationPrincipal UserContext userContext) {
         String verificationCodeId = verificationCodeService.createVerificationCodeForIdentifyMobile(command, userContext);
         return returnId(verificationCodeId);
     }
