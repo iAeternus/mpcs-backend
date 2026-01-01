@@ -16,7 +16,7 @@ public interface FileRepository {
 
     File byId(String fileId);
 
-    List<StorageId> cachedByFileHash(String hash);
+    HashCachedStorageIds cachedByFileHash(String hash);
 
     List<File> listByFileHash(String hash);
 

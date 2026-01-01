@@ -3,6 +3,7 @@ package com.ricky.file.infra;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
+import com.ricky.file.domain.HashCachedStorageIds;
 import com.ricky.file.domain.StorageId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.query.Query;
@@ -41,7 +42,7 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
     }
 
     @Override
-    public List<StorageId> cachedByFileHash(String hash) {
+    public HashCachedStorageIds cachedByFileHash(String hash) {
         requireNotBlank(hash, "File hash must not be blank");
         return cachedFileRepository.cachedByFileHash(hash);
     }

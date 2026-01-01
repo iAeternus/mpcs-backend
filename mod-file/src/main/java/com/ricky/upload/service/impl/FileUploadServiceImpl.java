@@ -54,7 +54,7 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         // 存储文件内容
         String hash = fileHasherFactory.getFileHasher().hash(multipartFile);
-        StorageId storageId = fileRepository.cachedByFileHash(hash)
+        StorageId storageId = fileRepository.cachedByFileHash(hash).getStorageIds()
                 .stream()
                 .findFirst()
                 .orElseGet(() -> fileStorage.store(multipartFile));
@@ -75,7 +75,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         rateLimiter.applyFor("Upload:InitUpload", 10);
 
         // 秒传判断
-        List<StorageId> storageIds = fileRepository.cachedByFileHash(command.getFileHash());
+        List<StorageId> storageIds = fileRepository.cachedByFileHash(command.getFileHash()).getStorageIds();
         if (isNotEmpty(storageIds)) { // 文件已存在
             StorageId storageId = storageIds.get(0);
             return InitUploadResponse.fastUploaded(storageId);

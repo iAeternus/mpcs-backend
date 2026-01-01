@@ -5,6 +5,7 @@ import com.ricky.common.constants.RegexConstants;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+import static com.ricky.common.constants.ConfigConstants.FOLDER_HIERARCHY_CACHE;
 import static java.util.regex.Pattern.matches;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -63,6 +64,10 @@ public class CommonUtils {
         }
 
         return mobile.replaceAll("(\\w{3})\\w*(\\w{4})", "$1****$2");
+    }
+
+    public static String redisCacheKey(String cacheName, String userId) {
+        return "Cache:" + cacheName + "::" + userId;
     }
 
 }

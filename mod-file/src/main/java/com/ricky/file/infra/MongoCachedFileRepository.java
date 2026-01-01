@@ -1,8 +1,10 @@
 package com.ricky.file.infra;
 
+import com.google.common.collect.ImmutableList;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.file.domain.File;
+import com.ricky.file.domain.HashCachedStorageIds;
 import com.ricky.file.domain.StorageId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -15,7 +17,7 @@ import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.common.constants.ConfigConstants.FILE_CACHE;
-import static com.ricky.common.constants.ConfigConstants.FILE_HASH_TO_STORAGE_IDS_CACHE;
+import static com.ricky.common.constants.ConfigConstants.HASH_STORAGES_CACHE;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -37,21 +39,24 @@ public class MongoCachedFileRepository extends MongoBaseRepository<File> {
     }
 
     // TODO 若增加文件聚合根逻辑删除，这个cache没有过滤逻辑删除掉的聚合根
-    @Cacheable(value = FILE_HASH_TO_STORAGE_IDS_CACHE, key = "#hash")
-    public List<StorageId> cachedByFileHash(String hash) {
+    @Cacheable(value = HASH_STORAGES_CACHE, key = "#hash")
+    public HashCachedStorageIds cachedByFileHash(String hash) {
         requireNotBlank(hash, "File hash must not be blank.");
 
         Query query = query(where("hash").is(hash));
         query.fields().include("storageId");
 
         List<File> files = mongoTemplate.find(query, File.class);
-        return files.stream()
+        List<StorageId> storageIds = files.stream()
                 .map(File::getStorageId)
                 .filter(ValidationUtils::nonNull)
                 .collect(toImmutableList());
+        return HashCachedStorageIds.builder()
+                .storageIds(storageIds)
+                .build();
     }
 
-    @Caching(evict = {@CacheEvict(value = FILE_HASH_TO_STORAGE_IDS_CACHE, key = "#hash")})
+    @Caching(evict = {@CacheEvict(value = HASH_STORAGES_CACHE, key = "#hash")})
     public void evictFileHashCache(String hash) {
         requireNotBlank(hash, "File hash must not be blank.");
         log.info("Evicted cache for hash[{}].", hash);
@@ -59,7 +64,7 @@ public class MongoCachedFileRepository extends MongoBaseRepository<File> {
 
     @Caching(evict = {
             @CacheEvict(value = FILE_CACHE, allEntries = true),
-            @CacheEvict(value = FILE_HASH_TO_STORAGE_IDS_CACHE, allEntries = true),
+            @CacheEvict(value = HASH_STORAGES_CACHE, allEntries = true),
     })
     public void evictAll() {
     }

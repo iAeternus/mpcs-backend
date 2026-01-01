@@ -18,6 +18,8 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @RequiredArgsConstructor
 public class MongoFolderHierarchyRepository extends MongoBaseRepository<FolderHierarchy> implements FolderHierarchyRepository {
 
+    private final MongoCachedFolderHierarchyRepository cachedFolderHierarchyRepository;
+
     @Override
     public FolderHierarchy byUserId(String userId) {
         requireNotBlank(userId, "User ID must not be blank.");
@@ -35,5 +37,12 @@ public class MongoFolderHierarchyRepository extends MongoBaseRepository<FolderHi
     @Override
     public void save(FolderHierarchy folderHierarchy) {
         super.save(folderHierarchy);
+        cachedFolderHierarchyRepository.evictFolderHierarchyCache(folderHierarchy.getUserId());
+    }
+
+    @Override
+    public FolderHierarchy cachedByUserId(String userId) {
+        requireNotBlank(userId, "User ID must not be blank.");
+        return cachedFolderHierarchyRepository.cachedByUserId(userId);
     }
 }

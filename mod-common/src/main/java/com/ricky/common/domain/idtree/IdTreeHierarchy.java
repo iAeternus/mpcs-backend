@@ -26,7 +26,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @version 1.0
  * @date 2024/9/12
  * @className IdTreeHierarchy
- * @desc ID树层次结构
+ * @desc ID树层级结构
  */
 @EqualsAndHashCode
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

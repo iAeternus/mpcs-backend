@@ -43,8 +43,9 @@ public interface ConfigConstants {
     String USER_CACHE = "USER";
     String FILE_CACHE = "FILE";
     String UPLOAD_SESSION_CACHE = "UPLOAD_SESSION";
-    String FILE_HASH_TO_STORAGE_IDS_CACHE = "FILE_HASH_TO_STORAGE_IDS";
+    String HASH_STORAGES_CACHE = "HASH_STORAGES_CACHE";
     String USER_FOLDERS_CACHE = "USER_FOLDERS";
+    String FOLDER_HIERARCHY_CACHE = "FOLDER_HIERARCHY";
 
     String REDIS_DOMAIN_EVENT_CONSUMER_GROUP = "domain.event.group";
     String REDIS_WEBHOOK_CONSUMER_GROUP = "webhook.group";

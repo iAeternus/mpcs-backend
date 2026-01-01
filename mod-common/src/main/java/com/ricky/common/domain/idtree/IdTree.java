@@ -29,7 +29,7 @@ import static java.util.Objects.requireNonNull;
  * @version 1.0
  * @date 2024/9/12
  * @className IdTree
- * @desc N叉树，用于表示层次结构
+ * @desc N叉树，用于表示层级结构
  */
 @EqualsAndHashCode
 @Getter(value = AccessLevel.PACKAGE)
@@ -75,10 +75,10 @@ public class IdTree implements ValueObject {
     }
 
     /**
-     * 构建层次结构
+     * 构建层级结构
      *
      * @param maxAllowedLevel 最大树高
-     * @return ID树层次结构
+     * @return ID树层级结构
      */
     public IdTreeHierarchy buildHierarchy(int maxAllowedLevel) {
         return new IdTreeHierarchy(
@@ -219,7 +219,7 @@ public class IdTree implements ValueObject {
         }
 
         /**
-         * 建立层次结构
+         * 建立层级结构
          *
          * @param maxAllowedLevel 最大树高
          * @return 节点在层级结构中的位置<br>
@@ -303,7 +303,7 @@ public class IdTree implements ValueObject {
         }
 
         /**
-         * 将Map转换为层次结构
+         * 将Map转换为层级结构
          *
          * @param idMap 节点本身的ID-该节点子节点的ID
          * @return 树的根节点
