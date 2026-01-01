@@ -14,7 +14,7 @@ import com.ricky.common.properties.CommonProperties;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.common.utils.MyObjectMapper;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.file.domain.FileStorage;
+import com.ricky.upload.domain.FileStorage;
 import com.ricky.common.security.jwt.JwtService;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;

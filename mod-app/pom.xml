@@ -21,12 +21,7 @@
         <!-- TODO APP需要依赖这些吗，如果仅仅是用作测试，考虑移到mod-api-test中去 -->
         <dependency>
             <groupId>com.ricky</groupId>
-            <artifactId>mod-file</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ricky</groupId>
-            <artifactId>mod-folder</artifactId>
+            <artifactId>mod-file-system</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>

@@ -4,17 +4,14 @@ import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.file.domain.*;
 import com.ricky.login.LoginApi;
+import com.ricky.upload.domain.FileStorage;
 import com.ricky.user.UserApi;
 import com.ricky.user.domain.dto.cmd.RegisterCommand;
 import com.ricky.user.domain.dto.resp.RegisterResponse;
 import com.ricky.verification.VerificationCodeApi;
 import com.ricky.verification.domain.VerificationCodeRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StreamUtils;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;

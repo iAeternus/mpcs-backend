@@ -20,11 +20,10 @@
     <description>MPCS Backend - My Private Cloud Storage</description>
 
     <modules>
-        <module>mod-file</module>
+        <module>mod-file-system</module>
         <module>mod-common</module>
         <module>mod-app</module>
         <module>mod-user</module>
-        <module>mod-folder</module>
         <module>mod-community</module>
         <module>mod-team</module>
         <module>mod-api-test</module>

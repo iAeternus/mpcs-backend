@@ -9,16 +9,13 @@ import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import com.ricky.user.domain.CreateUserResult;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserDomainService;
-import com.ricky.login.domain.dto.cmd.MobileOrEmailLoginCommand;
 import com.ricky.user.domain.dto.cmd.RegisterCommand;
-import com.ricky.login.domain.dto.cmd.VerificationCodeLoginCommand;
 import com.ricky.user.domain.dto.resp.RegisterResponse;
 import com.ricky.user.domain.UserRepository;
 import com.ricky.user.service.UserService;
 import com.ricky.verification.domain.VerificationCodeChecker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
