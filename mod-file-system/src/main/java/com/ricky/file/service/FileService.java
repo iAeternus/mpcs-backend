@@ -1,5 +1,8 @@
 package com.ricky.file.service;
 
-public interface FileService {
+import com.ricky.common.domain.user.UserContext;
+import com.ricky.file.domain.dto.resp.FetchFilePathResponse;
 
+public interface FileService {
+    FetchFilePathResponse fetchFilePath(String fileId, UserContext userContext);
 }

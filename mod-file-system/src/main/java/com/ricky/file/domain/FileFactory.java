@@ -8,10 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 @Component
-@RequiredArgsConstructor
 public class FileFactory {
-
-    private final FolderHierarchyRepository folderHierarchyRepository;
 
     public File create(String parentId,
                        StorageId storageId,
@@ -24,7 +21,6 @@ public class FileFactory {
                 file.getOriginalFilename(),
                 file.getSize(),
                 hash,
-                getPath(parentId, userContext),
                 userContext
         );
     }
@@ -39,7 +35,6 @@ public class FileFactory {
                 filename,
                 storedFile.getSize(),
                 storedFile.getHash(),
-                getPath(parentId, userContext),
                 userContext
         );
     }
@@ -56,13 +51,7 @@ public class FileFactory {
                 filename,
                 totalSize,
                 fileHash,
-                getPath(parentId, userContext),
                 userContext
         );
-    }
-
-    private String getPath(String parentId, UserContext userContext) {
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
-        return hierarchy.schemaOf(parentId);
     }
 }

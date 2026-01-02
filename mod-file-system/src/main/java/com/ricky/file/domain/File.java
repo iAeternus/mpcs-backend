@@ -32,23 +32,21 @@ public class File extends AggregateRoot {
     private String filename;
     private long size; // 文件大小，单位：byte
     private String hash; // 文件hash值
-    private String path; // 存储路径，暂时只支持绝对路径 TODO 不允许有前导斜杠
     private FileStatus status;
 
-    private File(String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {
+    private File(String parentId, StorageId storageId, String filename, long size, String hash, UserContext userContext) {
         super(newFileId(), userContext);
         this.parentId = parentId;
         this.storageId = storageId;
         this.filename = filename;
         this.size = size;
         this.hash = hash;
-        this.path = path;
         this.status = FileStatus.NORMAL;
         addOpsLog("新建", userContext);
     }
 
-    public static File create(String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {
-        File file = new File(parentId, storageId, filename, size, hash, path, userContext);
+    public static File create(String parentId, StorageId storageId, String filename, long size, String hash, UserContext userContext) {
+        File file = new File(parentId, storageId, filename, size, hash, userContext);
         file.raiseEvent(new FileUploadedEvent(
                 file.getId(),
                 file.filename,

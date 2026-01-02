@@ -108,6 +108,10 @@ public class FolderHierarchy extends AggregateRoot {
         return hierarchy.schemaOf(folderId);
     }
 
+    public Set<String> withAllParentIdsOf(String folderId) {
+        return hierarchy.withAllParentIdsOf(folderId);
+    }
+
     private void buildHierarchy() {
         try {
             this.hierarchy = this.idTree.buildHierarchy(MAX_FOLDER_HIERARCHY_LEVEL);

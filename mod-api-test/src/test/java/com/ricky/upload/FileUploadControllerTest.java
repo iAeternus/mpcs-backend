@@ -49,9 +49,6 @@ class FileUploadControllerTest extends BaseApiTest {
         assertEquals(fileHash, dbFile.getHash());
         assertEquals(file.length(), dbFile.getSize());
 
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(loginResponse.getUserId());
-        assertEquals(hierarchy.schemaOf(parentId), dbFile.getPath());
-
         GridFSFile gridFSFile = fileStorage.findFile(dbFile.getStorageId());
         assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
     }
@@ -163,9 +160,6 @@ class FileUploadControllerTest extends BaseApiTest {
         assertEquals(parentId, dbFile.getParentId());
         assertEquals(fileHash, dbFile.getHash());
         assertEquals(totalSize, dbFile.getSize());
-
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(loginResponse.getUserId());
-        assertEquals(hierarchy.schemaOf(parentId), dbFile.getPath());
 
         GridFSFile gridFSFile = fileStorage.findFile(dbFile.getStorageId());
         assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());

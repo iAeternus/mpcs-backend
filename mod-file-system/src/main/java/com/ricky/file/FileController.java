@@ -1,12 +1,13 @@
 package com.ricky.file;
 
+import com.ricky.common.domain.user.UserContext;
+import com.ricky.file.domain.dto.resp.FetchFilePathResponse;
 import com.ricky.file.service.FileService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @CrossOrigin
@@ -17,5 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class FileController {
 
     private final FileService fileService;
+
+    @GetMapping("/{fileId}/path")
+    public FetchFilePathResponse fetchFilePath(@PathVariable String fileId,
+                                               @AuthenticationPrincipal UserContext userContext) {
+        return fileService.fetchFilePath(fileId, userContext);
+    }
 
 }
