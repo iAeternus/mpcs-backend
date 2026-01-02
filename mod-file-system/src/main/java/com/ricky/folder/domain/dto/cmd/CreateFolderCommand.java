@@ -2,6 +2,7 @@ package com.ricky.folder.domain.dto.cmd;
 
 import com.ricky.common.domain.marker.Command;
 import com.ricky.common.validation.id.Id;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -20,6 +21,7 @@ public class CreateFolderCommand implements Command {
     /**
      * 父文件夹ID
      */
+    @Nullable
     @Id(pre = FOLDER_ID_PREFIX)
     String parentId;
 

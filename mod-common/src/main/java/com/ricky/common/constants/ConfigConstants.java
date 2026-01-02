@@ -43,8 +43,9 @@ public interface ConfigConstants {
     String USER_CACHE = "USER";
     String FILE_CACHE = "FILE";
     String UPLOAD_SESSION_CACHE = "UPLOAD_SESSION";
-    String HASH_STORAGES_CACHE = "HASH_STORAGES_CACHE";
+    String HASH_STORAGES_CACHE = "HASH_STORAGES";
     String USER_FOLDERS_CACHE = "USER_FOLDERS";
+    String FOLDER_CACHE = "FOLDER";
     String FOLDER_HIERARCHY_CACHE = "FOLDER_HIERARCHY";
 
     String REDIS_DOMAIN_EVENT_CONSUMER_GROUP = "domain.event.group";

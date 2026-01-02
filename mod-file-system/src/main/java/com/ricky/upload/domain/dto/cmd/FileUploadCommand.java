@@ -1,4 +1,4 @@
-package com.ricky.file.domain.dto.cmd;
+package com.ricky.upload.domain.dto.cmd;
 
 import com.ricky.common.domain.marker.Command;
 import com.ricky.common.exception.MyException;

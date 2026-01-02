@@ -5,7 +5,9 @@ import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileStatus;
-import com.ricky.file.domain.dto.resp.FileUploadResponse;
+import com.ricky.folder.FolderApi;
+import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.upload.domain.dto.resp.FileUploadResponse;
 import com.ricky.folder.domain.Folder;
 import com.ricky.upload.domain.dto.cmd.CompleteUploadCommand;
 import com.ricky.upload.domain.dto.cmd.InitUploadCommand;
@@ -21,6 +23,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 
 import static com.mongodb.assertions.Assertions.assertFalse;
+import static com.ricky.RandomTestFixture.rFolderName;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -32,21 +35,22 @@ class FileUploadControllerTest extends BaseApiTest {
         LoginResponse loginResponse = setupApi.registerWithLogin();
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
-        String parentId = Folder.newFolderId();
-        String path = "/test";
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
 
         // When
-        FileUploadResponse resp = FileUploadApi.upload(loginResponse.getJwt(), file, parentId, path);
+        FileUploadResponse resp = FileUploadApi.upload(loginResponse.getJwt(), file, parentId);
 
         // Then
         File dbFile = fileRepository.byId(resp.getFileId());
         assertEquals(FileStatus.NORMAL, dbFile.getStatus());
         assertEquals(parentId, dbFile.getParentId());
-        assertEquals(path, dbFile.getPath());
         assertEquals(fileHash, dbFile.getHash());
         assertEquals(file.length(), dbFile.getSize());
+
+        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(loginResponse.getUserId());
+        assertEquals(hierarchy.schemaOf(parentId), dbFile.getPath());
 
         GridFSFile gridFSFile = fileStorage.findFile(dbFile.getStorageId());
         assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
@@ -59,10 +63,13 @@ class FileUploadControllerTest extends BaseApiTest {
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
 
+        String parentId1 = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+        String parentId2 = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+
         // When
         // 先上传文件，抢占 storageId
-        FileUploadResponse resp = FileUploadApi.upload(loginResponse.getJwt(), file, Folder.newFolderId(), "/test");
-        FileUploadResponse resp2 = FileUploadApi.upload(loginResponse.getJwt(), file, Folder.newFolderId(), "/test");
+        FileUploadResponse resp = FileUploadApi.upload(loginResponse.getJwt(), file, parentId1);
+        FileUploadResponse resp2 = FileUploadApi.upload(loginResponse.getJwt(), file, parentId2);
 
         // Then
         File dbFile = fileRepository.byId(resp.getFileId());
@@ -71,16 +78,17 @@ class FileUploadControllerTest extends BaseApiTest {
     }
 
     @Test
-    void should_fail_to_upload_if_path_is_invalid() throws IOException {
+    void should_fail_to_upload_file_if_file_name_duplicates_at_same_folder() throws IOException {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
-        String parentId = Folder.newFolderId();
-        String path = "test"; // 非法的路径
+
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+        FileUploadApi.upload(loginResponse.getJwt(), file, parentId);
 
         // When & Then
-        assertError(() -> FileUploadApi.uploadRaw(loginResponse.getJwt(), file, parentId, path), REQUEST_VALIDATION_FAILED);
+        assertError(() -> FileUploadApi.uploadRaw(loginResponse.getJwt(), file, parentId), FILE_NAME_DUPLICATES);
     }
 
     @Test
@@ -89,8 +97,7 @@ class FileUploadControllerTest extends BaseApiTest {
         LoginResponse loginResponse = setupApi.registerWithLogin();
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
-        String parentId = Folder.newFolderId();
-        String path = "/chunk-test";
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
 
         int chunkSize = fileProperties.getUpload().getChunkSize();
         long totalSize = file.length();
@@ -143,7 +150,6 @@ class FileUploadControllerTest extends BaseApiTest {
                 CompleteUploadCommand.builder()
                         .uploadId(uploadId) // 分片路径
                         .parentId(parentId)
-                        .path(path)
                         .filename(file.getName())
                         .fileHash(fileHash)
                         .totalSize(totalSize)
@@ -155,9 +161,11 @@ class FileUploadControllerTest extends BaseApiTest {
 
         assertEquals(FileStatus.NORMAL, dbFile.getStatus());
         assertEquals(parentId, dbFile.getParentId());
-        assertEquals(path, dbFile.getPath());
         assertEquals(fileHash, dbFile.getHash());
         assertEquals(totalSize, dbFile.getSize());
+
+        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(loginResponse.getUserId());
+        assertEquals(hierarchy.schemaOf(parentId), dbFile.getPath());
 
         GridFSFile gridFSFile = fileStorage.findFile(dbFile.getStorageId());
         assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
@@ -169,14 +177,10 @@ class FileUploadControllerTest extends BaseApiTest {
         LoginResponse loginResponse = setupApi.registerWithLogin();
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
 
         // 先上传文件，抢占 storageId
-        FileUploadResponse first = FileUploadApi.upload(
-                loginResponse.getJwt(),
-                file,
-                Folder.newFolderId(),
-                "/fast"
-        );
+        FileUploadResponse first = FileUploadApi.upload(loginResponse.getJwt(), file, parentId);
 
         File dbFile = fileRepository.byId(first.getFileId());
         String fileHash = dbFile.getHash();
@@ -206,6 +210,7 @@ class FileUploadControllerTest extends BaseApiTest {
         LoginResponse loginResponse = setupApi.registerWithLogin();
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
         InitUploadResponse initResp = FileUploadApi.initUpload(
@@ -227,8 +232,7 @@ class FileUploadControllerTest extends BaseApiTest {
                 loginResponse.getJwt(),
                 CompleteUploadCommand.builder()
                         .uploadId(uploadId)
-                        .parentId(Folder.newFolderId())
-                        .path("/dup")
+                        .parentId(parentId)
                         .filename(file.getName())
                         .fileHash(fileHash)
                         .totalSize(file.length())
@@ -238,8 +242,7 @@ class FileUploadControllerTest extends BaseApiTest {
         // When & Then
         assertError(() -> FileUploadApi.completeUploadRaw(loginResponse.getJwt(), CompleteUploadCommand.builder()
                 .uploadId(uploadId)
-                .parentId(Folder.newFolderId())
-                .path("/dup")
+                .parentId(parentId)
                 .filename(file.getName())
                 .fileHash(fileHash)
                 .totalSize(file.length())
@@ -253,6 +256,7 @@ class FileUploadControllerTest extends BaseApiTest {
         LoginResponse loginResponse = setupApi.registerWithLogin();
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
 
@@ -278,8 +282,7 @@ class FileUploadControllerTest extends BaseApiTest {
         // When & Then
         assertError(() -> FileUploadApi.completeUploadRaw(loginResponse.getJwt(), CompleteUploadCommand.builder()
                 .uploadId(initResp.getUploadId())
-                .parentId(Folder.newFolderId())
-                .path("/fail")
+                .parentId(parentId)
                 .filename(file.getName())
                 .fileHash(fileHash)
                 .totalSize(file.length())

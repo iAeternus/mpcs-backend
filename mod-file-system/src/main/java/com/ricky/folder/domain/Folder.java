@@ -49,6 +49,10 @@ public class Folder extends AggregateRoot {
         return FOLDER_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
     }
 
+    public void addFile(String fileId) {
+        this.fileIds.add(fileId);
+    }
+
     public void rename(String newName, UserContext userContext) {
         if (ValidationUtils.equals(this.folderName, newName)) {
             return;

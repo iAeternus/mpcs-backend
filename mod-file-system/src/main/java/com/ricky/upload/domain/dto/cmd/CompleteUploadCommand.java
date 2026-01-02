@@ -23,10 +23,6 @@ public class CompleteUploadCommand implements Command {
     @Id(pre = FOLDER_ID_PREFIX)
     String parentId;
 
-    @Path
-    @NotBlank
-    String path;
-
     @NotBlank
     String filename;
 
@@ -35,7 +31,6 @@ public class CompleteUploadCommand implements Command {
 
     @Positive
     long totalSize;
-
 
     /**
      * 分片上传场景：必须提供

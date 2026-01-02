@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
@@ -30,6 +31,7 @@ public class MongoFolderRepository extends MongoBaseRepository<Folder> implement
     public void save(Folder folder) {
         super.save(folder);
         cachedFolderRepository.evictUserAllFoldersCache(folder.getUserId());
+        cachedFolderRepository.evictFolderCache(folder.getId());
     }
 
     @Override
@@ -41,6 +43,7 @@ public class MongoFolderRepository extends MongoBaseRepository<Folder> implement
     public void delete(Folder folder) {
         super.delete(folder);
         cachedFolderRepository.evictUserAllFoldersCache(folder.getUserId());
+        cachedFolderRepository.evictFolderCache(folder.getId());
     }
 
     @Override
@@ -52,7 +55,10 @@ public class MongoFolderRepository extends MongoBaseRepository<Folder> implement
         super.delete(folders);
         folders.stream()
                 .findAny()
-                .ifPresent(folder -> cachedFolderRepository.evictUserAllFoldersCache(folder.getUserId()));
+                .ifPresent(folder -> {
+                    cachedFolderRepository.evictUserAllFoldersCache(folder.getUserId());
+                    cachedFolderRepository.evictFolderCache(folder.getId());
+                });
     }
 
     @Override
@@ -68,5 +74,16 @@ public class MongoFolderRepository extends MongoBaseRepository<Folder> implement
     @Override
     public boolean exists(String arId) {
         return super.exists(arId);
+    }
+
+    @Override
+    public Optional<Folder> byIdOptional(String id) {
+        return super.byIdOptional(id);
+    }
+
+    @Override
+    public Folder cachedById(String folderId) {
+        requireNotBlank(folderId, "Folder ID must not be blank.");
+        return cachedFolderRepository.cachedById(folderId);
     }
 }

@@ -3,7 +3,7 @@ package com.ricky.upload;
 
 import com.ricky.BaseApiTest;
 import com.ricky.file.domain.MimeType;
-import com.ricky.file.domain.dto.resp.FileUploadResponse;
+import com.ricky.upload.domain.dto.resp.FileUploadResponse;
 import com.ricky.upload.domain.dto.cmd.CompleteUploadCommand;
 import com.ricky.upload.domain.dto.cmd.InitUploadCommand;
 import com.ricky.upload.domain.dto.resp.InitUploadResponse;
@@ -17,18 +17,17 @@ public class FileUploadApi {
 
     private static final String ROOT_URL = "/files/upload";
 
-    public static Response uploadRaw(String token, File file, String parentId, String path) {
+    public static Response uploadRaw(String token, File file, String parentId) {
         return BaseApiTest.given(token)
                 .contentType("multipart/form-data")
                 .multiPart("file", file)
                 .formParam("parentId", parentId)
-                .formParam("path", path)
                 .when()
                 .post(ROOT_URL);
     }
 
-    public static FileUploadResponse upload(String token, File file, String parentId, String path) {
-        return uploadRaw(token, file, parentId, path)
+    public static FileUploadResponse upload(String token, File file, String parentId) {
+        return uploadRaw(token, file, parentId)
                 .then()
                 .statusCode(201)
                 .extract()

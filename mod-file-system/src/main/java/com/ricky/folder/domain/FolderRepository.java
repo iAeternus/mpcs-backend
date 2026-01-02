@@ -3,6 +3,7 @@ package com.ricky.folder.domain;
 import com.ricky.common.domain.user.UserContext;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public interface FolderRepository {
@@ -21,4 +22,8 @@ public interface FolderRepository {
     Folder byId(String folderId);
 
     boolean exists(String folderId);
+
+    Optional<Folder> byIdOptional(String folderId);
+
+    Folder cachedById(String folderId);
 }

@@ -13,8 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.ricky.common.constants.ConfigConstants.FOLDER_COLLECTION;
-import static com.ricky.common.constants.ConfigConstants.USER_FOLDERS_CACHE;
+import static com.ricky.common.constants.ConfigConstants.*;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -44,4 +43,18 @@ public class MongoCachedFolderRepository extends MongoBaseRepository<Folder> {
         log.debug("Evicted all folders cache for user[{}].", userId);
     }
 
+    @Cacheable(value = FOLDER_CACHE, key = "#folderId")
+    public Folder cachedById(String folderId) {
+        requireNotBlank(folderId, "Folder ID must not be blank.");
+
+        Query query = query(where("_id").is(folderId));
+        return mongoTemplate.findOne(query, Folder.class);
+    }
+
+    @Caching(evict = {@CacheEvict(value = FOLDER_CACHE, key = "#folderId")})
+    public void evictFolderCache(String folderId) {
+        requireNotBlank(folderId, "Folder ID must not be blank.");
+
+        log.debug("Evicted folder cache for Folder[{}].", folderId);
+    }
 }

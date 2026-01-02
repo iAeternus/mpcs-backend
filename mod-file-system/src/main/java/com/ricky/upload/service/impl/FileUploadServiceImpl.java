@@ -6,13 +6,12 @@ import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.*;
-import com.ricky.file.domain.dto.resp.FileUploadResponse;
-import com.ricky.upload.domain.FileStorage;
-import com.ricky.upload.domain.UploadChunkCleaner;
-import com.ricky.upload.domain.UploadSession;
-import com.ricky.upload.domain.UploadSessionRepository;
+import com.ricky.folder.domain.Folder;
+import com.ricky.folder.domain.FolderRepository;
+import com.ricky.upload.domain.*;
 import com.ricky.upload.domain.dto.cmd.CompleteUploadCommand;
 import com.ricky.upload.domain.dto.cmd.InitUploadCommand;
+import com.ricky.upload.domain.dto.resp.FileUploadResponse;
 import com.ricky.upload.domain.dto.resp.InitUploadResponse;
 import com.ricky.upload.domain.dto.resp.UploadChunkResponse;
 import com.ricky.upload.service.FileUploadService;
@@ -41,28 +40,38 @@ public class FileUploadServiceImpl implements FileUploadService {
     private final FileHasherFactory fileHasherFactory;
     private final FileFactory fileFactory;
     private final FileStorage fileStorage;
+    private final UploadChunkCleaner uploadChunkCleaner;
+    private final FileUploadDomainService fileUploadDomainService;
     private final FileRepository fileRepository;
     private final UploadSessionRepository uploadSessionRepository;
-    private final UploadChunkCleaner uploadChunkCleaner;
+    private final FolderRepository folderRepository;
 
     @Override
     @Transactional
-    public FileUploadResponse upload(MultipartFile multipartFile, String parentId, String path, UserContext userContext) {
+    public FileUploadResponse upload(MultipartFile multipartFile, String parentId, UserContext userContext) {
+        rateLimiter.applyFor("Upload:Upload", 10);
+
         if (isBlank(multipartFile.getOriginalFilename())) {
             throw new MyException(FILE_ORIGINAL_NAME_MUST_NOT_BE_BLANK,
-                    "文件原始名称不能为空", "filename", multipartFile.getName());
+                    "文件原始名称不能为空。", "filename", multipartFile.getName());
         }
+
+        // 校验重名
+        fileUploadDomainService.checkFilenameDuplicates(parentId, multipartFile.getOriginalFilename());
 
         // 存储文件内容
         String hash = fileHasherFactory.getFileHasher().hash(multipartFile);
-        StorageId storageId = fileRepository.cachedByFileHash(hash).getStorageIds()
-                .stream()
+        StorageId storageId = fileRepository.cachedByFileHash(hash).getStorageIds().stream()
                 .findFirst()
                 .orElseGet(() -> fileStorage.store(multipartFile));
 
         // 落库聚合根
-        File file = fileFactory.create(parentId, path, storageId, multipartFile, hash, userContext);
+        File file = fileFactory.create(parentId, storageId, multipartFile, hash, userContext);
         fileRepository.save(file);
+
+        Folder parentFolder = folderRepository.cachedById(parentId);
+        parentFolder.addFile(file.getId());
+        folderRepository.save(parentFolder);
 
         log.info("File[{}] upload complete", file.getId());
         return FileUploadResponse.builder()
@@ -134,7 +143,6 @@ public class FileUploadServiceImpl implements FileUploadService {
         if (command.isFastUpload()) {
             File file = fileFactory.create(
                     command.getParentId(),
-                    command.getPath(),
                     command.getFilename(),
                     command.getStorageId(),
                     command.getFileHash(),
@@ -153,7 +161,6 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         File file = fileFactory.create(
                 command.getParentId(),
-                command.getPath(),
                 uploadSession.getFilename(),
                 storedFile,
                 userContext

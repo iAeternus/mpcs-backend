@@ -1,4 +1,4 @@
-package com.ricky.file.domain.dto.resp;
+package com.ricky.upload.domain.dto.resp;
 
 import com.ricky.common.domain.marker.Response;
 import lombok.AccessLevel;

@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static java.util.Objects.requireNonNull;
@@ -178,9 +179,9 @@ public class IdTree implements ValueObject {
             throw new RuntimeException("Mapped ID must contain all existing tree ids.");
         }
 
-        ImmutableList<IdNode> mappedNodes = this.nodes.stream()
+        List<IdNode> mappedNodes = this.nodes.stream()
                 .map(idNode -> idNode.map(idMap))
-                .collect(ImmutableList.toImmutableList());
+                .collect(toImmutableList());
         return new IdTree(mappedNodes);
     }
 

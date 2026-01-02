@@ -1,14 +1,19 @@
 package com.ricky.file.domain;
 
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 @Component
+@RequiredArgsConstructor
 public class FileFactory {
 
+    private final FolderHierarchyRepository folderHierarchyRepository;
+
     public File create(String parentId,
-                       String path,
                        StorageId storageId,
                        MultipartFile file,
                        String hash,
@@ -19,13 +24,12 @@ public class FileFactory {
                 file.getOriginalFilename(),
                 file.getSize(),
                 hash,
-                path,
+                getPath(parentId, userContext),
                 userContext
         );
     }
 
     public File create(String parentId,
-                       String path,
                        String filename,
                        StoredFile storedFile,
                        UserContext userContext) {
@@ -35,13 +39,12 @@ public class FileFactory {
                 filename,
                 storedFile.getSize(),
                 storedFile.getHash(),
-                path,
+                getPath(parentId, userContext),
                 userContext
         );
     }
 
     public File create(String parentId,
-                       String path,
                        String filename,
                        StorageId storageId,
                        String fileHash,
@@ -53,8 +56,13 @@ public class FileFactory {
                 filename,
                 totalSize,
                 fileHash,
-                path,
+                getPath(parentId, userContext),
                 userContext
         );
+    }
+
+    private String getPath(String parentId, UserContext userContext) {
+        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
+        return hierarchy.schemaOf(parentId);
     }
 }

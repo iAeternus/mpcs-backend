@@ -16,9 +16,10 @@ import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 
 /**
  * @brief 文件 <br>
- * 同一个hash值或storageId的文件在GridFs中保证唯一，多个文件可能对应一个hash值，
- * 这些文件可能分属不同用户，但是只要有一个用户修改了文件，系统立即认为hash值不同，则存储新文件，
- * 于是不会发生冲突
+ * 1. 同一个hash值或storageId的文件在GridFs中保证唯一，多个文件可能对应一个hash值，
+ *    这些文件可能分属不同用户，但是只要有一个用户修改了文件，系统立即认为hash值不同，则存储新文件，
+ *    于是不会发生冲突
+ * 2. 若已知parentId，整个路径已经确定，无需创建任何Folder。通过createFolder和upload可以组合多种操作
  */
 @Getter
 @TypeAlias("file")
@@ -31,7 +32,7 @@ public class File extends AggregateRoot {
     private String filename;
     private long size; // 文件大小，单位：byte
     private String hash; // 文件hash值
-    private String path; // 存储路径，暂时只支持绝对路径
+    private String path; // 存储路径，暂时只支持绝对路径 TODO 不允许有前导斜杠
     private FileStatus status;
 
     private File(String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {
@@ -43,7 +44,7 @@ public class File extends AggregateRoot {
         this.hash = hash;
         this.path = path;
         this.status = FileStatus.NORMAL;
-        addOpsLog("Create", userContext);
+        addOpsLog("新建", userContext);
     }
 
     public static File create(String parentId, StorageId storageId, String filename, long size, String hash, String path, UserContext userContext) {

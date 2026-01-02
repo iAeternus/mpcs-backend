@@ -4,7 +4,7 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.index.NonNegIndex;
 import com.ricky.common.validation.path.Path;
-import com.ricky.file.domain.dto.resp.FileUploadResponse;
+import com.ricky.upload.domain.dto.resp.FileUploadResponse;
 import com.ricky.upload.domain.dto.cmd.CompleteUploadCommand;
 import com.ricky.upload.domain.dto.cmd.InitUploadCommand;
 import com.ricky.upload.domain.dto.resp.InitUploadResponse;
@@ -40,9 +40,8 @@ public class FileUploadController {
     @PostMapping(consumes = MULTIPART_FORM_DATA_VALUE)
     public FileUploadResponse upload(@RequestParam("file") @NotNull MultipartFile file,
                                      @RequestParam("parentId") @Id(pre = FOLDER_ID_PREFIX) @NotBlank String parentId,
-                                     @RequestParam("path") @Path @NotBlank String path,
                                      @AuthenticationPrincipal UserContext userContext) {
-        return fileUploadService.upload(file, parentId, path, userContext);
+        return fileUploadService.upload(file, parentId, userContext);
     }
 
     @PostMapping("/init")
