@@ -15,12 +15,14 @@ public class FileFactory {
                        MultipartFile file,
                        String hash,
                        UserContext userContext) {
+        FileCategory category = FileCategory.fromFilename(file.getOriginalFilename());
         return File.create(
                 parentId,
                 storageId,
                 file.getOriginalFilename(),
                 file.getSize(),
                 hash,
+                category,
                 userContext
         );
     }
@@ -29,12 +31,14 @@ public class FileFactory {
                        String filename,
                        StoredFile storedFile,
                        UserContext userContext) {
+        FileCategory category = FileCategory.fromFilename(filename);
         return File.create(
                 parentId,
                 storedFile.getStorageId(),
                 filename,
                 storedFile.getSize(),
                 storedFile.getHash(),
+                category,
                 userContext
         );
     }
@@ -45,12 +49,14 @@ public class FileFactory {
                        String fileHash,
                        long totalSize,
                        UserContext userContext) {
+        FileCategory category = FileCategory.fromFilename(filename);
         return File.create(
                 parentId,
                 storageId,
                 filename,
                 totalSize,
                 fileHash,
+                category,
                 userContext
         );
     }

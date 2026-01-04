@@ -1,6 +1,7 @@
 package com.ricky.upload.domain.dto.cmd;
 
 import com.ricky.common.domain.marker.Command;
+import com.ricky.common.validation.filename.Filename;
 import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.path.Path;
 import com.ricky.file.domain.StorageId;
@@ -22,9 +23,6 @@ public class CompleteUploadCommand implements Command {
     @NotBlank
     @Id(pre = FOLDER_ID_PREFIX)
     String parentId;
-
-    @NotBlank
-    String filename;
 
     @NotBlank
     String fileHash; // 整文件 hash

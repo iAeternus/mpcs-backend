@@ -1,6 +1,6 @@
 package com.ricky.file.domain.metadata.extractor;
 
-import com.ricky.file.domain.MimeType;
+import com.ricky.file.domain.metadata.MimeType;
 import lombok.Value;
 
 import java.io.InputStream;

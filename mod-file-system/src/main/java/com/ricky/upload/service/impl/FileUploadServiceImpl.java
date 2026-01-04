@@ -143,7 +143,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         if (command.isFastUpload()) {
             File file = fileFactory.create(
                     command.getParentId(),
-                    command.getFilename(),
+                    uploadSession.getFilename(),
                     command.getStorageId(),
                     command.getFileHash(),
                     command.getTotalSize(),

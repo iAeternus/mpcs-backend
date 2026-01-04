@@ -4,10 +4,11 @@ import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.file.domain.evt.FileDeletedEvent;
-import com.ricky.file.domain.evt.FileUploadedEvent;
+import com.ricky.upload.domain.evt.FileUploadedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -33,8 +34,20 @@ public class File extends AggregateRoot {
     private long size; // 文件大小，单位：byte
     private String hash; // 文件hash值
     private FileStatus status;
+    private FileCategory category; // 文件类型
 
-    private File(String parentId, StorageId storageId, String filename, long size, String hash, UserContext userContext) {
+    @Setter
+    private String summary; // 文件摘要
+
+    private File(
+            String parentId,
+            StorageId storageId,
+            String filename,
+            long size,
+            String hash,
+            FileCategory category,
+            UserContext userContext
+    ) {
         super(newFileId(), userContext);
         this.parentId = parentId;
         this.storageId = storageId;
@@ -42,16 +55,24 @@ public class File extends AggregateRoot {
         this.size = size;
         this.hash = hash;
         this.status = FileStatus.NORMAL;
+        this.category = category;
         addOpsLog("新建", userContext);
     }
 
-    public static File create(String parentId, StorageId storageId, String filename, long size, String hash, UserContext userContext) {
-        File file = new File(parentId, storageId, filename, size, hash, userContext);
+    public static File create(
+            String parentId,
+            StorageId storageId,
+            String filename,
+            long size,
+            String hash,
+            FileCategory category,
+            UserContext userContext
+    ) {
+        File file = new File(parentId, storageId, filename, size, hash, category, userContext);
         file.raiseEvent(new FileUploadedEvent(
                 file.getId(),
-                file.filename,
-                file.getHash(),
-                file.getSize(),
+                file.getStorageId(),
+                file.getCategory(),
                 userContext
         ));
         return file;

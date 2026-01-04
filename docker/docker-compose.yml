@@ -112,6 +112,44 @@ services:
     networks:
       - app-network
 
+  elasticsearch:
+    image: elasticsearch:8.13.0
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node # 单节点模式
+      - xpack.security.enabled=false # 禁用安全认证，简化本地开发连接[citation:4]
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m # 设置JVM堆内存大小
+      - TZ=Asia/Shanghai
+    ports:
+      - "9200:9200" # REST API端口
+      - "9300:9300" # 集群通信端口（通常用不到）
+    volumes:
+      - ./es/data:/usr/share/elasticsearch/data # 数据持久化
+    #      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml # 自定义配置
+    networks:
+      - app-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "-u", "elastic:changeme", "http://localhost:9200/_cluster/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+#  kibana:
+#    image: kibana:8.13.0
+#    container_name: kibana
+#    restart: unless-stopped
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#      - TZ=Asia/Shanghai
+#    ports:
+#      - "5601:5601"
+#    depends_on:
+#      - elasticsearch
+#    networks:
+#      - app-network
+
 networks:
   app-network:
     driver: bridge

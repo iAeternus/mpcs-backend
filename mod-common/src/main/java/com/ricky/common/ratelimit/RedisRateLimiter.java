@@ -26,8 +26,8 @@ import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
  * @className RedisRateLimiter
  * @desc 使用Redis计数器实现的限流
  */
-@Component("customRedisRateLimiter")
 @RequiredArgsConstructor
+@Component("customRedisRateLimiter")
 public class RedisRateLimiter implements RateLimiter {
 
     private final StringRedisTemplate stringRedisTemplate;

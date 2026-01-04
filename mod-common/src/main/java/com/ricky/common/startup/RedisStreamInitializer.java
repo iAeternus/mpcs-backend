@@ -14,7 +14,6 @@ import static com.ricky.common.constants.ConfigConstants.*;
  * @brief Redis流初始化
  */
 @Slf4j
-@Component("redisStreamInitializer")
 public class RedisStreamInitializer {
 
     private final RedisTemplate<String, Object> redisTemplate;

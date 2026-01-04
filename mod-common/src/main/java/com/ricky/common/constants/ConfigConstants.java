@@ -1,5 +1,8 @@
 package com.ricky.common.constants;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * @author Ricky
  * @version 1.0
@@ -10,6 +13,7 @@ package com.ricky.common.constants;
 public interface ConfigConstants {
 
     String CHINA_TIME_ZONE = "Asia/Shanghai";
+    Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     String AUTHORIZATION = "Authorization";
     String BEARER = "Bearer ";
@@ -18,6 +22,7 @@ public interface ConfigConstants {
 
     String LOCAL_DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
+    // MongoDB集合名
     String USER_COLLECTION = "users";
     String FILE_COLLECTION = "files";
     String FOLDER_COLLECTION = "folders";
@@ -32,6 +37,7 @@ public interface ConfigConstants {
     String PUBLISHING_DOMAIN_EVENT_COLLECTION = "publishing_domain_event";
     String CONSUMING_DOMAIN_EVENT_COLLECTION = "consuming_domain_event";
 
+    // 数据库ID前缀
     String USER_ID_PREFIX = "USR";
     String FILE_ID_PREFIX = "FIL";
     String FOLDER_ID_PREFIX = "FLD";
@@ -40,6 +46,7 @@ public interface ConfigConstants {
     String UPLOAD_SESSION_ID_PREFIX = "UPL";
     String SENSITIVE_WORD_ID_PREFIX = "SST";
 
+    // Cache
     String USER_CACHE = "USER";
     String FILE_CACHE = "FILE";
     String UPLOAD_SESSION_CACHE = "UPLOAD_SESSION";
@@ -51,6 +58,18 @@ public interface ConfigConstants {
     String REDIS_DOMAIN_EVENT_CONSUMER_GROUP = "domain.event.group";
     String REDIS_WEBHOOK_CONSUMER_GROUP = "webhook.group";
     String REDIS_NOTIFICATION_CONSUMER_GROUP = "notification.group";
+
+    // ES索引
+    String FILE_ES_INDEX_NAME = "file";
+
+    // 领域事件别名
+    String FILE_UPLOADED_EVENT_NAME = "FILE_UPLOADED";
+    String FILE_DELETED_EVENT_NAME = "FILE_DELETED";
+    String USER_CREATED_EVENT_NAME = "USER_CREATED";
+    String FOLDER_HIERARCHY_CHANGED_EVENT_NAME = "FOLDER_HIERARCHY_CHANGED";
+    String FOLDER_CREATED_EVENT_NAME = "FOLDER_CREATED";
+    String FOLDER_RENAMED_EVENT_NAME = "FOLDER_RENAMED";
+    String FOLDER_DELETED_EVENT_NAME = "FOLDER_DELETED";
 
     String[] AVATAR_TYPES = {"image/png", "image/jpeg", "image/gif"};
 
@@ -68,5 +87,10 @@ public interface ConfigConstants {
     int MIN_PAGE_INDEX = 1;
     int MAX_PAGE_INDEX = 10000;
     int MIN_PAGE_SIZE = 10;
+
+    // LLM摘要生成
+    int BUFFER_SIZE = 8192;
+    int MAX_INPUT_TEXT_LENGTH = 100000;
+    int SUMMARY_MAX_TOKENS = 300; // 摘要Token限制
 
 }

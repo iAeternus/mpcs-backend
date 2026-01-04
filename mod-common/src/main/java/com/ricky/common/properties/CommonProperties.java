@@ -8,9 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 @Data
-@Component
 @Validated
-@ConfigurationProperties("mpcs.common")
 public class CommonProperties {
 
     private boolean httpsEnabled;

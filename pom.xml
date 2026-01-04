@@ -35,11 +35,14 @@
 
         <!-- Spring Boot -->
         <spring.boot.version>3.5.6</spring.boot.version>
-        <spring.elasticsearch.version>5.3.2</spring.elasticsearch.version>
         <spring.retry.version>2.0.12</spring.retry.version>
 
+        <!-- AI -->
+        <spring.ai.bom.version>1.0.0-M5</spring.ai.bom.version>
+        <spring.ai.alibaba.bom.version>1.1.0.0-M5</spring.ai.alibaba.bom.version>
+
         <!-- 文件解析 -->
-        <tika.version>2.9.2</tika.version>
+        <tika.version>3.2.1</tika.version>
         <poi.version>5.3.0</poi.version>
         <pdfbox.version>3.0.3</pdfbox.version>
         <itext.version>7.2.5</itext.version>
@@ -120,9 +123,9 @@
                 <version>${spring.boot.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-elasticsearch</artifactId>
-                <version>${spring.elasticsearch.version}</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+                <version>${spring.boot.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -143,6 +146,22 @@
                 <groupId>org.springframework.retry</groupId>
                 <artifactId>spring-retry</artifactId>
                 <version>${spring.retry.version}</version>
+            </dependency>
+
+            <!-- AI -->
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring.ai.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud.ai</groupId>
+                <artifactId>spring-ai-alibaba-bom</artifactId>
+                <version>${spring.ai.alibaba.bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- 文件解析 -->

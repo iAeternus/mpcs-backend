@@ -27,6 +27,8 @@ public interface RegexConstants {
     String PATH_PATTERN = "^([a-zA-Z0-9_-]+(/[a-zA-Z0-9_-]+)*)?$"; // 不允许有前导斜杠
 
     String VERIFICATION_CODE_PATTERN = "^[0-9]{6}$";
+    String FILENAME_PATTERN = "^[^\\\\/:*?\"<>|\\r\\n\\t]+\\.[a-zA-Z0-9]{1,10}$";
+
     String DATE_PATTERN = "^((19|20)\\d\\d)-(0?[1-9]|1[012])-(0?[1-9]|[12][0-9]|3[01])$";
     String TIME_PATTERN = "([01]?[0-9]|2[0-3]):[0-5][0-9]";
     String CONTROL_ALIAS_PATTERN = "^[A-Za-z]{1,10}$";

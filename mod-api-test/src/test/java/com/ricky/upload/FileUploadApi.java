@@ -2,7 +2,7 @@ package com.ricky.upload;
 
 
 import com.ricky.BaseApiTest;
-import com.ricky.file.domain.MimeType;
+import com.ricky.file.domain.metadata.MimeType;
 import com.ricky.upload.domain.dto.resp.FileUploadResponse;
 import com.ricky.upload.domain.dto.cmd.CompleteUploadCommand;
 import com.ricky.upload.domain.dto.cmd.InitUploadCommand;

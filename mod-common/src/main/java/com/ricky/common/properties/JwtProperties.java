@@ -10,9 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.validation.annotation.Validated;
 
 @Data
-@Component
 @Validated
-@ConfigurationProperties("mpcs.jwt")
 public class JwtProperties {
 
     @NotBlank

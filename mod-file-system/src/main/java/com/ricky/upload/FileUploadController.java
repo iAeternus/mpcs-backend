@@ -12,6 +12,7 @@ import com.ricky.upload.domain.dto.resp.UploadChunkResponse;
 import com.ricky.upload.service.FileUploadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class FileUploadController {
 
     @PostMapping("/init")
     @Operation(summary = "初始化分片上传")
-    public InitUploadResponse initUpload(@RequestBody InitUploadCommand command,
+    public InitUploadResponse initUpload(@RequestBody @Valid InitUploadCommand command,
                                          @AuthenticationPrincipal UserContext userContext) {
         return fileUploadService.initUpload(command, userContext);
     }
@@ -67,7 +68,7 @@ public class FileUploadController {
     @ResponseStatus(CREATED)
     @Operation(summary = "分片上传完成")
     @PostMapping("/complete")
-    public FileUploadResponse completeUpload(@RequestBody CompleteUploadCommand command,
+    public FileUploadResponse completeUpload(@RequestBody @Valid CompleteUploadCommand command,
                                              @AuthenticationPrincipal UserContext userContext) {
         return fileUploadService.completeUpload(command, userContext);
     }

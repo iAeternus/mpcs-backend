@@ -7,12 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 
+import static com.ricky.common.constants.ConfigConstants.USER_CREATED_EVENT_NAME;
 import static com.ricky.common.event.DomainEventType.USER_CREATED;
 import static lombok.AccessLevel.PRIVATE;
 
 @Getter
-@TypeAlias("USER_CREATED_EVENT")
-@JsonTypeDefine("USER_CREATED_EVENT")
+@TypeAlias(USER_CREATED_EVENT_NAME)
 @NoArgsConstructor(access = PRIVATE)
 public class UserCreatedEvent extends DomainEvent {
 

@@ -9,6 +9,7 @@ import java.lang.annotation.*;
  * @className JsonTypeDefine
  * @desc json子类型扩展
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented

@@ -1,7 +1,5 @@
 package com.ricky.file.domain.metadata;
 
-import com.ricky.file.domain.MimeType;
-
 public class GeneralMetadata extends Metadata {
 
     public GeneralMetadata(long size,

@@ -3,6 +3,7 @@ package com.ricky.common.properties;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
@@ -20,10 +21,11 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @className RedisProperties
  */
 @Data
-@Component
 @Validated
-@ConfigurationProperties("mpcs.redis")
 public class RedisProperties {
+
+    @NotNull
+    private Boolean domainEventStreamEnabled;
 
     @NotBlank
     private String domainEventStreamPrefix;

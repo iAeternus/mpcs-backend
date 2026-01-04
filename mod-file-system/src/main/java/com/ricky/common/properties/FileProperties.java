@@ -15,6 +15,7 @@ public class FileProperties {
 
     private HashConfig hash;
     private FileUploadConfig upload;
+    private String textFilePath;
 
     @Data
     public static class HashConfig {

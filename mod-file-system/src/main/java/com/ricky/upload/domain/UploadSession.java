@@ -29,7 +29,7 @@ import static com.ricky.common.exception.ErrorCodeEnum.*;
 public class UploadSession extends AggregateRoot {
 
     private String ownerId;
-    private String filename;
+    private String filename; // 带扩展名
     private String expectedHash; // 客户端整文件hash
     private long totalSize;
     private int chunkSize;

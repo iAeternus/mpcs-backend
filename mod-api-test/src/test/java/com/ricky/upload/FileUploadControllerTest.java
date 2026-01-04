@@ -3,6 +3,7 @@ package com.ricky.upload;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.LoginResponse;
+import com.ricky.common.event.DomainEventType;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileStatus;
 import com.ricky.folder.FolderApi;
@@ -13,6 +14,7 @@ import com.ricky.upload.domain.dto.cmd.CompleteUploadCommand;
 import com.ricky.upload.domain.dto.cmd.InitUploadCommand;
 import com.ricky.upload.domain.dto.resp.InitUploadResponse;
 import com.ricky.upload.domain.dto.resp.UploadChunkResponse;
+import com.ricky.upload.domain.evt.FileUploadedEvent;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -24,6 +26,7 @@ import java.util.Arrays;
 
 import static com.mongodb.assertions.Assertions.assertFalse;
 import static com.ricky.RandomTestFixture.rFolderName;
+import static com.ricky.common.event.DomainEventType.FILE_UPLOADED;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -51,6 +54,9 @@ class FileUploadControllerTest extends BaseApiTest {
 
         GridFSFile gridFSFile = fileStorage.findFile(dbFile.getStorageId());
         assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
+
+        FileUploadedEvent evt = latestEventFor(resp.getFileId(), FILE_UPLOADED, FileUploadedEvent.class);
+        assertEquals(resp.getFileId(), evt.getFileId());
     }
 
     @Test
@@ -147,7 +153,6 @@ class FileUploadControllerTest extends BaseApiTest {
                 CompleteUploadCommand.builder()
                         .uploadId(uploadId) // 分片路径
                         .parentId(parentId)
-                        .filename(file.getName())
                         .fileHash(fileHash)
                         .totalSize(totalSize)
                         .build()
@@ -227,7 +232,6 @@ class FileUploadControllerTest extends BaseApiTest {
                 CompleteUploadCommand.builder()
                         .uploadId(uploadId)
                         .parentId(parentId)
-                        .filename(file.getName())
                         .fileHash(fileHash)
                         .totalSize(file.length())
                         .build()
@@ -237,7 +241,6 @@ class FileUploadControllerTest extends BaseApiTest {
         assertError(() -> FileUploadApi.completeUploadRaw(loginResponse.getJwt(), CompleteUploadCommand.builder()
                 .uploadId(uploadId)
                 .parentId(parentId)
-                .filename(file.getName())
                 .fileHash(fileHash)
                 .totalSize(file.length())
                 .build()
@@ -277,12 +280,31 @@ class FileUploadControllerTest extends BaseApiTest {
         assertError(() -> FileUploadApi.completeUploadRaw(loginResponse.getJwt(), CompleteUploadCommand.builder()
                 .uploadId(initResp.getUploadId())
                 .parentId(parentId)
-                .filename(file.getName())
                 .fileHash(fileHash)
                 .totalSize(file.length())
                 .build()
         ), MERGE_CHUNKS_FAILED);
     }
 
+    @Test
+    void should_fail_to_init_upload_if_filename_invalid() throws IOException {
+        // Given
+        LoginResponse loginResponse = setupApi.registerWithLogin();
+        ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
+        java.io.File file = resource.getFile();
+
+        String fileHash = setupApi.deleteFileWithSameHash(file);
+
+        InitUploadCommand command = InitUploadCommand.builder()
+                .fileName("large/file.png")
+                .fileHash(fileHash)
+                .totalSize(file.length())
+                .chunkSize(fileProperties.getUpload().getChunkSize())
+                .totalChunks(1)
+                .build();
+
+        // When & Then
+        assertError(() -> FileUploadApi.initUploadRaw(loginResponse.getJwt(), command), REQUEST_VALIDATION_FAILED);
+    }
 
 }

@@ -1,0 +1,16 @@
+com.ricky.common.cors.CorsAutoConfiguration
+com.ricky.common.es.ElasticSearchAutoConfiguration
+com.ricky.common.event.consume.infra.RedisDomainEventConsumeAutoConfiguration
+com.ricky.common.event.publish.infra.MongoDomainEventPublishAutoConfiguration
+com.ricky.common.json.DomainEventJsonAutoConfiguration
+com.ricky.common.json.JsonAutoConfiguration
+com.ricky.common.llm.LLMAutoConfiguration
+com.ricky.common.lock.LockAutoConfiguration
+com.ricky.common.mongo.MongoAutoConfiguration
+com.ricky.common.password.PasswordAutoConfiguration
+com.ricky.common.properties.PropertiesAutoConfiguration
+com.ricky.common.redis.RedisAutoConfiguration
+com.ricky.common.restclient.RestTemplateAutoConfiguration
+com.ricky.common.retry.RetryAutoConfiguration
+com.ricky.common.startup.StartupAutoConfiguration
+com.ricky.common.taskexecutor.TaskExecutorAutoConfiguration
