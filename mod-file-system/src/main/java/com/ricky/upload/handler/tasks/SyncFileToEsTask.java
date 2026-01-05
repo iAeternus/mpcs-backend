@@ -9,6 +9,7 @@ import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -21,6 +22,7 @@ public class SyncFileToEsTask implements RetryableTask {
     private final FileExtraRepository fileExtraRepository;
     private final FileElasticSearchService esService;
 
+    @Transactional
     public void run(String fileId) {
         File file = fileRepository.cachedById(fileId);
         FileExtra fileExtra = fileExtraRepository.cachedByFileId(fileId);

@@ -3,6 +3,7 @@ package com.ricky.fileextra.domain;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
+import com.ricky.fileextra.domain.evt.FileExtraDeletedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,24 +43,25 @@ public class FileExtra extends AggregateRoot {
         return FILE_EXTRA_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
     }
 
-    public void setTextFilePath(String textFilePath, UserContext userContext) {
+    public void setTextFilePath(String textFilePath) {
         if (isNotBlank(textFilePath) && notEquals(textFilePath, this.textFilePath)) {
             this.textFilePath = textFilePath;
-            addOpsLog("设置文本文件缓存路径", userContext);
         }
     }
 
-    public void setSummary(String summary, UserContext userContext) {
+    public void setSummary(String summary) {
         if (isNotBlank(summary) && notEquals(summary, this.summary)) {
             this.summary = summary;
-            addOpsLog("设置摘要", userContext);
         }
     }
 
-    public void setKeywords(List<String> keywords, UserContext userContext) {
+    public void setKeywords(List<String> keywords) {
         if (isNotEmpty(keywords) && notEquals(keywords, this.keywords)) {
             this.keywords = keywords;
-            addOpsLog("设置关键词列表", userContext);
         }
+    }
+
+    public void onDelete(UserContext userContext) {
+        raiseEvent(new FileExtraDeletedEvent(textFilePath, userContext));
     }
 }

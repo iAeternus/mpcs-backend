@@ -84,8 +84,8 @@ public class FolderHierarchy extends AggregateRoot {
         return this.hierarchy.directChildIdsUnder(parentFolderId);
     }
 
-    public Set<String> allSubFolderIdsOf(String folderId) {
-        return this.hierarchy.allChildIdsOf(folderId);
+    public Set<String> withAllSubFolderIdsOf(String folderId) {
+        return this.hierarchy.withAllChildIdsOf(folderId);
     }
 
     public Map<String, String> folderFullPath(Map<String, String> folderNames) {

@@ -33,7 +33,7 @@ public class ExtractTextTask implements RetryableTask {
     private final FileExtraRepository fileExtraRepository;
 
     @Transactional
-    public void run(String fileId, StorageId storageId, FileCategory category, UserContext userContext) {
+    public void run(String fileId, StorageId storageId, FileCategory category) {
         if (!extractorFactory.supports(category)) {
             log.debug("No extractor supports category: {}, skipping", category);
             return;
@@ -49,7 +49,7 @@ public class ExtractTextTask implements RetryableTask {
         }
 
         FileExtra fileExtra = fileExtraRepository.byFileId(fileId);
-        fileExtra.setTextFilePath(filepath, userContext);
+        fileExtra.setTextFilePath(filepath);
         fileExtraRepository.save(fileExtra);
     }
 

@@ -4,14 +4,18 @@ import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.file.domain.HashCachedStorageIds;
+import com.ricky.file.domain.StorageId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -53,6 +57,12 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
     }
 
     @Override
+    public void delete(File file) {
+        super.delete(file);
+        cachedFileRepository.evictFileCache(file.getId());
+    }
+
+    @Override
     public void delete(List<File> files) {
         super.delete(files);
         cachedFileRepository.evictAll();
@@ -61,5 +71,28 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
     @Override
     public List<File> byIds(Set<String> ids) {
         return super.byIds(ids);
+    }
+
+    @Override
+    public List<File> listByStorageId(StorageId storageId) {
+        requireNonNull(storageId, "Storage ID must not be null");
+
+        Query query = query(where("storageId").is(storageId.getValue()));
+        return mongoTemplate.find(query, File.class);
+    }
+
+    @Override
+    public Map<StorageId, List<File>> listByStorageIds(List<StorageId> storageIds) {
+        if (isEmpty(storageIds)) return Collections.emptyMap();
+
+        Query query = query(where("storageId").in(storageIds));
+        return mongoTemplate.find(query, File.class)
+                .stream()
+                .collect(Collectors.groupingBy(File::getStorageId));
+    }
+
+    @Override
+    public boolean exists(String arId) {
+        return super.exists(arId);
     }
 }

@@ -23,14 +23,12 @@ public class FileUploadedEvent extends DomainEvent {
     String fileId;
     StorageId storageId;
     FileCategory category;
-    UserContext userContext;
 
     public FileUploadedEvent(String fileId, StorageId storageId, FileCategory category, UserContext userContext) {
         super(FILE_UPLOADED, userContext);
         this.fileId = fileId;
         this.storageId = storageId;
         this.category = category;
-        this.userContext = userContext;
     }
 
 }

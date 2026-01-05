@@ -21,6 +21,12 @@ public class FileController {
 
     // TODO 重命名、逻辑删除、强制删除、移动文件、获取文件信息
 
+    @DeleteMapping("/{fileId}/delete-force")
+    public void deleteFileForce(@PathVariable String fileId,
+                                @AuthenticationPrincipal UserContext userContext) {
+        fileService.deleteFileForce(fileId, userContext);
+    }
+
     @GetMapping("/{fileId}/path")
     public FetchFilePathResponse fetchFilePath(@PathVariable String fileId,
                                                @AuthenticationPrincipal UserContext userContext) {

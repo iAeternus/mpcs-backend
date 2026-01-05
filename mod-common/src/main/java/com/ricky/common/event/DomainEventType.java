@@ -22,6 +22,7 @@ public enum DomainEventType {
     FOLDER_CREATED(FOLDER),
     FOLDER_RENAMED(FOLDER),
     FOLDER_DELETED(FOLDER),
+    FILE_EXTRA_DELETED(FILE_EXTRA)
     // add here...
     ;
 

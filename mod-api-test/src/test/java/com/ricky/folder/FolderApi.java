@@ -54,14 +54,14 @@ public class FolderApi {
                 .statusCode(200);
     }
 
-    public static Response deleteFolderRaw(String token, String folderId) {
+    public static Response deleteFolderForceRaw(String token, String folderId) {
         return BaseApiTest.given(token)
                 .when()
-                .delete(ROOT_URL + "/{folderId}", folderId);
+                .delete(ROOT_URL + "/{folderId}/delete-force", folderId);
     }
 
-    public static void deleteFolder(String token, String folderId) {
-        deleteFolderRaw(token, folderId)
+    public static void deleteFolderForce(String token, String folderId) {
+        deleteFolderForceRaw(token, folderId)
                 .then()
                 .statusCode(200);
     }

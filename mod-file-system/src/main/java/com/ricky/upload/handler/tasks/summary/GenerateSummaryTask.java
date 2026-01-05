@@ -1,5 +1,6 @@
 package com.ricky.upload.handler.tasks.summary;
 
+import com.ricky.common.domain.task.RetryableTask;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.file.domain.File;
@@ -19,13 +20,13 @@ import static com.ricky.common.utils.ValidationUtils.isBlank;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class GenerateSummaryTask {
+public class GenerateSummaryTask implements RetryableTask {
 
     private final SummaryGenerator summaryGenerator;
     private final FileExtraRepository fileExtraRepository;
 
     @Transactional
-    public void run(String fileId, UserContext userContext) {
+    public void run(String fileId) {
         FileExtra fileExtra = fileExtraRepository.byFileId(fileId);
         String textFilePath = fileExtra.getTextFilePath();
         if(isBlank(textFilePath)) {
@@ -34,7 +35,7 @@ public class GenerateSummaryTask {
         }
 
         String summary = generateSummary(textFilePath);
-        fileExtra.setSummary(summary, userContext);
+        fileExtra.setSummary(summary);
         fileExtraRepository.save(fileExtra);
     }
 

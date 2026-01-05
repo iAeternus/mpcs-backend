@@ -8,9 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
+import java.util.List;
+
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_EXTRA_NOT_FOUND;
-import static com.ricky.common.utils.ValidationUtils.isNull;
-import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -45,5 +47,35 @@ public class MongoFileExtraRepository extends MongoBaseRepository<FileExtra> imp
         requireNotBlank(fileId, "File ID must not be blank");
 
         return cachedFileExtraRepository.cachedByFileId(fileId);
+    }
+
+    @Override
+    public void delete(FileExtra fileExtra) {
+        super.delete(fileExtra);
+        cachedFileExtraRepository.evictFileExtraCache(fileExtra.getFileId());
+    }
+
+    @Override
+    public void delete(List<FileExtra> fileExtras) {
+        super.delete(fileExtras);
+        cachedFileExtraRepository.evictAll();
+    }
+
+    @Override
+    public List<FileExtra> listByFileIds(List<String> fileIds) {
+        if (isEmpty(fileIds)) {
+            return Collections.emptyList();
+        }
+
+        Query query = query(where("fileId").in(fileIds));
+        return mongoTemplate.find(query, FileExtra.class);
+    }
+
+    @Override
+    public boolean existsByFileId(String fileId) {
+        requireNotBlank(fileId, "File ID must not be blank");
+
+        Query query = query(where("fileId").is(fileId));
+        return mongoTemplate.exists(query, FileExtra.class);
     }
 }

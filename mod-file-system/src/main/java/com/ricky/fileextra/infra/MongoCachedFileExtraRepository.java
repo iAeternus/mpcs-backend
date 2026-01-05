@@ -11,8 +11,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import static com.ricky.common.constants.ConfigConstants.FILE_CACHE;
-import static com.ricky.common.constants.ConfigConstants.FILE_EXTRA_CACHE;
+import static com.ricky.common.constants.ConfigConstants.*;
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_EXTRA_NOT_FOUND;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
@@ -41,5 +40,10 @@ public class MongoCachedFileExtraRepository extends MongoBaseRepository<FileExtr
     public void evictFileExtraCache(String fileId) {
         requireNotBlank(fileId, "File ID must not be blank");
         log.info("Evicted cache for FileExtra[{}].", fileId);
+    }
+
+    @Caching(evict = {@CacheEvict(value = FILE_EXTRA_CACHE, allEntries = true)})
+    public void evictAll() {
+        log.info("Evicted all caches for FileExtra");
     }
 }

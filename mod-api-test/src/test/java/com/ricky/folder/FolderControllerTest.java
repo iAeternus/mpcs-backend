@@ -2,6 +2,7 @@ package com.ricky.folder;
 
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.LoginResponse;
+import com.ricky.file.domain.File;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.UserCachedFolder;
 import com.ricky.folder.domain.dto.cmd.CreateFolderCommand;
@@ -11,8 +12,11 @@ import com.ricky.folder.domain.evt.FolderDeletedEvent;
 import com.ricky.folder.domain.evt.FolderRenamedEvent;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.evt.FolderHierarchyChangedEvent;
+import com.ricky.upload.FileUploadApi;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
 
+import java.io.IOException;
 import java.util.List;
 
 import static com.ricky.RandomTestFixture.rFolderName;
@@ -181,14 +185,14 @@ public class FolderControllerTest extends BaseApiTest {
     }
 
     @Test
-    void should_delete_folder() {
+    void should_delete_folder_force() {
         // Given
         LoginResponse response = setupApi.registerWithLogin();
         String folderId = FolderApi.createFolder(response.getJwt(), rFolderName());
         assertTrue(folderHierarchyRepository.byUserId(response.getUserId()).containsFolderId(folderId));
 
         // When
-        FolderApi.deleteFolder(response.getJwt(), folderId);
+        FolderApi.deleteFolderForce(response.getJwt(), folderId);
 
         // Then
         assertFalse(folderRepository.exists(folderId));
@@ -204,19 +208,44 @@ public class FolderControllerTest extends BaseApiTest {
     }
 
     @Test
-    public void delete_folder_should_also_delete_sub_folders_and_files() {
+    public void delete_folder_force_should_also_delete_sub_folders() {
         // Given
         LoginResponse response = setupApi.registerWithLogin();
         String folderId = FolderApi.createFolder(response.getJwt(), rFolderName());
         String subFolderId = FolderApi.createFolderWithParent(response.getJwt(), rFolderName(), folderId);
 
         // When
-        FolderApi.deleteFolder(response.getJwt(), folderId);
+        FolderApi.deleteFolderForce(response.getJwt(), folderId);
 
         // Then
         assertFalse(folderRepository.exists(subFolderId));
         assertEquals(subFolderId, latestEventFor(subFolderId, FOLDER_DELETED, FolderDeletedEvent.class).getFolderId());
         assertEquals(folderId, latestEventFor(folderId, FOLDER_DELETED, FolderDeletedEvent.class).getFolderId());
+    }
+
+    @Test
+    public void delete_folder_force_should_also_delete_sub_files() throws IOException, InterruptedException {
+        // Given
+        LoginResponse loginResponse = setupApi.registerWithLogin();
+        String folderId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        setupApi.deleteFileWithSameHash(file);
+
+        String fileId = FileUploadApi.upload(loginResponse.getJwt(), file, folderId).getFileId();
+        File dbFile = fileRepository.byId(fileId);
+
+        // 这里必须sleep，直接删除会导致文件上传事件还未处理完，导致mongodb写冲突
+        Thread.sleep(5 * 1000);
+
+        // When
+        FolderApi.deleteFolderForce(loginResponse.getJwt(), folderId);
+
+        // Then
+        assertFalse(fileRepository.exists(dbFile.getId()));
+        assertFalse(fileStorage.exists(dbFile.getStorageId()));
+        assertFalse(fileExtraRepository.existsByFileId(dbFile.getId()));
     }
 
 //    @Test

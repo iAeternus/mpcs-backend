@@ -2,6 +2,7 @@ package com.ricky.common.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
+import com.ricky.fileextra.domain.evt.FileExtraDeletedEvent;
 import com.ricky.folder.domain.evt.FolderCreatedEvent;
 import com.ricky.folder.domain.evt.FolderDeletedEvent;
 import com.ricky.folder.domain.evt.FolderRenamedEvent;
@@ -22,7 +23,8 @@ public class FileSystemDomainEventJsonConfiguration implements DomainEventSubtyp
                 new NamedType(FolderDeletedEvent.class, FOLDER_DELETED_EVENT_NAME),
                 new NamedType(FolderRenamedEvent.class, FOLDER_RENAMED_EVENT_NAME),
                 new NamedType(FolderHierarchyChangedEvent.class, FOLDER_HIERARCHY_CHANGED_EVENT_NAME),
-                new NamedType(FileUploadedEvent.class, FILE_UPLOADED_EVENT_NAME)
+                new NamedType(FileUploadedEvent.class, FILE_UPLOADED_EVENT_NAME),
+                new NamedType(FileExtraDeletedEvent.class, FILE_EXTRA_DELETED_EVENT_NAME)
         );
     }
 }

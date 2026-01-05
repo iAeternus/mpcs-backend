@@ -45,11 +45,11 @@ public class FolderController {
         folderService.renameFolder(folderId, command, userContext);
     }
 
-    @DeleteMapping("/{folderId}")
-    @Operation(summary = "删除文件夹")
-    public void deleteFolder(@PathVariable @NotBlank @Id(pre = FOLDER_ID_PREFIX) String folderId,
-                             @AuthenticationPrincipal UserContext userContext) {
-        folderService.deleteFolder(folderId, userContext);
+    @DeleteMapping("/{folderId}/delete-force")
+    @Operation(summary = "彻底删除文件夹")
+    public void deleteFolderForce(@PathVariable @NotBlank @Id(pre = FOLDER_ID_PREFIX) String folderId,
+                                  @AuthenticationPrincipal UserContext userContext) {
+        folderService.deleteFolderForce(folderId, userContext);
     }
 
 }

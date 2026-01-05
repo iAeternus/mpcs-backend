@@ -3,19 +3,18 @@ package com.ricky.folder.domain;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.ValidationUtils;
+import com.ricky.file.domain.File;
+import com.ricky.file.domain.FileRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_WITH_NAME_ALREADY_EXISTS;
 
 @Service
@@ -24,6 +23,7 @@ public class FolderDomainService {
 
     private final FolderRepository folderRepository;
     private final FolderHierarchyRepository folderHierarchyRepository;
+    private final FileRepository fileRepository;
 
     public void renameFolder(Folder folder, String newName, UserContext userContext) {
         FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
@@ -46,6 +46,37 @@ public class FolderDomainService {
             throw new MyException(FOLDER_WITH_NAME_ALREADY_EXISTS, "重命名失败，名称已被占用。",
                     "folderId", folder.getId(), "userId", userId);
         }
+    }
+
+    public Set<String> collectAllFileIds(String rootFolderId, FolderHierarchy hierarchy) {
+        Set<String> folderIds = hierarchy.withAllSubFolderIdsOf(rootFolderId);
+        List<Folder> folders = folderRepository.byIds(folderIds);
+
+        return folders.stream()
+                .flatMap(f -> f.getFileIds().stream())
+                .collect(toImmutableSet());
+    }
+
+    public DeleteFolderContext collectContext(String rootFolderId, FolderHierarchy hierarchy) {
+        Set<String> folderIds = hierarchy.withAllSubFolderIdsOf(rootFolderId);
+        List<Folder> folders = folderRepository.byIds(folderIds);
+
+        Set<String> fileIds = folders.stream()
+                .flatMap(f -> f.getFileIds().stream())
+                .collect(toImmutableSet());
+        List<File> files = fileRepository.byIds(fileIds);
+        return DeleteFolderContext.builder()
+                .folders(folders)
+                .files(files)
+                .build();
+    }
+
+    @Value
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class DeleteFolderContext {
+        List<Folder> folders;
+        List<File> files;
     }
 
 }

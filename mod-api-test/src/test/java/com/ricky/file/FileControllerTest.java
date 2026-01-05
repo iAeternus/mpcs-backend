@@ -2,6 +2,7 @@ package com.ricky.file;
 
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.LoginResponse;
+import com.ricky.file.domain.File;
 import com.ricky.file.domain.dto.resp.FetchFilePathResponse;
 import com.ricky.folder.FolderApi;
 import com.ricky.upload.FileUploadApi;
@@ -13,8 +14,33 @@ import java.io.IOException;
 import static com.ricky.RandomTestFixture.rFolderName;
 import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class FileControllerTest extends BaseApiTest {
+
+    @Test
+    void should_delete_file_force() throws IOException, InterruptedException {
+        // Given
+        LoginResponse loginResponse = setupApi.registerWithLogin();
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+
+        setupApi.deleteFileWithSameHash(file);
+        String fileId = FileUploadApi.upload(loginResponse.getJwt(), file, parentId).getFileId();
+        File dbFile = fileRepository.byId(fileId);
+
+        // 这里必须sleep，直接删除会导致文件上传事件还未处理完，导致mongodb写冲突
+        Thread.sleep(5 * 1000);
+
+        // When
+        FileApi.deleteFileForce(loginResponse.getJwt(), fileId);
+
+        // Then
+        assertFalse(fileRepository.exists(dbFile.getId()));
+        assertFalse(fileStorage.exists(dbFile.getStorageId()));
+        assertFalse(fileExtraRepository.existsByFileId(dbFile.getId()));
+    }
 
     @Test
     void should_fetch_file_path() throws IOException {

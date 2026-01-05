@@ -7,5 +7,7 @@ public enum AggregateRootType {
     TEAM,
     USER,
     COMMUNITY_POST,
+    FILE_EXTRA,
+    ;
 
 }

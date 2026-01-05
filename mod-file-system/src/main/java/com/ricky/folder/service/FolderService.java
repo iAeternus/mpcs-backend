@@ -9,5 +9,5 @@ public interface FolderService {
 
     void renameFolder(String folderId, RenameFolderCommand command, UserContext userContext);
 
-    void deleteFolder(String folderId, UserContext userContext);
+    void deleteFolderForce(String folderId, UserContext userContext);
 }

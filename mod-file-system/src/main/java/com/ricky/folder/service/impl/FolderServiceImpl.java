@@ -3,6 +3,7 @@ package com.ricky.folder.service.impl;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.File;
+import com.ricky.file.domain.FileDomainService;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderDomainService;
@@ -19,9 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Set;
 
-import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.utils.ValidationUtils.isNotEmpty;
 
 @Slf4j
@@ -32,6 +31,7 @@ public class FolderServiceImpl implements FolderService {
     private final RateLimiter rateLimiter;
     private final FolderFactory folderFactory;
     private final FolderDomainService folderDomainService;
+    private final FileDomainService fileDomainService;
     private final FolderRepository folderRepository;
     private final FolderHierarchyRepository folderHierarchyRepository;
     private final FileRepository fileRepository;
@@ -71,34 +71,20 @@ public class FolderServiceImpl implements FolderService {
 
     @Override
     @Transactional
-    public void deleteFolder(String folderId, UserContext userContext) {
+    public void deleteFolderForce(String folderId, UserContext userContext) {
         rateLimiter.applyFor("Folder:DeleteFolder", 10);
 
-        // 删除文件夹
-        Folder folder = folderRepository.byIdAndCheckUserShip(folderId, userContext);
-        folder.onDelete(userContext);
-        folderRepository.delete(folder);
+        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
+        FolderDomainService.DeleteFolderContext ctx = folderDomainService.collectContext(folderId, hierarchy);
 
-        // 删除文件夹下的文件
-        List<File> files = fileRepository.byIds(folder.getFileIds());
-        files.forEach(f -> f.onDelete(userContext));
-        fileRepository.delete(files);
+        List<Folder> folders = ctx.getFolders();
+        List<File> files = ctx.getFiles();
 
-        // 级联删除所有子文件夹和其中的文件
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(folder.getUserId());
-        Set<String> subFolderIds = hierarchy.allSubFolderIdsOf(folderId);
-        if (isNotEmpty(subFolderIds)) {
-            List<Folder> folders = folderRepository.byIds(subFolderIds);
-            folders.forEach(f -> f.onDelete(userContext));
-            folderRepository.delete(folders);
+        folders.forEach(folder -> folder.onDelete(userContext));
+        folderRepository.delete(folders);
 
-            Set<String> subFileIds = folders.stream()
-                    .flatMap(f -> f.getFileIds().stream())
-                    .collect(toImmutableSet());
-            List<File> subFiles = fileRepository.byIds(subFileIds);
-            subFiles.forEach(f -> f.onDelete(userContext));
-            fileRepository.delete(subFiles);
-        }
+        files.forEach(file -> file.onDelete(userContext));
+        fileDomainService.deleteFilesForce(files, userContext);
 
         hierarchy.removeFolder(folderId, userContext);
         folderHierarchyRepository.save(hierarchy);

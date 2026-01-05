@@ -16,6 +16,7 @@ import com.ricky.common.properties.CommonProperties;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.common.security.jwt.JwtService;
 import com.ricky.file.domain.FileRepository;
+import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import com.ricky.upload.domain.FileStorage;
@@ -113,6 +114,9 @@ public abstract class BaseApiTest {
 
     @Autowired
     protected FolderHierarchyRepository folderHierarchyRepository;
+
+    @Autowired
+    protected FileExtraRepository fileExtraRepository;
 
     @LocalServerPort
     protected int port;

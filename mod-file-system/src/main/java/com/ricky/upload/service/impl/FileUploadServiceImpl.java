@@ -6,6 +6,8 @@ import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.*;
+import com.ricky.fileextra.domain.FileExtra;
+import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.upload.domain.*;
@@ -45,6 +47,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     private final FileRepository fileRepository;
     private final UploadSessionRepository uploadSessionRepository;
     private final FolderRepository folderRepository;
+    private final FileExtraRepository fileExtraRepository;
 
     @Override
     @Transactional
@@ -72,6 +75,9 @@ public class FileUploadServiceImpl implements FileUploadService {
         Folder parentFolder = folderRepository.cachedById(parentId);
         parentFolder.addFile(file.getId());
         folderRepository.save(parentFolder);
+
+        FileExtra fileExtra = new FileExtra(file.getId(), userContext);
+        fileExtraRepository.save(fileExtra);
 
         log.info("File[{}] upload complete", file.getId());
         return FileUploadResponse.builder()
@@ -166,6 +172,13 @@ public class FileUploadServiceImpl implements FileUploadService {
                 userContext
         );
         fileRepository.save(file);
+
+        Folder parentFolder = folderRepository.cachedById(command.getParentId());
+        parentFolder.addFile(file.getId());
+        folderRepository.save(parentFolder);
+
+        FileExtra fileExtra = new FileExtra(file.getId(), userContext);
+        fileExtraRepository.save(fileExtra);
 
         uploadSession.complete(userContext);
         uploadSessionRepository.save(uploadSession);

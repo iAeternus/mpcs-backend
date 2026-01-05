@@ -25,4 +25,6 @@ public interface FileStorage {
     void delete(StorageId storageId);
 
     void delete(List<StorageId> storageIds);
+
+    boolean exists(StorageId storageId);
 }

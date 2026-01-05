@@ -31,6 +31,7 @@ import java.util.List;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static com.ricky.common.utils.ValidationUtils.isNull;
+import static com.ricky.common.utils.ValidationUtils.nonNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -99,13 +100,22 @@ public class GridFsFileStorage implements FileStorage {
 
     @Override
     public GridFSFile findFile(StorageId storageId) {
-        ObjectId objectId = new ObjectId(storageId.getValue());
-        GridFSFile gridFSFile = gridFsTemplate.findOne(query(where("_id").is(objectId)));
+        GridFSFile gridFSFile = findGridFSFile(storageId);
         if (isNull(gridFSFile)) {
-            throw new MyException(FILE_NOT_FOUND, "File not found", "objectId", objectId);
+            throw new MyException(FILE_NOT_FOUND, "File not found", "storageId", storageId);
         }
         return gridFSFile;
     }
+
+    private GridFSFile findGridFSFile(StorageId storageId) {
+        try {
+            ObjectId objectId = new ObjectId(storageId.getValue());
+            return gridFsTemplate.findOne(query(where("_id").is(objectId)));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
 
     @Override
     public InputStream getFileStream(StorageId storageId) {
@@ -126,6 +136,11 @@ public class GridFsFileStorage implements FileStorage {
                 .collect(toImmutableList());
         Query query = query(where("_id").in(objectIds));
         gridFsTemplate.delete(query);
+    }
+
+    @Override
+    public boolean exists(StorageId storageId) {
+        return nonNull(findGridFSFile(storageId));
     }
 
 }

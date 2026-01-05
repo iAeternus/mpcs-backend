@@ -49,24 +49,22 @@ public class RedisDomainEventConsumeAutoConfiguration {
 
         var container = StreamMessageListenerContainer.create(factory, options);
 
-        redisProperties.allDomainEventStreams().forEach(stream -> {
-            container.receiveAutoAck(
-                    from(REDIS_DOMAIN_EVENT_CONSUMER_GROUP, "DomainEventRedisStreamConsumer-" + stream),
-                    create(stream, lastConsumed()),
-                    message -> {
-                        ScopedSpan scopedSpan = tracingService.startNewSpan("domain-event-listener");
+        redisProperties.allDomainEventStreams().forEach(stream -> container.receiveAutoAck(
+                from(REDIS_DOMAIN_EVENT_CONSUMER_GROUP, "DomainEventRedisStreamConsumer-" + stream),
+                create(stream, lastConsumed()),
+                message -> {
+                    ScopedSpan scopedSpan = tracingService.startNewSpan("domain-event-listener");
 
-                        String jsonString = message.getValue();
-                        DomainEvent domainEvent = jsonCodec.readValue(jsonString, DomainEvent.class);
-                        try {
-                            domainEventConsumer.consume(new ConsumingDomainEvent<>(domainEvent.getId(), domainEvent.getType().name(), domainEvent));
-                        } catch (Throwable t) {
-                            log.error("Failed to listen domain event[{}:{}].", domainEvent.getType(), domainEvent.getId(), t);
-                        }
+                    String jsonString = message.getValue();
+                    DomainEvent domainEvent = jsonCodec.readValue(jsonString, DomainEvent.class);
+                    try {
+                        domainEventConsumer.consume(new ConsumingDomainEvent<>(domainEvent.getId(), domainEvent.getType().name(), domainEvent));
+                    } catch (Throwable t) {
+                        log.error("Failed to listen domain event[{}:{}].", domainEvent.getType(), domainEvent.getId(), t);
+                    }
 
-                        scopedSpan.end();
-                    });
-        });
+                    scopedSpan.end();
+                }));
 
         container.start();
         log.info("Start consuming domain events from redis stream.");
