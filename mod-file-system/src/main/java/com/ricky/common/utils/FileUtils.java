@@ -47,10 +47,6 @@ public class FileUtils {
         }
     }
 
-    public static String generateFilename(String originalFilename) {
-        return originalFilename + UuidGenerator.newShortUuid();
-    }
-
     @Deprecated
     public static void deleteUploadSessionChunkDir(Path chunkRootDir, String uploadId) {
         Path sessionDir = chunkRootDir.resolve(uploadId);

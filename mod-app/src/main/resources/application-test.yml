@@ -1,0 +1,73 @@
+spring:
+  elasticsearch:
+    # username: elastic
+    # password: 123456
+    uris: http://localhost:9200
+    connection-timeout: 1s
+  data:
+    mongodb:
+      uri: mongodb://admin:123456@localhost:27019/mpcs-dev?authSource=admin
+      database: mpcs-dev
+    redis:
+      database: 0
+      host: localhost
+      port: 6379
+      password: "123456"
+      timeout: 3000
+      jedis:
+        pool:
+          max-idle: 500
+          min-idle: 50
+          max-active: 2000
+          max-wait: 1000
+  servlet:
+    multipart:
+      max-file-size: 300MB
+      max-request-size: 500MB
+  ai:
+    openai:
+      api-key: your-api-key
+      base-url: https://api.deepseek.com
+      chat:
+        options:
+          model: deepseek-reasoner
+          temperature: 0.7 # 控制生成文本的随机性，取值范围0 - 1，值越大越随机
+
+management:
+  health:
+    elasticsearch:
+      enabled: false  # 禁用默认的健康检查
+
+#cloud:
+#  elasticsearch:
+#    host: ${ES_HOST:192.168.28.132}
+#    port: ${ES_PORT:9200}
+
+mpcs:
+  config:
+    limit-rate: false
+    base-domain-name: ci.ricky.com
+    https-enabled: false
+  jwt:
+    issuer: mpcs-local-issuer
+    secret: ckxGdnjP6bGmQyrGJaW32s8CtxyGVgeK
+    expire: 720
+    ahead-auto-refresh: 60
+  redis:
+    domain-event-stream-enabled: true
+    domain-event-stream-prefix: DomainEvent.LOCAL
+    domain-event-stream-count: 10
+    notification-stream: Notification.LOCAL
+    webhook-stream: Webhook.LOCAL
+  file:
+    hash:
+      algorithm: SHA256
+    upload:
+      chunk-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\chunks"
+      chunk-size: 1048576  # 1MB
+      buffer-size: 1048576  # 1MB
+    text-file-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\text-files"
+  common:
+    https-enabled: false
+    base-domain-name: mpcs.com  # TODO
+    limit-rate: false

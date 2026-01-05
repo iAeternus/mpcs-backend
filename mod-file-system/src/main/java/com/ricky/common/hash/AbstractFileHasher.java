@@ -14,6 +14,18 @@ import static com.ricky.common.exception.ErrorCodeEnum.INVALID_HASH_ALGORITHM;
 
 public abstract class AbstractFileHasher {
 
+    public MessageDigest newDigest() {
+        try {
+            return MessageDigest.getInstance(algorithm().getName());
+        } catch (NoSuchAlgorithmException e) {
+            throw new MyException(
+                    INVALID_HASH_ALGORITHM,
+                    "Invalid hash algorithm",
+                    "algorithm", algorithm().getName()
+            );
+        }
+    }
+
     public String hash(MultipartFile file) {
         try {
             return hash(file.getInputStream());

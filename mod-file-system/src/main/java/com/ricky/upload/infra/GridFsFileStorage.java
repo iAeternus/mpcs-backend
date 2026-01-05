@@ -5,6 +5,7 @@ import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.ricky.common.exception.MyException;
+import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.file.domain.StorageId;
 import com.ricky.file.domain.StoredFile;
@@ -29,7 +30,6 @@ import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
-import static com.ricky.common.utils.FileUtils.generateFilename;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -38,13 +38,14 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @RequiredArgsConstructor
 public class GridFsFileStorage implements FileStorage {
 
+    private final FileHasherFactory fileHasherFactory;
     private final GridFsTemplate gridFsTemplate;
     private final GridFSBucket gridFSBucket;
     private final FileProperties fileProperties;
 
     @Override
     public StorageId store(MultipartFile multipartFile) {
-        String filename = generateFilename(multipartFile.getOriginalFilename());
+        String filename = multipartFile.getOriginalFilename();
         try {
             ObjectId objectId = gridFsTemplate.store(
                     multipartFile.getInputStream(),
@@ -59,15 +60,9 @@ public class GridFsFileStorage implements FileStorage {
 
     @Override
     public StoredFile mergeChunksAndStore(UploadSession session, Path chunkDir) {
-        // TODO imm 换用hash器
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("SHA-256");
-        } catch (Exception e) {
-            throw new IllegalStateException("Hash algorithm not available", e);
-        }
+        MessageDigest digest = fileHasherFactory.getFileHasher().newDigest();
 
-        String filename = generateFilename(session.getFilename());
+        String filename = session.getFilename();
         GridFSUploadOptions options = new GridFSUploadOptions()
                 .chunkSizeBytes(fileProperties.getUpload().getChunkSize())
                 .metadata(new Document()
