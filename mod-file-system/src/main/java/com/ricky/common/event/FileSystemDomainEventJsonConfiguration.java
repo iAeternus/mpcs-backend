@@ -1,8 +1,7 @@
-package com.ricky.common.json;
+package com.ricky.common.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import com.ricky.common.event.DomainEventSubtypeRegistrar;
 import com.ricky.folder.domain.evt.FolderCreatedEvent;
 import com.ricky.folder.domain.evt.FolderDeletedEvent;
 import com.ricky.folder.domain.evt.FolderRenamedEvent;

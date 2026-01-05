@@ -2,8 +2,8 @@ package com.ricky.common.event.publish.infra;
 
 import com.ricky.common.event.DomainEvent;
 import com.ricky.common.event.publish.DomainEventSender;
+import com.ricky.common.json.JsonCodec;
 import com.ricky.common.properties.RedisProperties;
-import com.ricky.common.utils.MyObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.stream.ObjectRecord;
@@ -25,13 +25,13 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class RedisDomainEventSender implements DomainEventSender {
 
-    private final MyObjectMapper objectMapper;
+    private final JsonCodec jsonCodec;
     private final RedisProperties redisProperties;
     private final StringRedisTemplate stringRedisTemplate;
 
     public CompletableFuture<String> send(DomainEvent event) {
         try {
-            String eventString = objectMapper.writeValueAsString(event);
+            String eventString = jsonCodec.writeValueAsString(event);
             ObjectRecord<String, String> record = StreamRecords.newRecord()
                     .ofObject(eventString)
                     .withStreamKey(redisProperties.domainEventStreamForTenant(event.getArUserId()));

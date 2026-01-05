@@ -38,8 +38,7 @@
         <spring.retry.version>2.0.12</spring.retry.version>
 
         <!-- AI -->
-        <spring.ai.bom.version>1.0.0-M5</spring.ai.bom.version>
-        <spring.ai.alibaba.bom.version>1.1.0.0-M5</spring.ai.alibaba.bom.version>
+        <spring.ai.version>1.0.0</spring.ai.version>
 
         <!-- 文件解析 -->
         <tika.version>3.2.1</tika.version>
@@ -58,11 +57,6 @@
         <javers.version>7.6.1</javers.version>
         <diffutils.version>4.12</diffutils.version>
 
-        <!-- NLP/AI -->
-        <spring.ai.version>1.0.0-M4</spring.ai.version>
-        <opennlp.version>2.3.3</opennlp.version>
-        <stanford.corenlp.version>4.5.7</stanford.corenlp.version>
-
         <!-- 插件系统 -->
         <spring.plugin.version>3.0.0</spring.plugin.version>
 
@@ -79,6 +73,7 @@
         <micrometer.tracing.version>1.0.0</micrometer.tracing.version>
         <guava.version>31.1-jre</guava.version>
         <jjwt.version>0.12.5</jjwt.version>
+        <jackson.datatype.guava.version>2.17.2</jackson.datatype.guava.version>
 
         <!-- Swagger -->
         <swagger.version>2.2.38</swagger.version>
@@ -152,14 +147,7 @@
             <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
-                <version>${spring.ai.bom.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.alibaba.cloud.ai</groupId>
-                <artifactId>spring-ai-alibaba-bom</artifactId>
-                <version>${spring.ai.alibaba.bom.version}</version>
+                <version>${spring.ai.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -224,23 +212,6 @@
                 <groupId>io.github.java-diff-utils</groupId>
                 <artifactId>java-diff-utils</artifactId>
                 <version>${diffutils.version}</version>
-            </dependency>
-
-            <!-- NLP/AI -->
-            <dependency>
-                <groupId>org.springframework.experimental.ai</groupId>
-                <artifactId>spring-ai-core</artifactId>
-                <version>${spring.ai.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.opennlp</groupId>
-                <artifactId>opennlp-tools</artifactId>
-                <version>${opennlp.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>edu.stanford.nlp</groupId>
-                <artifactId>stanford-corenlp</artifactId>
-                <version>${stanford.corenlp.version}</version>
             </dependency>
 
             <!-- 插件系统 -->
@@ -308,6 +279,11 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt</artifactId>
                 <version>${jjwt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-guava</artifactId>
+                <version>${jackson.datatype.guava.version}</version>
             </dependency>
 
             <!-- 日志 -->

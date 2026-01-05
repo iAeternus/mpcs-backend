@@ -1,5 +1,6 @@
 package com.ricky;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ricky.common.event.DomainEvent;
 import com.ricky.common.event.DomainEventType;
 import com.ricky.common.event.consume.ConsumingDomainEventDao;
@@ -9,11 +10,11 @@ import com.ricky.common.exception.ErrorCodeEnum;
 import com.ricky.common.exception.ErrorResponse;
 import com.ricky.common.exception.MyError;
 import com.ricky.common.hash.FileHasherFactory;
+import com.ricky.common.json.JsonCodec;
 import com.ricky.common.password.IPasswordEncoder;
 import com.ricky.common.properties.CommonProperties;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.common.security.jwt.JwtService;
-import com.ricky.common.utils.MyObjectMapper;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
@@ -70,7 +71,10 @@ public abstract class BaseApiTest {
     protected MongoTemplate mongoTemplate;
 
     @Autowired
-    protected MyObjectMapper objectMapper;
+    protected ObjectMapper objectMapper;
+
+    @Autowired
+    protected JsonCodec jsonCodec;
 
     @Autowired
     protected StringRedisTemplate stringRedisTemplate;
@@ -113,11 +117,19 @@ public abstract class BaseApiTest {
     @LocalServerPort
     protected int port;
 
+    // 手动注入，应为given应该保持静态
+    private static ObjectMapper STATIC_OBJECT_MAPPER;
+
+    @Autowired
+    void setObjectMapper(ObjectMapper objectMapper) {
+        STATIC_OBJECT_MAPPER = objectMapper;
+    }
+
     public static RequestSpecification given() {
         return RestAssured.given()
                 .config(config()
                         .objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(
-                                (type, s) -> new MyObjectMapper()))
+                                (type, s) -> STATIC_OBJECT_MAPPER))
                         .encoderConfig(new EncoderConfig().appendDefaultContentCharsetToContentTypeIfUndefined(false))
                         .logConfig(LogConfig.logConfig().enableLoggingOfRequestAndResponseIfValidationFails()));
     }

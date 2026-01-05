@@ -34,3 +34,6 @@ build/
 
 ### log ###
 **/log/**
+
+/data
+**/application-ci.yml

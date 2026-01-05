@@ -1,0 +1,65 @@
+package com.ricky.fileextra.domain;
+
+import com.ricky.common.domain.AggregateRoot;
+import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.utils.SnowflakeIdGenerator;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.TypeAlias;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.util.List;
+
+import static com.ricky.common.constants.ConfigConstants.FILE_EXTRA_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.FILE_EXTRA_ID_PREFIX;
+import static com.ricky.common.utils.ValidationUtils.*;
+
+/**
+ * 文件增强信息
+ */
+@Getter
+@TypeAlias("file_extra")
+@Document(FILE_EXTRA_COLLECTION)
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class FileExtra extends AggregateRoot {
+
+    private String fileId; // 对应文件ID
+    private String textFilePath; // 提取出来的文本文件缓存绝对路径
+    private String summary; // 文件摘要
+    private List<String> keywords; // 关键词列表
+
+    public FileExtra(String fileId, UserContext userContext) {
+        super(newFileExtraId(), userContext);
+        this.fileId = fileId;
+        this.textFilePath = "";
+        this.summary = "";
+        this.keywords = List.of();
+        addOpsLog("新建", userContext);
+    }
+
+    public static String newFileExtraId() {
+        return FILE_EXTRA_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
+    }
+
+    public void setTextFilePath(String textFilePath, UserContext userContext) {
+        if (isNotBlank(textFilePath) && notEquals(textFilePath, this.textFilePath)) {
+            this.textFilePath = textFilePath;
+            addOpsLog("设置文本文件缓存路径", userContext);
+        }
+    }
+
+    public void setSummary(String summary, UserContext userContext) {
+        if (isNotBlank(summary) && notEquals(summary, this.summary)) {
+            this.summary = summary;
+            addOpsLog("设置摘要", userContext);
+        }
+    }
+
+    public void setKeywords(List<String> keywords, UserContext userContext) {
+        if (isNotEmpty(keywords) && notEquals(keywords, this.keywords)) {
+            this.keywords = keywords;
+            addOpsLog("设置关键词列表", userContext);
+        }
+    }
+}

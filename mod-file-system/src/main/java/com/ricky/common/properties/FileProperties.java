@@ -3,6 +3,7 @@ package com.ricky.common.properties;
 import com.ricky.common.hash.HashAlgorithm;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -15,7 +16,9 @@ public class FileProperties {
 
     private HashConfig hash;
     private FileUploadConfig upload;
-    private String textFilePath;
+
+    @NotBlank
+    private String textFileDir;
 
     @Data
     public static class HashConfig {

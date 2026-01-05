@@ -32,6 +32,7 @@ public interface ConfigConstants {
     String SHEDLOCK_COLLECTION = "shedlock";
     String VERIFICATION_COLLECTION = "verifications";
     String UPLOAD_SESSION_COLLECTION = "upload_sessions";
+    String FILE_EXTRA_COLLECTION = "file_extra";
     String SENSITIVE_WORD_COLLECTION = "sensitive_words";
 
     String PUBLISHING_DOMAIN_EVENT_COLLECTION = "publishing_domain_event";
@@ -44,6 +45,7 @@ public interface ConfigConstants {
     String FOLDER_HIERARCHY_ID_PREFIX = "FDH";
     String VERIFICATION_ID_PREFIX = "VRC";
     String UPLOAD_SESSION_ID_PREFIX = "UPL";
+    String FILE_EXTRA_ID_PREFIX = "EXT";
     String SENSITIVE_WORD_ID_PREFIX = "SST";
 
     // Cache
@@ -54,6 +56,7 @@ public interface ConfigConstants {
     String USER_FOLDERS_CACHE = "USER_FOLDERS";
     String FOLDER_CACHE = "FOLDER";
     String FOLDER_HIERARCHY_CACHE = "FOLDER_HIERARCHY";
+    String FILE_EXTRA_CACHE = "FILE_EXTRA";
 
     String REDIS_DOMAIN_EVENT_CONSUMER_GROUP = "domain.event.group";
     String REDIS_WEBHOOK_CONSUMER_GROUP = "webhook.group";

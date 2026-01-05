@@ -14,6 +14,7 @@ import lombok.Getter;
  * 403：权限不够
  * 404：资源未找到
  * 409：业务异常
+ * 422：配置错误
  * 426：套餐检查失败
  * 500：系统错误
  */
@@ -46,6 +47,7 @@ public enum ErrorCodeEnum {
     FILE_NOT_FOUND(404),
     FOLDER_NOT_FOUND(404),
     FOLDER_HIERARCHY_NOT_FOUND(404),
+    FILE_EXTRA_NOT_FOUND(404),
 
     // 409
     FILE_ALREADY_EXISTS(409),
@@ -72,6 +74,10 @@ public enum ErrorCodeEnum {
     FOLDER_WITH_NAME_ALREADY_EXISTS(409),
     FOLDER_NAME_DUPLICATES(409),
     GENERATE_SUMMARY_FAILED(409),
+    EXTRACT_FILE_TEXT_FAILED(409),
+
+    // 422
+    CONFIG_ERROR(422),
 
     // 426
 
@@ -80,6 +86,11 @@ public enum ErrorCodeEnum {
 
     // 500
     SYSTEM_ERROR(500),
+    ES_INDEX_CHECK_ERROR(500),
+    ES_INDEX_CREATE_ERROR(500),
+    ES_INDEX_MAPPING_ERROR(500),
+    ES_DOCUMENT_INDEX_ERROR(500),
+    ES_DOCUMENT_DELETE_ERROR(500),
     ;
 
     /**

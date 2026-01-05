@@ -2,10 +2,9 @@ package com.ricky.upload;
 
 
 import com.ricky.BaseApiTest;
-import com.ricky.file.domain.metadata.MimeType;
-import com.ricky.upload.domain.dto.resp.FileUploadResponse;
 import com.ricky.upload.domain.dto.cmd.CompleteUploadCommand;
 import com.ricky.upload.domain.dto.cmd.InitUploadCommand;
+import com.ricky.upload.domain.dto.resp.FileUploadResponse;
 import com.ricky.upload.domain.dto.resp.InitUploadResponse;
 import com.ricky.upload.domain.dto.resp.UploadChunkResponse;
 import io.restassured.response.Response;
@@ -54,12 +53,7 @@ public class FileUploadApi {
                 .contentType("multipart/form-data")
                 .formParam("uploadId", uploadId)
                 .formParam("chunkIndex", chunkIndex)
-                .multiPart(
-                        "chunk",
-                        "chunk-" + chunkIndex,
-                        new ByteArrayInputStream(chunkBytes),
-                        MimeType.IMAGE_PNG.getContentType()
-                )
+                .multiPart("chunk", "chunk-" + chunkIndex, new ByteArrayInputStream(chunkBytes), "image/png")
                 .when()
                 .post(ROOT_URL + "/chunk");
     }

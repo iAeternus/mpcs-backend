@@ -13,8 +13,6 @@ import reactor.core.publisher.Flux;
 public class AIResponse implements Response {
 
     String content;
-//    Long tokenUsage; // 消耗的Token数
-    String model; // 使用的模型
     Long latencyMs; // 请求耗时，单位：毫秒
     Boolean stream;
     Flux<String> streamContent; // 流式响应

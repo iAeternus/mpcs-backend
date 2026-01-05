@@ -1,10 +1,10 @@
 package com.ricky.common.security.jwt;
 
+import com.ricky.common.json.JsonCodec;
 import com.ricky.common.properties.JwtProperties;
 import com.ricky.common.security.IpJwtCookieUpdater;
 import com.ricky.common.security.MdcFilter;
 import com.ricky.common.tracing.TracingService;
-import com.ricky.common.utils.MyObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -34,7 +34,7 @@ public class JwtWebSecurityConfiguration {
     private final JwtCookieFactory jwtCookieFactory;
     private final IpJwtCookieUpdater ipJwtCookieUpdater;
     private final JwtProperties jwtProperties;
-    private final MyObjectMapper objectMapper;
+    private final JsonCodec jsonCodec;
     private final TracingService tracingService;
 
     @Bean
@@ -54,7 +54,7 @@ public class JwtWebSecurityConfiguration {
                         .anyRequest().authenticated())
                 .authenticationManager(authenticationManager)
                 .exceptionHandling(it -> it.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint))
-                .addFilterAfter(new JwtAuthenticationFilter(authenticationManager, objectMapper, tracingService), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JwtAuthenticationFilter(authenticationManager, jsonCodec, tracingService), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AutoRefreshJwtFilter(jwtService,
                                 jwtCookieFactory,
                                 ipJwtCookieUpdater,

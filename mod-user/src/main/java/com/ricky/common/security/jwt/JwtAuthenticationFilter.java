@@ -2,8 +2,8 @@ package com.ricky.common.security.jwt;
 
 import com.ricky.common.exception.MyError;
 import com.ricky.common.exception.MyException;
+import com.ricky.common.json.JsonCodec;
 import com.ricky.common.tracing.TracingService;
-import com.ricky.common.utils.MyObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -27,14 +27,14 @@ import static org.springframework.web.util.WebUtils.getCookie;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final AuthenticationManager authenticationManager;
-    private final MyObjectMapper objectMapper;
+    private final JsonCodec jsonCodec;
     private final TracingService tracingService;
 
     public JwtAuthenticationFilter(AuthenticationManager authenticationManager,
-                                   MyObjectMapper objectMapper,
+                                   JsonCodec jsonCodec,
                                    TracingService tracingService) {
         this.authenticationManager = authenticationManager;
-        this.objectMapper = objectMapper;
+        this.jsonCodec = jsonCodec;
         this.tracingService = tracingService;
     }
 
@@ -70,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         null);
 
                 PrintWriter writer = response.getWriter();
-                writer.print(objectMapper.writeValueAsString(error.toErrorResponse()));
+                writer.print(jsonCodec.writeValueAsString(error.toErrorResponse()));
                 writer.flush();
                 return;
             }

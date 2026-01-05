@@ -1,7 +1,9 @@
 package com.ricky.common.domain.user;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.ricky.common.utils.ValidationUtils;
-import lombok.Data;
+import lombok.Value;
 
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -13,7 +15,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  * @className UserContext
  * @desc 用户上下文，使用ThreadLocal传递
  */
-@Data
+@Value
 public class UserContext {
 
     public static final UserContext NOUSER = new UserContext(null, null, null);
@@ -22,27 +24,33 @@ public class UserContext {
     /**
      * 用户ID
      */
-    private String uid;
+    String uid;
 
     /**
      * 用户名
      */
-    private String username;
+    String username;
 
     /**
      * 角色
      */
-    private Role role;
+    Role role;
 
-    private UserContext(String uid, String username, Role role) {
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public UserContext(
+            @JsonProperty("uid") String uid,
+            @JsonProperty("username") String username,
+            @JsonProperty("role") Role role) {
         this.uid = uid;
         this.username = username;
         this.role = role;
     }
 
+
     public static UserContext of(String uid, String username, Role role) {
         return new UserContext(uid, username, role);
     }
+
 
     public boolean isSelf(String uid) {
         requireNotBlank(uid, "uid must not be null");

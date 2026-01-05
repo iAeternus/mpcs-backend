@@ -1,8 +1,6 @@
 com.ricky.common.cors.CorsAutoConfiguration
-com.ricky.common.es.ElasticSearchAutoConfiguration
 com.ricky.common.event.consume.infra.RedisDomainEventConsumeAutoConfiguration
 com.ricky.common.event.publish.infra.MongoDomainEventPublishAutoConfiguration
-com.ricky.common.json.DomainEventJsonAutoConfiguration
 com.ricky.common.json.JsonAutoConfiguration
 com.ricky.common.llm.LLMAutoConfiguration
 com.ricky.common.lock.LockAutoConfiguration

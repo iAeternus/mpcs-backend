@@ -5,6 +5,6 @@ import java.io.InputStream;
 
 public interface SummaryGenerator {
 
-    String generate(InputStream inputStream);
+    String generate(String textFilePath) throws IOException;
 
 }

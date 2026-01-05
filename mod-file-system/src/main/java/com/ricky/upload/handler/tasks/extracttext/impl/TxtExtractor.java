@@ -1,28 +1,35 @@
 package com.ricky.upload.handler.tasks.extracttext.impl;
 
+import com.ricky.file.domain.FileCategory;
 import com.ricky.upload.handler.tasks.extracttext.TextExtractor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-public class TxtExtractor implements TextExtractor {
+@Slf4j
+@Component
+public class TxtExtractor extends AbstractTextExtractor {
 
     @Override
-    public void extract(InputStream inputStream, String textFilePath) throws IOException {
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        StringBuilder stringBuffer = new StringBuilder();
-        String content;
-        while ((content = bufferedReader.readLine()) != null) {
-            stringBuffer.append(content);
+    public FileCategory getSupportedCategory() {
+        return FileCategory.TEXT;
+    }
+
+    @Override
+    protected void doExtract(InputStream inputStream, String textFilePath) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+             BufferedWriter writer = Files.newBufferedWriter(Paths.get(textFilePath))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                writer.write(line);
+                writer.newLine();
+            }
+
+            log.debug("Text extracted to: {}", textFilePath);
         }
-        bufferedReader.close();
-        inputStreamReader.close();
-        inputStream.close();
-
-        File file = new File(textFilePath);
-        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
-
-        bufferedWriter.write(stringBuffer.toString());
-        bufferedWriter.close();
     }
 }

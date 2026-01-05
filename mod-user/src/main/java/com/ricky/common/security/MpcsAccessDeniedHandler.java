@@ -1,8 +1,8 @@
 package com.ricky.common.security;
 
 import com.ricky.common.exception.MyError;
+import com.ricky.common.json.JsonCodec;
 import com.ricky.common.tracing.TracingService;
-import com.ricky.common.utils.MyObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @Component
 @RequiredArgsConstructor
 public class MpcsAccessDeniedHandler implements AccessDeniedHandler {
-    private final MyObjectMapper objectMapper;
+    private final JsonCodec jsonCodec;
     private final TracingService tracingService;
 
     @Override
@@ -34,7 +34,7 @@ public class MpcsAccessDeniedHandler implements AccessDeniedHandler {
         String traceId = tracingService.currentTraceId();
         MyError error = new MyError(ACCESS_DENIED, 403, "Access denied.", request.getRequestURI(), traceId, null);
         PrintWriter writer = response.getWriter();
-        writer.print(objectMapper.writeValueAsString(error.toErrorResponse()));
+        writer.print(jsonCodec.writeValueAsString(error.toErrorResponse()));
         writer.flush();
     }
 }

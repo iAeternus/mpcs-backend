@@ -1,8 +1,8 @@
 package com.ricky.common.security;
 
 import com.ricky.common.exception.MyError;
+import com.ricky.common.json.JsonCodec;
 import com.ricky.common.tracing.TracingService;
-import com.ricky.common.utils.MyObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +21,7 @@ import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 @Component
 @RequiredArgsConstructor
 public class MpcsAuthenticationEntryPoint implements AuthenticationEntryPoint {
-    private final MyObjectMapper objectMapper;
+    private final JsonCodec jsonCodec;
     private final TracingService tracingService;
 
     @Override
@@ -34,7 +34,7 @@ public class MpcsAuthenticationEntryPoint implements AuthenticationEntryPoint {
         MyError error = new MyError(AUTHENTICATION_FAILED, 401, "Authentication failed.", request.getRequestURI(), traceId, null);
 
         PrintWriter writer = response.getWriter();
-        writer.print(objectMapper.writeValueAsString(error.toErrorResponse()));
+        writer.print(jsonCodec.writeValueAsString(error.toErrorResponse()));
         writer.flush();
     }
 }

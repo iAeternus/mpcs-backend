@@ -170,6 +170,7 @@ class FileUploadControllerTest extends BaseApiTest {
         assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
     }
 
+    // TODO：文本文件应该指向storageId，而不是每个文件聚合根都有
     @Test
     void should_fast_upload_when_hash_exists() throws IOException {
         // Given

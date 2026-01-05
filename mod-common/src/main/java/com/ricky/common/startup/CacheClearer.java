@@ -6,8 +6,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Component;
 
-import static com.ricky.common.constants.ConfigConstants.FILE_CACHE;
-import static com.ricky.common.constants.ConfigConstants.USER_CACHE;
+import static com.ricky.common.constants.ConfigConstants.*;
 
 /**
  * @author Ricky
@@ -24,6 +23,11 @@ public class CacheClearer {
     @Caching(evict = {
             @CacheEvict(value = USER_CACHE, allEntries = true),
             @CacheEvict(value = FILE_CACHE, allEntries = true),
+            @CacheEvict(value = UPLOAD_SESSION_CACHE, allEntries = true),
+            @CacheEvict(value = HASH_STORAGES_CACHE, allEntries = true),
+            @CacheEvict(value = USER_FOLDERS_CACHE, allEntries = true),
+            @CacheEvict(value = FOLDER_CACHE, allEntries = true),
+            @CacheEvict(value = FOLDER_HIERARCHY_CACHE, allEntries = true),
     })
     public void evictAllCache() {
         log.info("Evicted all cache.");

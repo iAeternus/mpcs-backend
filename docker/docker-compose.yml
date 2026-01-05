@@ -136,19 +136,19 @@ services:
       retries: 5
       start_period: 40s
 
-#  kibana:
-#    image: kibana:8.13.0
-#    container_name: kibana
-#    restart: unless-stopped
-#    environment:
-#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-#      - TZ=Asia/Shanghai
-#    ports:
-#      - "5601:5601"
-#    depends_on:
-#      - elasticsearch
-#    networks:
-#      - app-network
+  kibana:
+    image: kibana:8.13.0
+    container_name: kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - TZ=Asia/Shanghai
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - app-network
 
 networks:
   app-network:

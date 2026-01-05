@@ -11,16 +11,18 @@ import org.springframework.validation.annotation.Validated;
  * @version 1.0
  * @date 2025/2/26
  * @className SystemProperties
- * @desc 全文档系统的设置，由管理员进行配置
+ * @desc MPCS系统的设置，由管理员进行配置
  */
 @Data
 @Validated
 public class SystemProperties {
 
+    private boolean httpsEnabled;
+
     /**
      * 是否启用流控
      */
-    private Boolean enableLimitRate = false;
+    private boolean limitRate = false;
 
     @NotBlank
     private String baseDomainName;

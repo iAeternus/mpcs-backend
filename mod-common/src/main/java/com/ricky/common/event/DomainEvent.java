@@ -3,7 +3,6 @@ package com.ricky.common.event;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.common.json.JsonTypeDefine;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,8 +21,8 @@ import static lombok.AccessLevel.PROTECTED;
  * @className DomainEvent
  * @desc 领域事件 <br>
  * 这里ar代指AggregateRoot
- * DomainEvent既要保证能支持MongoDB的序列化/反序列化，有要能够通过Jackson序列化/反序列化（因为要发送到Redis）<br>
- * @see JsonTypeDefine 其子类必须加@JsonTypeDefine注解才可正常序列化<br>
+ * DomainEvent既要保证能支持MongoDB的序列化/反序列化，也要能够通过Jackson序列化/反序列化（因为要发送到Redis）<br>
+ * @see DomainEventSubtypeRegistrar 业务模块注册派生领域事件序列化
  */
 @Getter
 @FieldNameConstants

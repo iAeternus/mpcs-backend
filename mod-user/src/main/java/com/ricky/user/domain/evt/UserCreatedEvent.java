@@ -2,7 +2,6 @@ package com.ricky.user.domain.evt;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.event.DomainEvent;
-import com.ricky.common.json.JsonTypeDefine;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;

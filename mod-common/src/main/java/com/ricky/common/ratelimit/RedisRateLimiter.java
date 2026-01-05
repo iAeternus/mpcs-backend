@@ -79,7 +79,7 @@ public class RedisRateLimiter implements RateLimiter {
      * @param expireUnit 有效时间单位
      */
     private void doApply(String key, int limit, int expire, TimeUnit expireUnit) {
-        if (!systemProperties.getEnableLimitRate()) {
+        if (!systemProperties.isLimitRate()) {
             return;
         }
 

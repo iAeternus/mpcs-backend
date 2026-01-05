@@ -3,16 +3,15 @@ package com.ricky.common.event.consume.infra;
 import com.ricky.common.event.DomainEvent;
 import com.ricky.common.event.consume.ConsumingDomainEvent;
 import com.ricky.common.event.consume.DomainEventConsumer;
+import com.ricky.common.json.JsonCodec;
 import com.ricky.common.properties.RedisProperties;
 import com.ricky.common.tracing.TracingService;
-import com.ricky.common.utils.MyObjectMapper;
 import io.micrometer.tracing.ScopedSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -34,7 +33,7 @@ import static org.springframework.data.redis.connection.stream.StreamOffset.crea
 @ConditionalOnProperty(value = "mpcs.redis.domain-event-stream-enabled", havingValue = "true")
 public class RedisDomainEventConsumeAutoConfiguration {
     private final RedisProperties redisProperties;
-    private final MyObjectMapper objectMapper;
+    private final JsonCodec jsonCodec;
     private final DomainEventConsumer<DomainEvent> domainEventConsumer;
     private final TracingService tracingService;
 
@@ -58,7 +57,7 @@ public class RedisDomainEventConsumeAutoConfiguration {
                         ScopedSpan scopedSpan = tracingService.startNewSpan("domain-event-listener");
 
                         String jsonString = message.getValue();
-                        DomainEvent domainEvent = objectMapper.readValue(jsonString, DomainEvent.class);
+                        DomainEvent domainEvent = jsonCodec.readValue(jsonString, DomainEvent.class);
                         try {
                             domainEventConsumer.consume(new ConsumingDomainEvent<>(domainEvent.getId(), domainEvent.getType().name(), domainEvent));
                         } catch (Throwable t) {

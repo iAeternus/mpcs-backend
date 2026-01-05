@@ -1,51 +1,64 @@
 package com.ricky.upload.handler.tasks.extracttext;
 
+import com.ricky.common.domain.task.RetryableTask;
+import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.exception.MyException;
 import com.ricky.common.properties.FileProperties;
+import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileCategory;
+import com.ricky.file.domain.FileRepository;
 import com.ricky.file.domain.StorageId;
+import com.ricky.fileextra.domain.FileExtra;
+import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.upload.domain.FileStorage;
-import com.ricky.upload.handler.tasks.extracttext.impl.TxtExtractor;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
 
-import static com.ricky.file.domain.FileCategory.TEXT;
+import static com.ricky.common.exception.ErrorCodeEnum.EXTRACT_FILE_TEXT_FAILED;
+import static com.ricky.common.utils.ValidationUtils.isBlank;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-public class ExtractTextTask {
+public class ExtractTextTask implements RetryableTask {
 
+    private final TextExtractorFactory extractorFactory;
     private final FileStorage fileStorage;
     private final FileProperties fileProperties;
+    private final FileExtraRepository fileExtraRepository;
 
-    private static final Map<FileCategory, TextExtractor> EXTRACTORS = new HashMap<>();
+    @Transactional
+    public void run(String fileId, StorageId storageId, FileCategory category, UserContext userContext) {
+        if (!extractorFactory.supports(category)) {
+            log.debug("No extractor supports category: {}, skipping", category);
+            return;
+        }
 
-    static {
-        EXTRACTORS.put(TEXT, new TxtExtractor());
-        // TODO add here...
+        TextExtractor extractor = extractorFactory.getExtractor(category)
+                .orElseThrow(() -> new UnsupportedOperationException(
+                        String.format("No extractor found for category: %s", category)));
+
+        String filepath = extract(storageId, extractor);
+        if (isBlank(filepath)) {
+            return;
+        }
+
+        FileExtra fileExtra = fileExtraRepository.byFileId(fileId);
+        fileExtra.setTextFilePath(filepath, userContext);
+        fileExtraRepository.save(fileExtra);
     }
 
-    public void run(StorageId storageId, FileCategory category) {
-        InputStream inputStream = fileStorage.getFileStream(storageId);
-        String textFilePath = fileProperties.getTextFilePath();
-        extract(inputStream, textFilePath, category);
+    private String extract(StorageId storageId, TextExtractor extractor) {
+        try (InputStream inputStream = fileStorage.getFileStream(storageId)) {
+            String textFileDir = fileProperties.getTextFileDir();
+            return extractor.extract(storageId, inputStream, textFileDir);
+        } catch (IOException ex) {
+            throw new MyException(EXTRACT_FILE_TEXT_FAILED, "提取文件文本失败", "storageId", storageId);
+        }
     }
-
-    // 若没有提取器匹配，则不做任何事
-    private void extract(InputStream inputStream, String textFilePath, FileCategory fileCategory) {
-        EXTRACTORS.forEach((category, extractor) -> {
-            try {
-                if (fileCategory == category) {
-                    EXTRACTORS.get(category).extract(inputStream, textFilePath);
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
 }

@@ -36,9 +36,6 @@ public class File extends AggregateRoot {
     private FileStatus status;
     private FileCategory category; // 文件类型
 
-    @Setter
-    private String summary; // 文件摘要
-
     private File(
             String parentId,
             StorageId storageId,

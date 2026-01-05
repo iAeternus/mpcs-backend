@@ -1,6 +1,6 @@
 package com.ricky.common.cache;
 
-import com.ricky.common.utils.MyObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.HashCachedStorageIds;
 import com.ricky.folder.domain.UserCachedFolders;
@@ -38,10 +38,9 @@ public class CacheConfiguration {
     private static final String CACHE_PREFIX = "Cache:";
 
     @Bean
-    public RedisCacheManagerBuilderCustomizer redisBuilderCustomizer(MyObjectMapper objectMapper) {
-        MyObjectMapper defaultObjectMapper = new MyObjectMapper();
-        defaultObjectMapper.activateDefaultTyping(defaultObjectMapper.getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
-        GenericJackson2JsonRedisSerializer defaultSerializer = new GenericJackson2JsonRedisSerializer(defaultObjectMapper);
+    public RedisCacheManagerBuilderCustomizer redisBuilderCustomizer(ObjectMapper objectMapper) {
+        objectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
+        GenericJackson2JsonRedisSerializer defaultSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
         var userCachedMembersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, User.class);
         var fileCachedMembersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, File.class);

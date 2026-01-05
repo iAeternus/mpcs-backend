@@ -1,14 +1,20 @@
 package com.ricky.upload.handler.tasks.summary;
 
+import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.exception.MyException;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.file.domain.StorageId;
-import com.ricky.upload.domain.FileStorage;
+import com.ricky.fileextra.domain.FileExtra;
+import com.ricky.fileextra.domain.FileExtraRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.InputStream;
+import java.io.IOException;
+
+import static com.ricky.common.exception.ErrorCodeEnum.GENERATE_SUMMARY_FAILED;
+import static com.ricky.common.utils.ValidationUtils.isBlank;
 
 @Slf4j
 @Component
@@ -16,16 +22,28 @@ import java.io.InputStream;
 public class GenerateSummaryTask {
 
     private final SummaryGenerator summaryGenerator;
-    private final FileStorage fileStorage;
-    private final FileRepository fileRepository;
+    private final FileExtraRepository fileExtraRepository;
 
-    public void run(String fileId, StorageId storageId) {
-        InputStream inputStream = fileStorage.getFileStream(storageId);
-        String summary = summaryGenerator.generate(inputStream);
+    @Transactional
+    public void run(String fileId, UserContext userContext) {
+        FileExtra fileExtra = fileExtraRepository.byFileId(fileId);
+        String textFilePath = fileExtra.getTextFilePath();
+        if(isBlank(textFilePath)) {
+            log.error("文本文件路径为空");
+            return;
+        }
 
-        File file = fileRepository.byId(fileId);
-        file.setSummary(summary);
-        fileRepository.save(file);
+        String summary = generateSummary(textFilePath);
+        fileExtra.setSummary(summary, userContext);
+        fileExtraRepository.save(fileExtra);
+    }
+
+    String generateSummary(String textFilePath) {
+        try {
+            return summaryGenerator.generate(textFilePath);
+        } catch (IOException ex) {
+            throw new MyException(GENERATE_SUMMARY_FAILED, "AI摘要生成失败", "textFilePath", textFilePath);
+        }
     }
 
 }

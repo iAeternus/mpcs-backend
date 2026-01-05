@@ -7,8 +7,8 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
+import com.ricky.common.exception.MyException;
 import com.ricky.file.domain.EsFile;
-import com.ricky.file.domain.FileRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,6 +18,8 @@ import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.common.constants.ConfigConstants.FILE_ES_INDEX_NAME;
+import static com.ricky.common.exception.ErrorCodeEnum.ES_DOCUMENT_DELETE_ERROR;
+import static com.ricky.common.exception.ErrorCodeEnum.ES_DOCUMENT_INDEX_ERROR;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
 
 @Slf4j
@@ -29,8 +31,6 @@ public class FileElasticSearchService implements ElasticSearchService<EsFile> {
 
     @Override
     public void upload(EsFile esFile) {
-        checkAndCreateIndex();
-
         IndexResponse resp = index(IndexRequest.of(b -> b
                 .index(FILE_ES_INDEX_NAME)
                 .id(esFile.getId())
@@ -43,6 +43,7 @@ public class FileElasticSearchService implements ElasticSearchService<EsFile> {
     @Override
     public void uploadBatch(List<EsFile> objs) {
         // TODO
+        throw new UnsupportedOperationException("批量上传暂未实现");
     }
 
     @Override
@@ -146,68 +147,14 @@ public class FileElasticSearchService implements ElasticSearchService<EsFile> {
 
     @Override
     public void removeById(String id) {
-        // TODO
-    }
-
-    private void checkAndCreateIndex() {
-        boolean exists = indexExists();
-        if (!exists) {
-            createIndex();
-        }
-    }
-
-    private boolean indexExists() {
         try {
-            return esClient.indices()
-                    .exists(e -> e.index(FILE_ES_INDEX_NAME))
-                    .value();
-        } catch (IOException ex) {
-            log.error("检查ES索引[{}]失败: {}", FILE_ES_INDEX_NAME, ex.getMessage());
-            throw new RuntimeException(ex);
-        }
-    }
-
-    private void createIndex() {
-        try {
-            // 索引
-            esClient.indices().create(c -> c
+            esClient.delete(d -> d
                     .index(FILE_ES_INDEX_NAME)
-                    .settings(s -> s
-                            .numberOfShards("3")
-                            .numberOfReplicas("1")
-                            .analysis(a -> a
-                                    .analyzer("ik_filename", analyzer -> analyzer
-                                            .custom(custom -> custom
-                                                    .tokenizer("ik_max_word")
-                                                    .filter("lowercase")
-                                            )
-                                    )
-                            )
-                    )
+                    .id(id)
             );
-
-            // 映射
-            esClient.indices().putMapping(p -> p
-                    .index(FILE_ES_INDEX_NAME)
-                    .properties("name", prop -> prop
-                            .text(t -> t
-                                    .analyzer("ik_filename")
-                                    .searchAnalyzer("ik_smart")
-                            )
-                    )
-                    .properties("summary", prop -> prop
-                            .text(t -> t.analyzer("ik_smart"))
-                    )
-                    .properties("category", prop -> prop.keyword(k -> k))
-                    .properties("keywords", prop -> prop.keyword(k -> k))
-                    .properties("sizeInBytes", prop -> prop.long_(l -> l))
-                    .properties("lastModified", prop -> prop.date(d -> d))
-            );
-
-            log.info("创建ES索引[{}]成功", FILE_ES_INDEX_NAME);
+            log.info("删除ES文档成功: ID={}", id);
         } catch (IOException ex) {
-            log.error("创建ES索引[{}]失败: {}", FILE_ES_INDEX_NAME, ex.getMessage());
-            throw new RuntimeException(ex);
+            throw new MyException(ES_DOCUMENT_DELETE_ERROR, "删除ES文档失败", "ID", id, "exception", ex);
         }
     }
 
@@ -215,8 +162,8 @@ public class FileElasticSearchService implements ElasticSearchService<EsFile> {
         try {
             return esClient.index(req);
         } catch (IOException ex) {
-            log.error("ES索引[{}]失败: {}", req.document().getId(), ex.getMessage());
-            throw new RuntimeException(ex);
+            throw new MyException(ES_DOCUMENT_INDEX_ERROR, "ES索引失败",
+                    "indexName", FILE_ES_INDEX_NAME, "exception", ex);
         }
     }
 }
