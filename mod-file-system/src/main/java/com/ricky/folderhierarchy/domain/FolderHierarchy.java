@@ -7,7 +7,7 @@ import com.ricky.common.domain.idtree.exception.IdNodeLevelOverflowException;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.SnowflakeIdGenerator;
-import com.ricky.folderhierarchy.domain.evt.FolderHierarchyChangedEvent;
+import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,6 +23,10 @@ import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_TOO_DEEP
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+/**
+ * 文件层级结构，一个层级结构就是一个文件空间（file space）
+ * 用户可拥有多个文件空间
+ */
 @Getter
 @Document(FOLDER_HIERARCHY_COLLECTION)
 @TypeAlias(FOLDER_HIERARCHY_COLLECTION)

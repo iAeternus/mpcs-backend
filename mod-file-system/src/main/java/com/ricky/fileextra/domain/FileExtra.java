@@ -3,7 +3,7 @@ package com.ricky.fileextra.domain;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
-import com.ricky.fileextra.domain.evt.FileExtraDeletedEvent;
+import com.ricky.fileextra.domain.event.FileExtraDeletedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -2,8 +2,8 @@ package com.ricky.folder;
 
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.IdResponse;
-import com.ricky.folder.domain.dto.cmd.CreateFolderCommand;
-import com.ricky.folder.domain.dto.cmd.RenameFolderCommand;
+import com.ricky.folder.command.CreateFolderCommand;
+import com.ricky.folder.command.RenameFolderCommand;
 import io.restassured.response.Response;
 
 public class FolderApi {

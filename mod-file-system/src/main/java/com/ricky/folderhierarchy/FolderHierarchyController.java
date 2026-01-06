@@ -1,8 +1,8 @@
 package com.ricky.folderhierarchy;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.folderhierarchy.domain.dto.cmd.UpdateFolderHierarchyCommand;
-import com.ricky.folderhierarchy.domain.dto.resp.FolderHierarchyResponse;
+import com.ricky.folderhierarchy.command.UpdateFolderHierarchyCommand;
+import com.ricky.folderhierarchy.query.FolderHierarchyResponse;
 import com.ricky.folderhierarchy.service.FolderHierarchyQueryService;
 import com.ricky.folderhierarchy.service.FolderHierarchyService;
 import io.swagger.v3.oas.annotations.Operation;

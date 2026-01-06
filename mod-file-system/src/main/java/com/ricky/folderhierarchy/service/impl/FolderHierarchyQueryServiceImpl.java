@@ -5,7 +5,7 @@ import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
-import com.ricky.folderhierarchy.domain.dto.resp.FolderHierarchyResponse;
+import com.ricky.folderhierarchy.query.FolderHierarchyResponse;
 import com.ricky.folderhierarchy.service.FolderHierarchyQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static com.ricky.folderhierarchy.domain.dto.resp.FolderHierarchyResponse.HierarchyFolder;
+import static com.ricky.folderhierarchy.query.FolderHierarchyResponse.HierarchyFolder;
 
 @Service
 @RequiredArgsConstructor

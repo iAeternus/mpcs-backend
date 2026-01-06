@@ -1,7 +1,7 @@
 package com.ricky.verification;
 
 import com.ricky.BaseApiTest;
-import com.ricky.user.domain.dto.resp.RegisterResponse;
+import com.ricky.user.command.RegisterResponse;
 import com.ricky.verification.domain.VerificationCode;
 import com.ricky.verification.domain.dto.cmd.CreateFindBackPasswordVerificationCodeCommand;
 import com.ricky.verification.domain.dto.cmd.CreateLoginVerificationCodeCommand;

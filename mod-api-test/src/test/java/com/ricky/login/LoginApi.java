@@ -1,8 +1,8 @@
 package com.ricky.login;
 
 import com.ricky.BaseApiTest;
-import com.ricky.login.domain.dto.cmd.MobileOrEmailLoginCommand;
-import com.ricky.login.domain.dto.cmd.VerificationCodeLoginCommand;
+import com.ricky.login.command.MobileOrEmailLoginCommand;
+import com.ricky.login.command.VerificationCodeLoginCommand;
 import io.restassured.http.Cookie;
 import io.restassured.response.Response;
 

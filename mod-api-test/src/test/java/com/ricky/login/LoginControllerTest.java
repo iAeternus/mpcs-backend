@@ -2,12 +2,12 @@ package com.ricky.login;
 
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.LoginResponse;
-import com.ricky.login.domain.dto.cmd.MobileOrEmailLoginCommand;
-import com.ricky.login.domain.dto.cmd.VerificationCodeLoginCommand;
+import com.ricky.login.command.MobileOrEmailLoginCommand;
+import com.ricky.login.command.VerificationCodeLoginCommand;
 import com.ricky.user.UserApi;
 import com.ricky.user.domain.User;
-import com.ricky.user.domain.dto.resp.RegisterResponse;
-import com.ricky.user.domain.dto.resp.UserInfoResponse;
+import com.ricky.user.command.RegisterResponse;
+import com.ricky.user.query.UserInfoResponse;
 import com.ricky.verification.VerificationCodeApi;
 import com.ricky.verification.domain.VerificationCode;
 import com.ricky.verification.domain.dto.cmd.CreateLoginVerificationCodeCommand;

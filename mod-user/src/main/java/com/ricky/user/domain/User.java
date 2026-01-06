@@ -5,7 +5,7 @@ import com.ricky.common.domain.user.Role;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.SnowflakeIdGenerator;
-import com.ricky.user.domain.evt.UserCreatedEvent;
+import com.ricky.user.domain.event.UserCreatedEvent;
 import lombok.*;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;

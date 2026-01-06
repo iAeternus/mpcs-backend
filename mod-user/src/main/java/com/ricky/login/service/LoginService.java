@@ -1,8 +1,8 @@
 package com.ricky.login.service;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.login.domain.dto.cmd.MobileOrEmailLoginCommand;
-import com.ricky.login.domain.dto.cmd.VerificationCodeLoginCommand;
+import com.ricky.login.command.MobileOrEmailLoginCommand;
+import com.ricky.login.command.VerificationCodeLoginCommand;
 
 public interface LoginService {
     String loginWithMobileOrEmail(MobileOrEmailLoginCommand command);

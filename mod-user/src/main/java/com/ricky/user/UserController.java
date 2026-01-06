@@ -1,10 +1,10 @@
 package com.ricky.user;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.user.domain.dto.cmd.RegisterCommand;
-import com.ricky.user.domain.dto.resp.RegisterResponse;
-import com.ricky.user.domain.dto.resp.UserInfoResponse;
-import com.ricky.user.domain.dto.resp.UserProfileResponse;
+import com.ricky.user.command.RegisterCommand;
+import com.ricky.user.command.RegisterResponse;
+import com.ricky.user.query.UserInfoResponse;
+import com.ricky.user.query.UserProfileResponse;
 import com.ricky.user.service.UserQueryService;
 import com.ricky.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;

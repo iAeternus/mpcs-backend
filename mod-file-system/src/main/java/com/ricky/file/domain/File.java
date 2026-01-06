@@ -4,12 +4,11 @@ import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.common.utils.ValidationUtils;
-import com.ricky.file.domain.evt.FileDeletedEvent;
-import com.ricky.upload.domain.evt.FileUploadedEvent;
+import com.ricky.file.domain.event.FileDeletedEvent;
+import com.ricky.upload.domain.event.FileUploadedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 

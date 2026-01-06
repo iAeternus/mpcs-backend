@@ -4,7 +4,7 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.file.domain.dto.resp.FetchFilePathResponse;
+import com.ricky.file.query.FetchFilePathResponse;
 import com.ricky.file.service.FileQueryService;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderRepository;

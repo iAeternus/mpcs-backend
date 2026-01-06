@@ -1,8 +1,8 @@
 package com.ricky.folder.service;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.folder.domain.dto.cmd.CreateFolderCommand;
-import com.ricky.folder.domain.dto.cmd.RenameFolderCommand;
+import com.ricky.folder.command.CreateFolderCommand;
+import com.ricky.folder.command.RenameFolderCommand;
 
 public interface FolderService {
     String createFolder(CreateFolderCommand command, UserContext userContext);

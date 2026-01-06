@@ -4,11 +4,11 @@ import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.domain.idtree.IdTree;
 import com.ricky.folder.FolderApi;
-import com.ricky.folder.domain.dto.cmd.RenameFolderCommand;
+import com.ricky.folder.command.RenameFolderCommand;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.dto.cmd.UpdateFolderHierarchyCommand;
-import com.ricky.folderhierarchy.domain.dto.resp.FolderHierarchyResponse;
-import com.ricky.folderhierarchy.domain.evt.FolderHierarchyChangedEvent;
+import com.ricky.folderhierarchy.command.UpdateFolderHierarchyCommand;
+import com.ricky.folderhierarchy.query.FolderHierarchyResponse;
+import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -24,7 +24,7 @@ import static com.ricky.common.event.DomainEventType.FOLDER_HIERARCHY_CHANGED;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_TOO_DEEP;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NAME_DUPLICATES;
 import static com.ricky.common.utils.CommonUtils.redisCacheKey;
-import static com.ricky.folderhierarchy.domain.dto.resp.FolderHierarchyResponse.HierarchyFolder;
+import static com.ricky.folderhierarchy.query.FolderHierarchyResponse.HierarchyFolder;
 import static java.lang.Boolean.TRUE;
 import static org.junit.jupiter.api.Assertions.*;
 

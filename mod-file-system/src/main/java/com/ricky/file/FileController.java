@@ -2,8 +2,8 @@ package com.ricky.file;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.validation.id.Id;
-import com.ricky.file.domain.dto.cmd.RenameFileCommand;
-import com.ricky.file.domain.dto.resp.FetchFilePathResponse;
+import com.ricky.file.command.RenameFileCommand;
+import com.ricky.file.query.FetchFilePathResponse;
 import com.ricky.file.service.FileQueryService;
 import com.ricky.file.service.FileService;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,8 +1,8 @@
 package com.ricky.file;
 
 import com.ricky.BaseApiTest;
-import com.ricky.file.domain.dto.cmd.RenameFileCommand;
-import com.ricky.file.domain.dto.resp.FetchFilePathResponse;
+import com.ricky.file.command.RenameFileCommand;
+import com.ricky.file.query.FetchFilePathResponse;
 import io.restassured.response.Response;
 
 public class FileApi {
