@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ricky.common.exception.MyException;
 
 import java.io.InputStream;
 import java.io.Writer;
@@ -92,6 +91,7 @@ public class JsonCodec {
             throw new RuntimeException(e);
         }
     }
+
     public <T> T convertValue(Object fromValue, Class<T> toValueType) {
         try {
             return objectMapper.convertValue(fromValue, toValueType);

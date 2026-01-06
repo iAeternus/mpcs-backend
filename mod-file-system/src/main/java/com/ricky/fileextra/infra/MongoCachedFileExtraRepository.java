@@ -2,7 +2,6 @@ package com.ricky.fileextra.infra;
 
 import com.ricky.common.exception.MyException;
 import com.ricky.common.mongo.MongoBaseRepository;
-import com.ricky.file.domain.File;
 import com.ricky.fileextra.domain.FileExtra;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -11,7 +10,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import static com.ricky.common.constants.ConfigConstants.*;
+import static com.ricky.common.constants.ConfigConstants.FILE_EXTRA_CACHE;
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_EXTRA_NOT_FOUND;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;

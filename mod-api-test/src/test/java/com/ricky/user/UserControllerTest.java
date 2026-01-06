@@ -2,9 +2,9 @@ package com.ricky.user;
 
 import com.ricky.BaseApiTest;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.user.domain.User;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
+import com.ricky.user.domain.User;
 import com.ricky.user.domain.event.UserCreatedEvent;
 import com.ricky.verification.VerificationCodeApi;
 import org.junit.jupiter.api.Test;

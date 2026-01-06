@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StreamOperations;
-import org.springframework.stereotype.Component;
 
 import static com.ricky.common.constants.ConfigConstants.*;
 

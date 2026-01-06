@@ -8,7 +8,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.List;
 import java.util.Map;
 
 import static com.ricky.common.exception.ErrorCodeEnum.LLM_CALL_PARAMS_INVALID;
@@ -27,7 +26,7 @@ public class AICommand implements Command {
     @Override
     public void correctAndValidate() {
         Command.super.correctAndValidate();
-        if(isBlank(userPrompt)) {
+        if (isBlank(userPrompt)) {
             throw new MyException(LLM_CALL_PARAMS_INVALID, "userPrompt不能为空");
         }
     }

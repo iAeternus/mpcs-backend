@@ -2,8 +2,8 @@ package com.ricky.file;
 
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.LoginResponse;
-import com.ricky.file.domain.File;
 import com.ricky.file.command.RenameFileCommand;
+import com.ricky.file.domain.File;
 import com.ricky.file.query.FetchFilePathResponse;
 import com.ricky.folder.FolderApi;
 import com.ricky.upload.FileUploadApi;

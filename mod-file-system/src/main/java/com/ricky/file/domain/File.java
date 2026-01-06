@@ -18,8 +18,8 @@ import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 /**
  * @brief 文件 <br>
  * 1. 同一个hash值或storageId的文件在GridFs中保证唯一，多个文件可能对应一个hash值，
- *    这些文件可能分属不同用户，但是只要有一个用户修改了文件，系统立即认为hash值不同，则存储新文件，
- *    于是不会发生冲突
+ * 这些文件可能分属不同用户，但是只要有一个用户修改了文件，系统立即认为hash值不同，则存储新文件，
+ * 于是不会发生冲突
  * 2. 若已知parentId，整个路径已经确定，无需创建任何Folder。通过createFolder和upload可以组合多种操作
  */
 @Getter

@@ -1,11 +1,7 @@
 package com.ricky.upload.service;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.upload.command.FileUploadResponse;
-import com.ricky.upload.command.CompleteUploadCommand;
-import com.ricky.upload.command.InitUploadCommand;
-import com.ricky.upload.command.InitUploadResponse;
-import com.ricky.upload.command.UploadChunkResponse;
+import com.ricky.upload.command.*;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileUploadService {

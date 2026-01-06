@@ -6,7 +6,6 @@ import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import net.javacrumbs.shedlock.provider.mongo.MongoLockProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 
 import static com.ricky.common.constants.ConfigConstants.SHEDLOCK_COLLECTION;

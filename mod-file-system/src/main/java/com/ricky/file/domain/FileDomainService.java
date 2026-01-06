@@ -1,7 +1,6 @@
 package com.ricky.file.domain;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.common.utils.ValidationUtils;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.upload.domain.FileStorage;
@@ -50,7 +49,7 @@ public class FileDomainService {
         fileRepository.delete(files);
 
         // 若删除文件聚合根后无聚合根指向文件内容，则级联删除文件内容
-        if(isNotEmpty(emptyStorageIds)) {
+        if (isNotEmpty(emptyStorageIds)) {
             fileStorage.delete(emptyStorageIds);
         }
 

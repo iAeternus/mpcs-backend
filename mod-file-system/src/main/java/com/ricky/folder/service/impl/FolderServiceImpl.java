@@ -5,12 +5,12 @@ import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileDomainService;
 import com.ricky.file.domain.FileRepository;
+import com.ricky.folder.command.CreateFolderCommand;
+import com.ricky.folder.command.RenameFolderCommand;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.folder.domain.FolderFactory;
 import com.ricky.folder.domain.FolderRepository;
-import com.ricky.folder.command.CreateFolderCommand;
-import com.ricky.folder.command.RenameFolderCommand;
 import com.ricky.folder.service.FolderService;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
-import static com.ricky.common.utils.ValidationUtils.isNotEmpty;
 
 @Slf4j
 @Service

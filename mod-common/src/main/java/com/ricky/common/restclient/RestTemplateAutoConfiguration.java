@@ -3,7 +3,6 @@ package com.ricky.common.restclient;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 
 import static java.time.Duration.ofSeconds;

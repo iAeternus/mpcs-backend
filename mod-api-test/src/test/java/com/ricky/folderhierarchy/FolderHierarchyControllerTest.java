@@ -5,10 +5,10 @@ import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.domain.idtree.IdTree;
 import com.ricky.folder.FolderApi;
 import com.ricky.folder.command.RenameFolderCommand;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.command.UpdateFolderHierarchyCommand;
-import com.ricky.folderhierarchy.query.FolderHierarchyResponse;
+import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
+import com.ricky.folderhierarchy.query.FolderHierarchyResponse;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

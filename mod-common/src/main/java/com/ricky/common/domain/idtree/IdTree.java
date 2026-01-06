@@ -1,6 +1,5 @@
 package com.ricky.common.domain.idtree;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.ricky.common.domain.idtree.exception.IdNodeLevelOverflowException;
 import com.ricky.common.domain.idtree.exception.IdNodeNotFoundException;

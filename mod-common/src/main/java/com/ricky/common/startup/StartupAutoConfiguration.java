@@ -3,7 +3,6 @@ package com.ricky.common.startup;
 import com.ricky.common.properties.RedisProperties;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 
 @AutoConfiguration

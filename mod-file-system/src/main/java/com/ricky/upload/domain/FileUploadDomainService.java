@@ -23,7 +23,7 @@ public class FileUploadDomainService {
 
     public void checkFilenameDuplicates(String parentId, String filename) {
         Folder parentFolder = folderRepository.cachedById(parentId);
-        if(isEmpty(parentFolder.getFileIds())) {
+        if (isEmpty(parentFolder.getFileIds())) {
             return;
         }
 

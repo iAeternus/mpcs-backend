@@ -2,11 +2,7 @@ package com.ricky.upload;
 
 
 import com.ricky.BaseApiTest;
-import com.ricky.upload.command.CompleteUploadCommand;
-import com.ricky.upload.command.InitUploadCommand;
-import com.ricky.upload.command.FileUploadResponse;
-import com.ricky.upload.command.InitUploadResponse;
-import com.ricky.upload.command.UploadChunkResponse;
+import com.ricky.upload.command.*;
 import io.restassured.response.Response;
 
 import java.io.ByteArrayInputStream;

@@ -27,12 +27,12 @@ public class GenerateSummaryTask implements RetryableTask {
     public void run(String fileId) {
         FileExtra fileExtra = fileExtraRepository.byFileId(fileId);
 
-        if(isNotBlank(fileExtra.getSummary())) {
+        if (isNotBlank(fileExtra.getSummary())) {
             log.info("summary already exists for FileExtra[{}]", fileExtra.getId());
         }
 
         String textFilePath = fileExtra.getTextFilePath();
-        if(isBlank(textFilePath)) {
+        if (isBlank(textFilePath)) {
             log.error("文本文件路径为空");
             return;
         }

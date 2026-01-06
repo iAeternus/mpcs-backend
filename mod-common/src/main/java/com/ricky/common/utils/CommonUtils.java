@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.time.Duration;
 
 import static java.util.regex.Pattern.matches;
 import static org.apache.commons.lang3.StringUtils.isBlank;
