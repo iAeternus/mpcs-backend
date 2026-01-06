@@ -17,4 +17,9 @@ public class FileExtraDeletedEventHandler extends AbstractDomainEventHandler<Fil
     protected void doHandle(FileExtraDeletedEvent evt) {
         TaskRunner.run(() -> deleteTextFileTask.run(evt.getTextFilePath()));
     }
+
+    @Override
+    public boolean isIdempotent() {
+        return true;
+    }
 }

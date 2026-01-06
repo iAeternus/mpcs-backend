@@ -34,7 +34,7 @@ public class RedisDomainEventSender implements DomainEventSender {
             String eventString = jsonCodec.writeValueAsString(event);
             ObjectRecord<String, String> record = StreamRecords.newRecord()
                     .ofObject(eventString)
-                    .withStreamKey(redisProperties.domainEventStreamForTenant(event.getArUserId()));
+                    .withStreamKey(redisProperties.domainEventStreamForUser(event.getArUserId()));
             stringRedisTemplate.opsForStream().add(record);
             return CompletableFuture.completedFuture(event.getId());
         } catch (Throwable t) {

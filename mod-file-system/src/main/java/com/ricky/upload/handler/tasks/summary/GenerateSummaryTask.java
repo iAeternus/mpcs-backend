@@ -16,6 +16,7 @@ import java.io.IOException;
 
 import static com.ricky.common.exception.ErrorCodeEnum.GENERATE_SUMMARY_FAILED;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
+import static com.ricky.common.utils.ValidationUtils.isNotBlank;
 
 @Slf4j
 @Component
@@ -28,6 +29,11 @@ public class GenerateSummaryTask implements RetryableTask {
     @Transactional
     public void run(String fileId) {
         FileExtra fileExtra = fileExtraRepository.byFileId(fileId);
+
+        if(isNotBlank(fileExtra.getSummary())) {
+            log.info("summary already exists for FileExtra[{}]", fileExtra.getId());
+        }
+
         String textFilePath = fileExtra.getTextFilePath();
         if(isBlank(textFilePath)) {
             log.error("文本文件路径为空");
@@ -43,7 +49,7 @@ public class GenerateSummaryTask implements RetryableTask {
         try {
             return summaryGenerator.generate(textFilePath);
         } catch (IOException ex) {
-            throw new MyException(GENERATE_SUMMARY_FAILED, "AI摘要生成失败", "textFilePath", textFilePath);
+            throw new MyException(GENERATE_SUMMARY_FAILED, "摘要生成失败", "textFilePath", textFilePath);
         }
     }
 

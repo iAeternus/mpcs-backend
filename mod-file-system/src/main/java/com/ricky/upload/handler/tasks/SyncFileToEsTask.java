@@ -37,6 +37,6 @@ public class SyncFileToEsTask implements RetryableTask {
                 Date.from(file.getUpdatedAt())
         );
 
-        esService.upload(esFile);
+        esService.index(esFile);
     }
 }

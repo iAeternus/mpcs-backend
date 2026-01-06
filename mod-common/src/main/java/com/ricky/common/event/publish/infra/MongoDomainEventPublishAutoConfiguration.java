@@ -29,9 +29,8 @@ public class MongoDomainEventPublishAutoConfiguration {
 
         // Get notification on DomainEvent insertion in MongoDB, then publish staged domain events to messaging middleware such as Kafka
         container.register(ChangeStreamRequest.builder(
-                        (MessageListener<ChangeStreamDocument<Document>, PublishingDomainEvent>) message -> {
-                            domainEventPublisher.publishStagedDomainEvents();
-                        })
+                        (MessageListener<ChangeStreamDocument<Document>, PublishingDomainEvent>) message ->
+                                domainEventPublisher.publishStagedDomainEvents())
                 .collection(PUBLISHING_DOMAIN_EVENT_COLLECTION)
                 .filter(new Document("$match", new Document("operationType", OperationType.INSERT.getValue())))
                 .build(), PublishingDomainEvent.class);

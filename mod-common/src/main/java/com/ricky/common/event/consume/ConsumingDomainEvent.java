@@ -21,8 +21,8 @@ import static lombok.AccessLevel.PRIVATE;
 @Getter
 @FieldNameConstants
 @NoArgsConstructor(access = PRIVATE)
-@Document(CONSUMING_DOMAIN_EVENT_COLLECTION)
 @TypeAlias("CONSUMING_DOMAIN_EVENT")
+@Document(CONSUMING_DOMAIN_EVENT_COLLECTION)
 public class ConsumingDomainEvent<T extends DomainEvent> {
 
     private String eventId; // 领域事件ID

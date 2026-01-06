@@ -25,7 +25,7 @@ public class MongoConsumingDomainEventDao<T extends DomainEvent> implements Cons
     public boolean recordAsConsumed(ConsumingDomainEvent<T> consumingDomainEvent, String handlerName) {
         Query query = query(where(eventId)
                 .is(consumingDomainEvent.getEventId())
-                .and(handlerName)
+                .and(ConsumingDomainEvent.Fields.handlerName)
                 .is(handlerName));
 
         Update update = new Update()

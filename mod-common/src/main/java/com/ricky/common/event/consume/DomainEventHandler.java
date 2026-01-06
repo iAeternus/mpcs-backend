@@ -13,8 +13,9 @@ import com.ricky.common.event.DomainEvent;
 public interface DomainEventHandler<T extends DomainEvent> {
 
     /**
+     * 事件处理是否具有幂等性
+     *
      * @return true=是 false=否
-     * @brief 事件处理是否具有幂等性
      * @note 默认情况下，所有处理程序都被假定为非幂等的
      */
     default boolean isIdempotent() {
@@ -22,8 +23,9 @@ public interface DomainEventHandler<T extends DomainEvent> {
     }
 
     /**
+     * 事件处理优先级
+     *
      * @return 数值越小，优先级越高
-     * @brief 事件处理优先级
      */
     default int priority() {
         return 0;

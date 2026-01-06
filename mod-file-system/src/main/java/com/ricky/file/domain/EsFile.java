@@ -1,6 +1,7 @@
 package com.ricky.file.domain;
 
 import com.ricky.common.domain.marker.Identified;
+import com.ricky.common.exception.MyException;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,11 +10,14 @@ import org.springframework.data.elasticsearch.annotations.DateFormat;
 import org.springframework.data.elasticsearch.annotations.Document;
 import org.springframework.data.elasticsearch.annotations.Field;
 import org.springframework.data.elasticsearch.annotations.FieldType;
+import org.springframework.util.StringUtils;
 
 import java.util.Date;
 import java.util.List;
 
 import static com.ricky.common.constants.ConfigConstants.FILE_ES_INDEX_NAME;
+import static com.ricky.common.exception.ErrorCodeEnum.ES_FILE_INVALID;
+import static com.ricky.common.utils.ValidationUtils.isBlank;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Keyword;
 import static org.springframework.data.elasticsearch.annotations.FieldType.Text;
 
@@ -75,6 +79,15 @@ public class EsFile implements Identified {
         this.keywords = keywords;
         this.sizeInBytes = sizeInBytes;
         this.lastModified = lastModified;
+    }
+
+    public void validate() {
+        if (isBlank(id)) {
+            throw new MyException(ES_FILE_INVALID, "文件ID不能为空");
+        }
+        if (isBlank(name)) {
+            throw new MyException(ES_FILE_INVALID, "文件名不能为空");
+        }
     }
 
 }

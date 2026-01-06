@@ -29,15 +29,13 @@ public abstract class AbstractTextExtractor implements TextExtractor {
 
         // 若文件已存在，则直接返回路径
         if (Files.exists(path)) {
-            log.debug("使用缓存文本文件: storageId={}, path={}",
-                    storageId.getValue(), filePath);
+            log.debug("使用缓存文本文件: storageId={}, path={}", storageId.getValue(), filePath);
             return filePath;
         }
 
         // 若文件不存在，则执行提取
         doExtract(inputStream, filePath);
-        log.debug("文本提取完成并缓存: storageId={}, path={}",
-                storageId.getValue(), filePath);
+        log.debug("文本提取完成并缓存: storageId={}, path={}", storageId.getValue(), filePath);
         return filePath;
     }
 

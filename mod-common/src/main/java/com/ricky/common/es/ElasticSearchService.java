@@ -1,40 +1,43 @@
 package com.ricky.common.es;
 
+import co.elastic.clients.elasticsearch.core.BulkResponse;
+import co.elastic.clients.elasticsearch.core.DeleteResponse;
+import co.elastic.clients.elasticsearch.core.IndexResponse;
+
 import java.util.List;
 
+/**
+ * ES文件服务接口 - 精简为核心业务方法
+ */
 public interface ElasticSearchService<T> {
 
     /**
-     * 上传对象至ES
+     * 索引单个对象
      */
-    void upload(T obj);
+    IndexResponse index(T obj);
 
     /**
-     * 批量上传对象至ES
+     * 批量索引对象
      */
-    void uploadBatch(List<T> objs);
-
-    /**
-     * 根据关键词搜索
-     */
-    default List<T> search(String keyword) {
-        return pageSearch(keyword, 0, 20, true);
-    }
+    BulkResponse indexBulk(List<T> objs);
 
     /**
      * 分页搜索
-     *
-     * @param keyword   搜索关键词
-     * @param page      页码
-     * @param size      每页大小
-     * @param highlight 是否高亮显示
-     * @return 搜索结果
      */
-    List<T> pageSearch(String keyword, int page, int size, boolean highlight);
+    SearchResult<T> search(String keyword, int page, int size);
 
     /**
      * 根据ID删除对象
      */
-    void removeById(String id);
+    DeleteResponse deleteById(String id);
 
+    /**
+     * 批量删除对象
+     */
+    BulkResponse deleteBulk(List<String> ids);
+
+    /**
+     * 根据ID查询对象
+     */
+    T byId(String id);
 }

@@ -2,6 +2,7 @@ package com.ricky.fileextra.handler.tasks;
 
 import com.ricky.common.domain.task.RetryableTask;
 import com.ricky.common.exception.MyException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -9,8 +10,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_DELETE_FAILED;
-import static com.ricky.common.exception.ErrorCodeEnum.FILE_NOT_FOUND;
 
+@Slf4j
 @Component
 public class DeleteTextFileTask implements RetryableTask {
 
@@ -19,8 +20,8 @@ public class DeleteTextFileTask implements RetryableTask {
 
         // 首先检查文件是否存在
         if (!Files.exists(path)) {
-            throw new MyException(FILE_NOT_FOUND, "文件不存在",
-                    "textFilePath", textFilePath);
+            log.warn("File not found: {}, skipping handle", textFilePath);
+            return;
         }
 
         try {

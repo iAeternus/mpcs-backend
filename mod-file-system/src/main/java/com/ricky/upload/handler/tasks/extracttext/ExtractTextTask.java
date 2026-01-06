@@ -1,12 +1,9 @@
 package com.ricky.upload.handler.tasks.extracttext;
 
 import com.ricky.common.domain.task.RetryableTask;
-import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.properties.FileProperties;
-import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileCategory;
-import com.ricky.file.domain.FileRepository;
 import com.ricky.file.domain.StorageId;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
@@ -35,13 +32,13 @@ public class ExtractTextTask implements RetryableTask {
     @Transactional
     public void run(String fileId, StorageId storageId, FileCategory category) {
         if (!extractorFactory.supports(category)) {
-            log.debug("No extractor supports category: {}, skipping", category);
+            log.warn("No extractor supports category: {}, skipping", category);
             return;
         }
 
         TextExtractor extractor = extractorFactory.getExtractor(category)
-                .orElseThrow(() -> new UnsupportedOperationException(
-                        String.format("No extractor found for category: %s", category)));
+                .orElseThrow(() ->
+                        new UnsupportedOperationException(String.format("No extractor found for category: %s", category)));
 
         String filepath = extract(storageId, extractor);
         if (isBlank(filepath)) {

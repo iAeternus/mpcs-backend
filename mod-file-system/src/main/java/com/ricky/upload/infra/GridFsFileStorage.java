@@ -94,7 +94,7 @@ public class GridFsFileStorage implements FileStorage {
                     .size(writtenBytes)
                     .build();
         } catch (IOException e) {
-            throw new MyException(MERGE_CHUNKS_FAILED, "Merge chunks failed", "uploadSession", session);
+            throw new MyException(MERGE_CHUNKS_FAILED, "Merge chunks failed", "uploadSessionId", session.getId());
         }
     }
 
