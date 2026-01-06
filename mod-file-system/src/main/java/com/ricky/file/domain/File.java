@@ -3,6 +3,7 @@ package com.ricky.file.domain;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
+import com.ricky.common.utils.ValidationUtils;
 import com.ricky.file.domain.evt.FileDeletedEvent;
 import com.ricky.upload.domain.evt.FileUploadedEvent;
 import lombok.AccessLevel;
@@ -77,6 +78,15 @@ public class File extends AggregateRoot {
 
     public static String newFileId() {
         return FILE_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
+    }
+
+    public void rename(String newName, UserContext userContext) {
+        if (ValidationUtils.equals(this.filename, newName)) {
+            return;
+        }
+
+        this.filename = newName;
+        addOpsLog("重命名为[" + newName + "]", userContext);
     }
 
     public void onDelete(UserContext userContext) {

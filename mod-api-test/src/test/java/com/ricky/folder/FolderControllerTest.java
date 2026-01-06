@@ -9,7 +9,6 @@ import com.ricky.folder.domain.dto.cmd.CreateFolderCommand;
 import com.ricky.folder.domain.dto.cmd.RenameFolderCommand;
 import com.ricky.folder.domain.evt.FolderCreatedEvent;
 import com.ricky.folder.domain.evt.FolderDeletedEvent;
-import com.ricky.folder.domain.evt.FolderRenamedEvent;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.evt.FolderHierarchyChangedEvent;
 import com.ricky.upload.FileUploadApi;
@@ -148,9 +147,6 @@ public class FolderControllerTest extends BaseApiTest {
         // Then
         Folder folder = folderRepository.byId(folderId);
         assertEquals(newName, folder.getFolderName());
-
-        FolderRenamedEvent evt = latestEventFor(folderId, FOLDER_RENAMED, FolderRenamedEvent.class);
-        assertEquals(folderId, evt.getFolderId());
     }
 
     @Test

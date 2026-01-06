@@ -3,6 +3,7 @@ package com.ricky.file;
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
+import com.ricky.file.domain.dto.cmd.RenameFileCommand;
 import com.ricky.file.domain.dto.resp.FetchFilePathResponse;
 import com.ricky.folder.FolderApi;
 import com.ricky.upload.FileUploadApi;
@@ -11,12 +12,36 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
 
+import static com.ricky.RandomTestFixture.rFilename;
 import static com.ricky.RandomTestFixture.rFolderName;
 import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class FileControllerTest extends BaseApiTest {
+
+    @Test
+    void should_rename_file() throws IOException {
+        // Given
+        LoginResponse loginResponse = setupApi.registerWithLogin();
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+
+        setupApi.deleteFileWithSameHash(file);
+        String fileId = FileUploadApi.upload(loginResponse.getJwt(), file, parentId).getFileId();
+
+        String newName = rFilename();
+
+        // When
+        FileApi.renameFile(loginResponse.getJwt(), fileId, RenameFileCommand.builder()
+                .newName(newName)
+                .build());
+
+        // Then
+        File dbFile = fileRepository.byId(fileId);
+        assertEquals(newName, dbFile.getFilename());
+    }
 
     @Test
     void should_delete_file_force() throws IOException, InterruptedException {

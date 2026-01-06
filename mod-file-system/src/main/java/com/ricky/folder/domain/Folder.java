@@ -6,7 +6,6 @@ import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.folder.domain.evt.FolderCreatedEvent;
 import com.ricky.folder.domain.evt.FolderDeletedEvent;
-import com.ricky.folder.domain.evt.FolderRenamedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -59,7 +58,6 @@ public class Folder extends AggregateRoot {
         }
 
         this.folderName = newName;
-        raiseEvent(new FolderRenamedEvent(this.getId(), userContext));
         addOpsLog("重命名为[" + newName + "]", userContext);
     }
 

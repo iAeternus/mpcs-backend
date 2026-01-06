@@ -50,4 +50,8 @@ public class RandomTestFixture {
         return RandomStringUtils.secure().nextAlphabetic(6) + "文件夹";
     }
 
+    public static String rFilename() {
+        return RandomStringUtils.secure().nextAlphabetic(6) + "文件";
+    }
+
 }
