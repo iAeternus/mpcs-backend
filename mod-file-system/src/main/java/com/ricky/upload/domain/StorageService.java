@@ -10,9 +10,9 @@ import java.nio.file.Path;
 import java.util.List;
 
 /**
- * @brief 文件数据存储
+ * @brief 文件数据存储服务
  */
-public interface FileStorage {
+public interface StorageService {
 
     StorageId store(MultipartFile multipartFile);
 

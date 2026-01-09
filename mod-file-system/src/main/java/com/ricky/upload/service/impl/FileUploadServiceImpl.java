@@ -37,7 +37,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     private final FileProperties fileProperties;
     private final FileHasherFactory fileHasherFactory;
     private final FileFactory fileFactory;
-    private final FileStorage fileStorage;
+    private final StorageService storageService;
     private final UploadChunkCleaner uploadChunkCleaner;
     private final FileUploadDomainService fileUploadDomainService;
     private final FileRepository fileRepository;
@@ -62,7 +62,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         String hash = fileHasherFactory.getFileHasher().hash(multipartFile);
         StorageId storageId = fileRepository.cachedByFileHash(hash).getStorageIds().stream()
                 .findFirst()
-                .orElseGet(() -> fileStorage.store(multipartFile));
+                .orElseGet(() -> storageService.store(multipartFile));
 
         // 落库聚合根
         File file = fileFactory.create(parentId, storageId, multipartFile, hash, userContext);
@@ -159,7 +159,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         uploadSession.checkAllChunksUploaded();
 
         Path chunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), uploadSession.getId());
-        StoredFile storedFile = fileStorage.mergeChunksAndStore(uploadSession, chunkDir);
+        StoredFile storedFile = storageService.mergeChunksAndStore(uploadSession, chunkDir);
 
         File file = fileFactory.create(
                 command.getParentId(),

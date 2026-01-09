@@ -9,6 +9,7 @@ import com.ricky.file.service.FileQueryService;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,11 +29,11 @@ public class FileQueryServiceImpl implements FileQueryService {
     private final FolderRepository folderRepository;
 
     @Override
-    public FetchFilePathResponse fetchFilePath(String fileId, UserContext userContext) {
+    public FetchFilePathResponse fetchFilePath(String customId, String fileId, UserContext userContext) {
         rateLimiter.applyFor("File:FetchFilePath", 50);
 
         File file = fileRepository.cachedById(fileId);
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
+        FolderHierarchy hierarchy = folderHierarchyRepository.cachedByCustomId(customId);
         String dirPath = Arrays.stream(hierarchy.schemaOf(file.getParentId()).split(NODE_ID_SEPARATOR))
                 .map(folderRepository::cachedById)
                 .map(Folder::getFolderName)

@@ -1,5 +1,6 @@
 package com.ricky.folderhierarchy.infra;
 
+import com.ricky.common.domain.SpaceType;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
@@ -8,9 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_NOT_FOUND;
-import static com.ricky.common.utils.ValidationUtils.isNull;
-import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -20,29 +22,63 @@ public class MongoFolderHierarchyRepository extends MongoBaseRepository<FolderHi
 
     private final MongoCachedFolderHierarchyRepository cachedFolderHierarchyRepository;
 
-    @Override
-    public FolderHierarchy byUserId(String userId) {
-        requireNotBlank(userId, "User ID must not be blank.");
+//    @Override
+//    public FolderHierarchy byUserId(String userId) {
+//        requireNotBlank(userId, "User ID must not be blank.");
+//
+//        Query query = query(where("userId").is(userId));
+//        FolderHierarchy hierarchy = mongoTemplate.findOne(query, FolderHierarchy.class);
+//
+//        if (isNull(hierarchy)) {
+//            throw new MyException(FOLDER_HIERARCHY_NOT_FOUND, "未找到文件夹。", "userId", userId);
+//        }
+//
+//        return hierarchy;
+//    }
 
-        Query query = query(where("userId").is(userId));
+    @Override
+    public FolderHierarchy byCustomId(String customId) {
+        requireNotBlank(customId, "Custom ID must not be blank.");
+
+        Query query = query(where("customId").is(customId));
         FolderHierarchy hierarchy = mongoTemplate.findOne(query, FolderHierarchy.class);
 
         if (isNull(hierarchy)) {
-            throw new MyException(FOLDER_HIERARCHY_NOT_FOUND, "未找到文件夹。", "userId", userId);
+            throw new MyException(FOLDER_HIERARCHY_NOT_FOUND, "未找到文件夹层次结构。", "customId", customId);
         }
 
         return hierarchy;
     }
 
     @Override
+    public List<FolderHierarchy> byUserIdAndSpaceType(String userId, SpaceType spaceType) {
+        requireNotBlank(userId, "User ID must not be blank.");
+        requireNonNull(spaceType, "Space Type must not be null.");
+
+        Query query = query(where("userId").is(userId)
+                .and("customId").regex("^" + spaceType.getPrefix()));
+
+        return mongoTemplate.find(query, FolderHierarchy.class);
+    }
+
+
+    @Override
     public void save(FolderHierarchy folderHierarchy) {
         super.save(folderHierarchy);
-        cachedFolderHierarchyRepository.evictFolderHierarchyCache(folderHierarchy.getUserId());
+        cachedFolderHierarchyRepository.evictFolderHierarchyCache(folderHierarchy.getCustomId());
     }
 
     @Override
-    public FolderHierarchy cachedByUserId(String userId) {
-        requireNotBlank(userId, "User ID must not be blank.");
-        return cachedFolderHierarchyRepository.cachedByUserId(userId);
+    public FolderHierarchy cachedByCustomId(String customId) {
+        requireNotBlank(customId, "Custom ID must not be blank.");
+        return cachedFolderHierarchyRepository.cachedByCustomId(customId);
+    }
+
+    @Override
+    public boolean existsByCustomId(String customId) {
+        requireNotBlank(customId, "Custom ID must not be blank.");
+
+        Query query = query(where("customId").is(customId)); // 需要索引
+        return mongoTemplate.exists(query, FolderHierarchy.class);
     }
 }

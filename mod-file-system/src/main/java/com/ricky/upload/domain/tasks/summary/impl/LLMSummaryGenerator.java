@@ -96,12 +96,7 @@ public class LLMSummaryGenerator implements SummaryGenerator {
     private String generateSummaryWithAI(String text) {
         AICommand command = AICommand.builder()
                 .systemPrompt(FILE_SUMMARY_PROMPT)
-                .userPrompt("请为以下文本生成简明摘要：\n\n" + text)
-                .options(Map.of(
-                        "temperature", 0.3,
-                        "max_tokens", SUMMARY_MAX_TOKENS,
-                        "model", "deepseek-chat"
-                ))
+                .userPrompt("Please generate a concise summary for the following text:\n\n" + text)
                 .build();
 
         return llmService.chat(command)

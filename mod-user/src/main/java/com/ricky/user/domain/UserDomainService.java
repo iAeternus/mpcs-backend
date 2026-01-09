@@ -18,7 +18,7 @@ public class UserDomainService {
     private final UserRepository userRepository;
     private final UserFactory userFactory;
 
-    public CreateUserResult register(String mobileOrEmail, String password, String username, UserContext userContext) {
+    public CreateUserResult register(String mobileOrEmail, String password, UserContext userContext) {
         if (userRepository.existsByMobileOrEmail(mobileOrEmail)) {
             throw new MyException(USER_WITH_MOBILE_OR_EMAIL_ALREADY_EXISTS, "注册失败，手机号或邮箱已被占用。",
                     "mobileOrEmail", maskMobileOrEmail(mobileOrEmail));
@@ -32,7 +32,7 @@ public class UserDomainService {
             email = mobileOrEmail;
         }
 
-        return userFactory.create(username, mobile, email, password, userContext);
+        return userFactory.create(mobile, email, password, userContext);
     }
 
     // 使用REQUIRES_NEW保证即便其他地方有异常，这里也能正常写库

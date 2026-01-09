@@ -46,7 +46,7 @@ management:
 mpcs:
   config:
     limit-rate: false
-    base-domain-name: ci.ricky.com
+    base-domain-name: mpcs.com  # TODO
     https-enabled: false
   jwt:
     issuer: mpcs-local-issuer
@@ -67,7 +67,3 @@ mpcs:
       chunk-size: 1048576  # 1MB
       buffer-size: 1048576  # 1MB
     text-file-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\text-files"
-  common:
-    https-enabled: false
-    base-domain-name: mpcs.com  # TODO
-    limit-rate: false

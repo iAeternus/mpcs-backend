@@ -21,7 +21,6 @@ public class AICommand implements Command {
     @NotBlank
     String userPrompt; // 用户问题
     String systemPrompt; // 系统指令
-    Map<String, Object> options; // 模型特定参数
 
     @Override
     public void correctAndValidate() {

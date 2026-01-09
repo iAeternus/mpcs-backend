@@ -1,11 +1,13 @@
 package com.ricky.folder.domain;
 
+import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.*;
 import org.springframework.stereotype.Service;
@@ -25,8 +27,8 @@ public class FolderDomainService {
     private final FolderHierarchyRepository folderHierarchyRepository;
     private final FileRepository fileRepository;
 
-    public void renameFolder(Folder folder, String newName, UserContext userContext) {
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
+    public void renameFolder(String customId, Folder folder, String newName, UserContext userContext) {
+        FolderHierarchy hierarchy = folderHierarchyRepository.cachedByCustomId(customId);
         checkSiblingNameDuplication(folder, hierarchy, newName, userContext.getUid());
         folder.rename(newName, userContext);
     }

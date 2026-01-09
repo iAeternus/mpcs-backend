@@ -11,6 +11,9 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.USER_ID_PREFIX;
@@ -36,25 +39,24 @@ public class User extends AggregateRoot {
     private Role role;
     private boolean mobileIdentified; // 是否已验证手机号
     private FailedLoginCount failedLoginCount; // 登录失败次数
+    private Set<String> groupIds; // 权限组集合
 
-    private User(String mobile, String email, String password, UserContext userContext) {
+    public User(String mobile, String email, String password, UserContext userContext) {
         super(userContext.getUid(), userContext);
+        init(mobile, email, password, userContext);
+    }
+
+    private void init(String mobile, String email, String password, UserContext userContext) {
         this.username = userContext.getUsername();
         this.role = Role.NORMAL_USER;
         this.mobile = mobile;
-        if (isNotBlank(this.mobile)) {
-            this.mobileIdentified = true;
-        }
+        this.mobileIdentified = isNotBlank(this.mobile);
         this.email = email;
         this.password = password;
         this.failedLoginCount = FailedLoginCount.init();
-        this.addOpsLog("注册", userContext);
-    }
-
-    public static User create(String mobile, String email, String password, UserContext userContext) {
-        User user = new User(mobile, email, password, userContext);
-        user.raiseEvent(new UserCreatedEvent(user.getId(), userContext));
-        return user;
+        this.groupIds = new HashSet<>();
+        addOpsLog("注册", userContext);
+        raiseEvent(new UserCreatedEvent(this.getId(), userContext));
     }
 
     public static String newUserId() {

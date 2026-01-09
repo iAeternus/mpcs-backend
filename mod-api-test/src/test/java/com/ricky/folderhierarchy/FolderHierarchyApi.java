@@ -21,13 +21,13 @@ public class FolderHierarchyApi {
                 .statusCode(200);
     }
 
-    public static Response fetchFolderHierarchyRaw(String token) {
+    public static Response fetchFolderHierarchyRaw(String token, String customId) {
         return BaseApiTest.given(token)
-                .get(ROOT_URL);
+                .get(ROOT_URL + "/{customId}", customId);
     }
 
-    public static FolderHierarchyResponse fetchFolderHierarchy(String token) {
-        return fetchFolderHierarchyRaw(token)
+    public static FolderHierarchyResponse fetchFolderHierarchy(String token, String customId) {
+        return fetchFolderHierarchyRaw(token, customId)
                 .then()
                 .statusCode(200)
                 .extract()

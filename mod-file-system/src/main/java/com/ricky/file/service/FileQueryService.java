@@ -4,5 +4,5 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.file.query.FetchFilePathResponse;
 
 public interface FileQueryService {
-    FetchFilePathResponse fetchFilePath(String fileId, UserContext userContext);
+    FetchFilePathResponse fetchFilePath(String customId, String fileId, UserContext userContext);
 }

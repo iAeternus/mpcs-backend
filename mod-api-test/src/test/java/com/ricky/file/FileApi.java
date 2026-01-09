@@ -34,10 +34,10 @@ public class FileApi {
                 .statusCode(200);
     }
 
-    public static FetchFilePathResponse fetchFilePath(String token, String fileId) {
+    public static FetchFilePathResponse fetchFilePath(String token, String customId, String fileId) {
         return BaseApiTest.given(token)
                 .when()
-                .get(ROOT_URL + "/{fileId}/path", fileId)
+                .get(ROOT_URL + "/{customId}/{fileId}/path", customId, fileId)
                 .then()
                 .statusCode(200)
                 .extract()

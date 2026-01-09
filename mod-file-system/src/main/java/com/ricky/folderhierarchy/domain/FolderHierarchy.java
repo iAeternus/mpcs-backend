@@ -1,12 +1,15 @@
 package com.ricky.folderhierarchy.domain;
 
 import com.ricky.common.domain.AggregateRoot;
+import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.idtree.IdTree;
 import com.ricky.common.domain.idtree.IdTreeHierarchy;
 import com.ricky.common.domain.idtree.exception.IdNodeLevelOverflowException;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.SnowflakeIdGenerator;
+import com.ricky.common.utils.UuidGenerator;
+import com.ricky.folder.domain.Folder;
 import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -19,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static com.ricky.common.constants.ConfigConstants.*;
+import static com.ricky.common.domain.SpaceType.*;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_TOO_DEEP;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -33,22 +37,33 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FolderHierarchy extends AggregateRoot {
 
+    private String customId; // 自定义ID，全局唯一
     private IdTree idTree;
     private IdTreeHierarchy hierarchy;
 
-    private FolderHierarchy(UserContext userContext) {
+    public FolderHierarchy(String customId, UserContext userContext) {
         super(newFolderHierarchyId(), userContext);
+        init(customId, userContext);
+    }
+
+    private void init(String customId, UserContext userContext) {
+        this.customId = customId;
         this.idTree = new IdTree(new ArrayList<>(0));
         this.buildHierarchy();
         addOpsLog("新建", userContext);
     }
 
-    public static FolderHierarchy create(UserContext userContext) {
-        return new FolderHierarchy(userContext);
-    }
-
     public static String newFolderHierarchyId() {
         return FOLDER_HIERARCHY_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
+    }
+
+    public static String defaultCustomId(SpaceType spaceType) {
+        String uuid = UuidGenerator.newShortUuid();
+        return switch (spaceType) {
+            case PERSONAL -> PERSONAL.getPrefix() + uuid;
+            case PUBLIC -> PUBLIC.getPrefix() + uuid;
+            default -> throw new IllegalStateException("团队空间customId应由用户指定");
+        };
     }
 
     public void update(IdTree idTree, UserContext userContext) {
@@ -58,7 +73,9 @@ public class FolderHierarchy extends AggregateRoot {
         addOpsLog("更新层级", userContext);
     }
 
-    public void addFolder(String parentFolderId, String folderId, UserContext userContext) {
+    public void addFolder(Folder folder, UserContext userContext) {
+        String folderId = folder.getId();
+        String parentFolderId = folder.getParentId();
         if (isNotBlank(parentFolderId)) {
             if (!containsFolderId(parentFolderId)) {
                 throw new MyException(FOLDER_NOT_FOUND, "未找到文件夹。",

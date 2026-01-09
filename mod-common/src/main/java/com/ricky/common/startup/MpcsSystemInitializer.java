@@ -68,6 +68,7 @@ public class MpcsSystemInitializer implements ApplicationListener<ApplicationRea
         ensurePublishingDomainEventIndex();
         ensureConsumingDomainEventIndex();
         ensureFileIndex();
+        ensureFolderHierarchyIndex();
     }
 
     private void ensurePublishingDomainEventIndex() {
@@ -85,5 +86,10 @@ public class MpcsSystemInitializer implements ApplicationListener<ApplicationRea
     private void ensureFileIndex() {
         IndexOperations indexOperations = mongoTemplate.indexOps(FILE_COLLECTION);
         indexOperations.createIndex(new Index().on("hash", DESC));
+    }
+
+    private void ensureFolderHierarchyIndex() {
+        IndexOperations indexOperations = mongoTemplate.indexOps(FOLDER_HIERARCHY_COLLECTION);
+        indexOperations.createIndex(new Index().on("customId", DESC));
     }
 }

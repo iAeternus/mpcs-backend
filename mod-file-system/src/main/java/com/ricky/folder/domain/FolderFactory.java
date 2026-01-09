@@ -25,7 +25,7 @@ public class FolderFactory {
                          FolderHierarchy folderHierarchy,
                          UserContext userContext) {
         checkSiblingNameDuplication(folderName, userId, parentFolderId, folderHierarchy);
-        return Folder.create(parentFolderId, folderName, userContext);
+        return new Folder(parentFolderId, folderName, userContext);
     }
 
     private void checkSiblingNameDuplication(String folderName,

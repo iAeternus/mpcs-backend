@@ -26,7 +26,7 @@ public class FolderHierarchyServiceImpl implements FolderHierarchyService {
     public void updateFolderHierarchy(UpdateFolderHierarchyCommand command, UserContext userContext) {
         rateLimiter.applyFor("FolderHierarchy:UpdateFolderHierarchy", 10);
 
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
+        FolderHierarchy hierarchy = folderHierarchyRepository.byCustomId(command.getCustomId());
         folderHierarchyDomainService.updateFolderHierarchy(hierarchy, command.getIdTree(), userContext);
 
         folderHierarchyRepository.save(hierarchy);

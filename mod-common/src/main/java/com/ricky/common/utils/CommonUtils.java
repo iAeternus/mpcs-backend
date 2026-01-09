@@ -5,7 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Collection;
+import java.util.List;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.util.regex.Pattern.matches;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -69,6 +72,23 @@ public class CommonUtils {
 
     public static String redisCacheKey(String cacheName, String userId) {
         return "Cache:" + cacheName + "::" + userId;
+    }
+
+    public static String objectToString(Object obj) {
+        if (obj instanceof String str) {
+            return str;
+        }
+        throw new IllegalArgumentException("类型必须是String");
+    }
+
+    public static List<String> objectToListString(Object obj) {
+        if (obj instanceof Collection<?> coll) {
+            return coll.stream()
+                    .filter(ValidationUtils::nonNull)
+                    .map(Object::toString)
+                    .collect(toImmutableList());
+        }
+        throw new IllegalArgumentException("类型必须是List<String>");
     }
 
 }

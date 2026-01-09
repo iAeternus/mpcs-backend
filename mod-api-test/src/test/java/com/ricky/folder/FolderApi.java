@@ -3,6 +3,7 @@ package com.ricky.folder;
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.IdResponse;
 import com.ricky.folder.command.CreateFolderCommand;
+import com.ricky.folder.command.DeleteFolderForceCommand;
 import com.ricky.folder.command.RenameFolderCommand;
 import io.restassured.response.Response;
 
@@ -25,16 +26,16 @@ public class FolderApi {
                 .as(IdResponse.class).getId();
     }
 
-    public static String createFolder(String token, String folderName) {
-        return createFolderRaw(token, CreateFolderCommand.builder().folderName(folderName).build())
+    public static String createFolder(String token, String customId, String folderName) {
+        return createFolderRaw(token, CreateFolderCommand.builder().customId(customId).folderName(folderName).build())
                 .then()
                 .statusCode(201)
                 .extract()
                 .as(IdResponse.class).getId();
     }
 
-    public static String createFolderWithParent(String token, String folderName, String parentId) {
-        return createFolderRaw(token, CreateFolderCommand.builder().folderName(folderName).parentId(parentId).build())
+    public static String createFolderWithParent(String token, String customId, String folderName, String parentId) {
+        return createFolderRaw(token, CreateFolderCommand.builder().customId(customId).folderName(folderName).parentId(parentId).build())
                 .then()
                 .statusCode(201)
                 .extract()
@@ -54,14 +55,15 @@ public class FolderApi {
                 .statusCode(200);
     }
 
-    public static Response deleteFolderForceRaw(String token, String folderId) {
+    public static Response deleteFolderForceRaw(String token, String folderId, DeleteFolderForceCommand command) {
         return BaseApiTest.given(token)
+                .body(command)
                 .when()
                 .delete(ROOT_URL + "/{folderId}/delete-force", folderId);
     }
 
-    public static void deleteFolderForce(String token, String folderId) {
-        deleteFolderForceRaw(token, folderId)
+    public static void deleteFolderForce(String token, String folderId, DeleteFolderForceCommand command) {
+        deleteFolderForceRaw(token, folderId, command)
                 .then()
                 .statusCode(200);
     }

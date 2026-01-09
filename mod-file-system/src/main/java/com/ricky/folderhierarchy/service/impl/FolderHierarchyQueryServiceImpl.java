@@ -4,6 +4,7 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import com.ricky.folderhierarchy.query.FolderHierarchyResponse;
 import com.ricky.folderhierarchy.service.FolderHierarchyQueryService;
@@ -24,10 +25,10 @@ public class FolderHierarchyQueryServiceImpl implements FolderHierarchyQueryServ
     private final FolderHierarchyRepository folderHierarchyRepository;
 
     @Override
-    public FolderHierarchyResponse fetchFolderHierarchy(UserContext userContext) {
+    public FolderHierarchyResponse fetchFolderHierarchy(String customId, UserContext userContext) {
         rateLimiter.applyFor("FolderHierarchy:FetchFolderHierarchy", 50);
 
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
+        FolderHierarchy hierarchy = folderHierarchyRepository.cachedByCustomId(customId);
         List<HierarchyFolder> allFolders = folderRepository.cachedUserAllFolders(userContext.getUid()).stream()
                 .map(folder -> HierarchyFolder.builder()
                         .id(folder.getId())

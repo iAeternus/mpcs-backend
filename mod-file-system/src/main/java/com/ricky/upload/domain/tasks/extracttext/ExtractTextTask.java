@@ -7,7 +7,7 @@ import com.ricky.file.domain.FileCategory;
 import com.ricky.file.domain.StorageId;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
-import com.ricky.upload.domain.FileStorage;
+import com.ricky.upload.domain.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -25,7 +25,7 @@ import static com.ricky.common.utils.ValidationUtils.isBlank;
 public class ExtractTextTask implements RetryableTask {
 
     private final TextExtractorFactory extractorFactory;
-    private final FileStorage fileStorage;
+    private final StorageService storageService;
     private final FileProperties fileProperties;
     private final FileExtraRepository fileExtraRepository;
 
@@ -51,7 +51,7 @@ public class ExtractTextTask implements RetryableTask {
     }
 
     private String extract(StorageId storageId, TextExtractor extractor) {
-        try (InputStream inputStream = fileStorage.getFileStream(storageId)) {
+        try (InputStream inputStream = storageService.getFileStream(storageId)) {
             String textFileDir = fileProperties.getTextFileDir();
             return extractor.extract(storageId, inputStream, textFileDir);
         } catch (IOException ex) {

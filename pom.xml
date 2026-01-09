@@ -27,6 +27,8 @@
         <module>mod-community</module>
         <module>mod-team</module>
         <module>mod-api-test</module>
+        <module>mod-group</module>
+        <module>mod-manage</module>
     </modules>
 
     <properties>

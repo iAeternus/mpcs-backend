@@ -1,6 +1,7 @@
 package com.ricky.folder.domain;
 
 import com.ricky.common.domain.AggregateRoot;
+import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.common.utils.ValidationUtils;
@@ -31,17 +32,17 @@ public class Folder extends AggregateRoot {
     private String folderName;
     private Set<String> fileIds; // 该文件夹下所有文件ID
 
-    private Folder(String parentId, String folderName, UserContext userContext) {
+    public Folder(String parentId, String folderName, UserContext userContext) {
         super(newFolderId(), userContext);
+        init(parentId, folderName, userContext);
+    }
+
+    private void init(String parentId, String folderName, UserContext userContext) {
         this.parentId = parentId;
         this.folderName = folderName;
         this.fileIds = new TreeSet<>();
-    }
-
-    public static Folder create(String parentId, String folderName, UserContext userContext) {
-        Folder folder = new Folder(parentId, folderName, userContext);
-        folder.raiseEvent(new FolderCreatedEvent(folder.getId(), userContext));
-        return folder;
+        raiseEvent(new FolderCreatedEvent(getId(), userContext));
+        addOpsLog("新建", userContext);
     }
 
     public static String newFolderId() {

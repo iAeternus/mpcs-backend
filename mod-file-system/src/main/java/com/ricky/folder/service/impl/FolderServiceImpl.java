@@ -6,6 +6,7 @@ import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileDomainService;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.folder.command.CreateFolderCommand;
+import com.ricky.folder.command.DeleteFolderForceCommand;
 import com.ricky.folder.command.RenameFolderCommand;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderDomainService;
@@ -13,6 +14,7 @@ import com.ricky.folder.domain.FolderFactory;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folder.service.FolderService;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,14 +34,13 @@ public class FolderServiceImpl implements FolderService {
     private final FileDomainService fileDomainService;
     private final FolderRepository folderRepository;
     private final FolderHierarchyRepository folderHierarchyRepository;
-    private final FileRepository fileRepository;
 
     @Override
     @Transactional
     public String createFolder(CreateFolderCommand command, UserContext userContext) {
         rateLimiter.applyFor("Folder:CreateFolder", 10);
 
-        FolderHierarchy folderHierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
+        FolderHierarchy folderHierarchy = folderHierarchyRepository.byCustomId(command.getCustomId());
         Folder folder = folderFactory.create(
                 command.getFolderName(),
                 userContext.getUid(),
@@ -47,7 +48,7 @@ public class FolderServiceImpl implements FolderService {
                 folderHierarchy,
                 userContext
         );
-        folderHierarchy.addFolder(command.getParentId(), folder.getId(), userContext);
+        folderHierarchy.addFolder(folder, userContext);
 
         folderRepository.save(folder);
         folderHierarchyRepository.save(folderHierarchy);
@@ -62,17 +63,17 @@ public class FolderServiceImpl implements FolderService {
         rateLimiter.applyFor("Folder:RenameFolder", 10);
 
         Folder folder = folderRepository.byIdAndCheckUserShip(folderId, userContext);
-        folderDomainService.renameFolder(folder, command.getNewName(), userContext);
+        folderDomainService.renameFolder(command.getCustomId(), folder, command.getNewName(), userContext);
         folderRepository.save(folder);
         log.info("Renamed folder[{}].", folderId);
     }
 
     @Override
     @Transactional
-    public void deleteFolderForce(String folderId, UserContext userContext) {
+    public void deleteFolderForce(String folderId, DeleteFolderForceCommand command, UserContext userContext) {
         rateLimiter.applyFor("Folder:DeleteFolder", 10);
 
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(userContext.getUid());
+        FolderHierarchy hierarchy = folderHierarchyRepository.byCustomId(command.getCustomId());
         FolderDomainService.DeleteFolderContext ctx = folderDomainService.collectContext(folderId, hierarchy);
 
         List<Folder> folders = ctx.getFolders();

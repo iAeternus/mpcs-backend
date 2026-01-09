@@ -12,14 +12,15 @@ import com.ricky.common.exception.MyError;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.json.JsonCodec;
 import com.ricky.common.password.IPasswordEncoder;
-import com.ricky.common.properties.CommonProperties;
 import com.ricky.common.properties.FileProperties;
+import com.ricky.common.properties.SystemProperties;
 import com.ricky.common.security.jwt.JwtService;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.folder.domain.FolderRepository;
+import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
-import com.ricky.upload.domain.FileStorage;
+import com.ricky.upload.domain.StorageService;
 import com.ricky.user.domain.UserRepository;
 import com.ricky.verification.domain.VerificationCodeRepository;
 import io.restassured.RestAssured;
@@ -63,7 +64,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 public abstract class BaseApiTest {
 
     @Autowired
-    protected CommonProperties commonProperties;
+    protected SystemProperties systemProperties;
 
     @Autowired
     protected FileProperties fileProperties;
@@ -92,13 +93,16 @@ public abstract class BaseApiTest {
     protected FileHasherFactory fileHasherFactory;
 
     @Autowired
-    protected FileStorage fileStorage;
+    protected StorageService storageService;
 
     @Autowired
     protected JwtService jwtService;
 
     @Autowired
     protected IPasswordEncoder passwordEncoder;
+
+    @Autowired
+    protected FolderHierarchyDomainService folderHierarchyDomainService;
 
     @Autowired
     protected FileRepository fileRepository;

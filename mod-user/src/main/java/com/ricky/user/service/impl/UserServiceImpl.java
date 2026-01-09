@@ -46,7 +46,6 @@ public class UserServiceImpl implements UserService {
         CreateUserResult result = userDomainService.register(
                 mobileOrEmail,
                 encodedPassword,
-                command.getUsername(),
                 userContext);
 
         User user = result.getUser();

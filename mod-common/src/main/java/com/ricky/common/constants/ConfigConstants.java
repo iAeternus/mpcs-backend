@@ -33,6 +33,7 @@ public interface ConfigConstants {
     String VERIFICATION_COLLECTION = "verifications";
     String UPLOAD_SESSION_COLLECTION = "upload_sessions";
     String FILE_EXTRA_COLLECTION = "file_extra";
+    String GROUP_COLLECTION = "groups";
     String SENSITIVE_WORD_COLLECTION = "sensitive_words";
 
     String PUBLISHING_DOMAIN_EVENT_COLLECTION = "publishing_domain_event";
@@ -46,6 +47,7 @@ public interface ConfigConstants {
     String VERIFICATION_ID_PREFIX = "VRC";
     String UPLOAD_SESSION_ID_PREFIX = "UPL";
     String FILE_EXTRA_ID_PREFIX = "EXT";
+    String GROUP_ID_PREFIX = "GRP";
     String SENSITIVE_WORD_ID_PREFIX = "SST";
 
     // Cache
@@ -73,6 +75,8 @@ public interface ConfigConstants {
     String FOLDER_CREATED_EVENT_NAME = "FOLDER_CREATED";
     String FOLDER_DELETED_EVENT_NAME = "FOLDER_DELETED";
     String FILE_EXTRA_DELETED_EVENT_NAME = "FILE_EXTRA_DELETED";
+    String GROUP_DELETED_EVENT_NAME = "GROUP_DELETED";
+    String GROUP_MEMBERS_CHANGED_EVENT_NAME = "GROUP_MEMBERS_CHANGED";
 
     String[] AVATAR_TYPES = {"image/png", "image/jpeg", "image/gif"};
 
@@ -86,10 +90,13 @@ public interface ConfigConstants {
     int MAX_PAGE_SIZE = 500;
     int MAX_COMMENT_HIERARCHY_LEVEL = 6;
     int MAX_FOLDER_HIERARCHY_LEVEL = 5;
+    int MAX_CUSTOM_ID_LENGTH = 50;
 
     int MIN_PAGE_INDEX = 1;
     int MAX_PAGE_INDEX = 10000;
     int MIN_PAGE_SIZE = 10;
+
+    int MAX_GROUP_MANAGER_SIZE = 10;
 
     // LLM摘要生成
     int BUFFER_SIZE = 8192;

@@ -17,12 +17,17 @@ public class SystemProperties {
 
     private boolean httpsEnabled;
 
+    @NotBlank
+    private String baseDomainName;
+
     /**
      * 是否启用流控
      */
     private boolean limitRate = false;
 
-    @NotBlank
-    private String baseDomainName;
+    /**
+     * 是否启用鉴权
+     */
+    private boolean auth = false;
 
 }

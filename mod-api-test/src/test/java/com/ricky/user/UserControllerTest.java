@@ -40,7 +40,7 @@ public class UserControllerTest extends BaseApiTest {
         assertNotNull(user);
         assertEquals(username, user.getUsername());
 
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(user.getId());
+        FolderHierarchy hierarchy = folderHierarchyDomainService.personalSpaceOf(user.getId());
         assertEquals(user.getId(), hierarchy.getUserId());
     }
 

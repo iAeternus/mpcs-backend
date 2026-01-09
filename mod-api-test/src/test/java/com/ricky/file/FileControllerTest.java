@@ -6,6 +6,7 @@ import com.ricky.file.command.RenameFileCommand;
 import com.ricky.file.domain.File;
 import com.ricky.file.query.FetchFilePathResponse;
 import com.ricky.folder.FolderApi;
+import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.upload.FileUploadApi;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -24,9 +25,12 @@ public class FileControllerTest extends BaseApiTest {
     void should_rename_file() throws IOException {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
 
         setupApi.deleteFileWithSameHash(file);
         String fileId = FileUploadApi.upload(loginResponse.getJwt(), file, parentId).getFileId();
@@ -47,9 +51,11 @@ public class FileControllerTest extends BaseApiTest {
     void should_delete_file_force() throws IOException, InterruptedException {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+        String parentId = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
 
         setupApi.deleteFileWithSameHash(file);
         String fileId = FileUploadApi.upload(loginResponse.getJwt(), file, parentId).getFileId();
@@ -63,7 +69,7 @@ public class FileControllerTest extends BaseApiTest {
 
         // Then
         assertFalse(fileRepository.exists(dbFile.getId()));
-        assertFalse(fileStorage.exists(dbFile.getStorageId()));
+        assertFalse(storageService.exists(dbFile.getStorageId()));
         assertFalse(fileExtraRepository.existsByFileId(dbFile.getId()));
     }
 
@@ -71,18 +77,21 @@ public class FileControllerTest extends BaseApiTest {
     void should_fetch_file_path() throws IOException {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
 
         String parentFolderName = rFolderName();
         String childFolderName = rFolderName();
-        String parentFolderId = FolderApi.createFolder(loginResponse.getJwt(), parentFolderName);
-        String childFolderId = FolderApi.createFolderWithParent(loginResponse.getJwt(), childFolderName, parentFolderId);
+        String parentFolderId = FolderApi.createFolder(loginResponse.getJwt(), customId, parentFolderName);
+        String childFolderId = FolderApi.createFolderWithParent(loginResponse.getJwt(), customId, childFolderName, parentFolderId);
 
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
         String fileId = FileUploadApi.upload(loginResponse.getJwt(), file, childFolderId).getFileId();
 
+        FolderHierarchy personalSpace = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId());
+
         // When
-        FetchFilePathResponse response = FileApi.fetchFilePath(loginResponse.getJwt(), fileId);
+        FetchFilePathResponse response = FileApi.fetchFilePath(loginResponse.getJwt(), personalSpace.getCustomId(), fileId);
 
         // Then
         assertEquals(

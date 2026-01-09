@@ -8,12 +8,6 @@ import org.springframework.context.annotation.Bean;
 public class PropertiesAutoConfiguration {
 
     @Bean
-    @ConfigurationProperties("mpcs.common")
-    public CommonProperties commonProperties() {
-        return new CommonProperties();
-    }
-
-    @Bean
     @ConfigurationProperties("mpcs.jwt")
     public JwtProperties jwtProperties() {
         return new JwtProperties();

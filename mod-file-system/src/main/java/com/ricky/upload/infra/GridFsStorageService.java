@@ -9,7 +9,7 @@ import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.file.domain.StorageId;
 import com.ricky.file.domain.StoredFile;
-import com.ricky.upload.domain.FileStorage;
+import com.ricky.upload.domain.StorageService;
 import com.ricky.upload.domain.UploadSession;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
@@ -37,7 +37,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Component
 @RequiredArgsConstructor
-public class GridFsFileStorage implements FileStorage {
+public class GridFsStorageService implements StorageService {
 
     private final FileHasherFactory fileHasherFactory;
     private final GridFsTemplate gridFsTemplate;

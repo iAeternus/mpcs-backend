@@ -3,7 +3,7 @@ package com.ricky.file.domain;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
-import com.ricky.upload.domain.FileStorage;
+import com.ricky.upload.domain.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +18,7 @@ import static com.ricky.common.utils.ValidationUtils.isNotEmpty;
 @RequiredArgsConstructor
 public class FileDomainService {
 
-    private final FileStorage fileStorage;
+    private final StorageService storageService;
     private final FileRepository fileRepository;
     private final FileExtraRepository fileExtraRepository;
 
@@ -28,7 +28,7 @@ public class FileDomainService {
     public void deleteFileForce(File file, UserContext userContext) {
         List<File> files = fileRepository.listByStorageId(file.getStorageId());
         if (isEmpty(files)) {
-            fileStorage.delete(file.getStorageId());
+            storageService.delete(file.getStorageId());
         }
 
         FileExtra fileExtra = fileExtraRepository.byFileId(file.getId());
@@ -50,7 +50,7 @@ public class FileDomainService {
 
         // 若删除文件聚合根后无聚合根指向文件内容，则级联删除文件内容
         if (isNotEmpty(emptyStorageIds)) {
-            fileStorage.delete(emptyStorageIds);
+            storageService.delete(emptyStorageIds);
         }
 
         List<String> fileIds = files.stream().map(File::getId).collect(toImmutableList());

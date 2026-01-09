@@ -1,9 +1,18 @@
 package com.ricky.folderhierarchy.domain;
 
+import com.ricky.common.domain.SpaceType;
+
+import java.util.List;
+
 public interface FolderHierarchyRepository {
-    FolderHierarchy byUserId(String userId);
+
+    FolderHierarchy byCustomId(String customId);
+
+    List<FolderHierarchy> byUserIdAndSpaceType(String userId, SpaceType spaceType);
 
     void save(FolderHierarchy folderHierarchy);
 
-    FolderHierarchy cachedByUserId(String userId);
+    FolderHierarchy cachedByCustomId(String customId);
+
+    boolean existsByCustomId(String customId);
 }

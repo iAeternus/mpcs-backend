@@ -4,8 +4,10 @@ import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
+import com.ricky.folder.FolderApi;
+import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.login.LoginApi;
-import com.ricky.upload.domain.FileStorage;
+import com.ricky.upload.domain.StorageService;
 import com.ricky.user.UserApi;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
@@ -26,10 +28,11 @@ import static com.ricky.RandomTestFixture.*;
 @RequiredArgsConstructor
 public class SetupApi {
 
+    private final FolderHierarchyDomainService folderHierarchyDomainService;
     private final VerificationCodeRepository verificationCodeRepository;
     private final FileHasherFactory fileHasherFactory;
     private final FileRepository fileRepository;
-    private final FileStorage fileStorage;
+    private final StorageService storageService;
 
     public RegisterResponse register(String mobileOrEmail, String password) {
         return register(rUsername(), mobileOrEmail, password);
@@ -70,7 +73,7 @@ public class SetupApi {
         }
 
         List<File> files = fileRepository.listByFileHash(fileHash);
-        fileStorage.delete(files.stream().map(File::getStorageId).collect(toImmutableList()));
+        storageService.delete(files.stream().map(File::getStorageId).collect(toImmutableList()));
         fileRepository.delete(files);
 
         return fileHash;

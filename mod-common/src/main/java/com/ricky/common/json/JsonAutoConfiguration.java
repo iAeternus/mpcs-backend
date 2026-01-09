@@ -40,11 +40,6 @@ public class JsonAutoConfiguration {
     @PostConstruct
     public void configureObjectMapper() {
         configure(objectMapper);
-
-        objectMapper.addMixIn(
-                org.springframework.ai.openai.OpenAiChatOptions.class,
-                OpenAiChatOptionsMixin.class
-        );
     }
 
     @Bean

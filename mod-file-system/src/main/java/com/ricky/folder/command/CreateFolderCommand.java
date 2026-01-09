@@ -1,9 +1,12 @@
 package com.ricky.folder.command;
 
+import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.marker.Command;
 import com.ricky.common.validation.id.Id;
+import com.ricky.common.validation.id.custom.CustomId;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -17,6 +20,13 @@ import static com.ricky.common.constants.ConfigConstants.MAX_GENERIC_NAME_LENGTH
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class CreateFolderCommand implements Command {
+
+    /**
+     * 文件夹层次结构自定义ID
+     */
+    @NotBlank
+    @CustomId
+    String customId;
 
     /**
      * 父文件夹ID

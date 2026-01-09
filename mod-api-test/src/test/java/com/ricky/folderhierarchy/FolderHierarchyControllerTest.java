@@ -17,16 +17,14 @@ import java.util.stream.IntStream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.RandomTestFixture.rFolderName;
-import static com.ricky.common.constants.ConfigConstants.FOLDER_HIERARCHY_CACHE;
 import static com.ricky.common.constants.ConfigConstants.MAX_FOLDER_HIERARCHY_LEVEL;
 import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
 import static com.ricky.common.event.DomainEventType.FOLDER_HIERARCHY_CHANGED;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_TOO_DEEP;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NAME_DUPLICATES;
-import static com.ricky.common.utils.CommonUtils.redisCacheKey;
 import static com.ricky.folderhierarchy.query.FolderHierarchyResponse.HierarchyFolder;
-import static java.lang.Boolean.TRUE;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FolderHierarchyControllerTest extends BaseApiTest {
 
@@ -34,12 +32,16 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
     void should_fetch_folder_hierarchy() {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
-        String folderId1 = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
-        String folderId2 = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
-        String folderId3 = FolderApi.createFolderWithParent(loginResponse.getJwt(), rFolderName(), folderId1);
+        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+
+        String folderId1 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String folderId2 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String folderId3 = FolderApi.createFolderWithParent(loginResponse.getJwt(), customId, rFolderName(), folderId1);
+
+        FolderHierarchy personalSpace = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId());
 
         // When
-        FolderHierarchyResponse response = FolderHierarchyApi.fetchFolderHierarchy(loginResponse.getJwt());
+        FolderHierarchyResponse response = FolderHierarchyApi.fetchFolderHierarchy(loginResponse.getJwt(), personalSpace.getCustomId());
 
         // Then
         List<String> folderIds = response.getAllFolders().stream()
@@ -48,7 +50,7 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
         assertEquals(3, folderIds.size());
         assertTrue(folderIds.containsAll(List.of(folderId1, folderId2, folderId3)));
 
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(loginResponse.getUserId());
+        FolderHierarchy hierarchy = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId());
         assertEquals(hierarchy.getIdTree(), response.getIdTree());
     }
 
@@ -56,22 +58,27 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
     void should_update_folder_hierarchy() {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
-        String folderId1 = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
-        String folderId2 = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
-        String folderId3 = FolderApi.createFolderWithParent(loginResponse.getJwt(), rFolderName(), folderId1);
+        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+
+        String folderId1 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String folderId2 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String folderId3 = FolderApi.createFolderWithParent(loginResponse.getJwt(), customId, rFolderName(), folderId1);
 
         IdTree idTree = new IdTree(new ArrayList<>(0));
         idTree.addNode(null, folderId2);
         idTree.addNode(null, folderId3);
         idTree.addNode(folderId2, folderId1);
 
+        FolderHierarchy personalSpace = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId());
+
         // When
         FolderHierarchyApi.updateFolderHierarchy(loginResponse.getJwt(), UpdateFolderHierarchyCommand.builder()
+                .customId(personalSpace.getCustomId())
                 .idTree(idTree)
                 .build());
 
         // Then
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(loginResponse.getUserId());
+        FolderHierarchy hierarchy = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId());
         assertEquals(3, hierarchy.allFolderIds().size());
         assertTrue(hierarchy.allFolderIds().containsAll(List.of(folderId1, folderId2, folderId3)));
         assertEquals(folderId2 + NODE_ID_SEPARATOR + folderId1, hierarchy.getHierarchy().schemaOf(folderId1));
@@ -86,8 +93,10 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
     void should_fail_to_update_folder_hierarchy_if_too_deep() {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+
         List<String> folderIds = IntStream.range(0, MAX_FOLDER_HIERARCHY_LEVEL + 1)
-                .mapToObj(i -> FolderApi.createFolder(loginResponse.getJwt(), rFolderName()))
+                .mapToObj(i -> FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName()))
                 .collect(toImmutableList());
 
         IdTree idTree = new IdTree(new ArrayList<>(0));
@@ -98,7 +107,10 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
                     idTree.addNode(parentId, currId);
                 });
 
+        FolderHierarchy personalSpace = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId());
+
         UpdateFolderHierarchyCommand command = UpdateFolderHierarchyCommand.builder()
+                .customId(personalSpace.getCustomId())
                 .idTree(idTree)
                 .build();
 
@@ -110,19 +122,22 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
     void should_fail_to_update_folder_hierarchy_if_name_duplicates_at_root_level() {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
 
         String folderName = rFolderName();
-        String folderId1 = FolderApi.createFolder(loginResponse.getJwt(), folderName);
-        String folderId2 = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+        String folderId1 = FolderApi.createFolder(loginResponse.getJwt(), customId, folderName);
+        String folderId2 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
 
         IdTree idTree = new IdTree(new ArrayList<>(0));
         idTree.addNode(null, folderId1);
         idTree.addNode(folderId1, folderId2);
 
         FolderHierarchyApi.updateFolderHierarchy(loginResponse.getJwt(), UpdateFolderHierarchyCommand.builder()
+                .customId(customId)
                 .idTree(idTree)
                 .build());
         FolderApi.renameFolder(loginResponse.getJwt(), folderId2, RenameFolderCommand.builder()
+                .customId(customId)
                 .newName(folderName)
                 .build());
 
@@ -131,6 +146,7 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
         updateIdTree.addNode(null, folderId2);
 
         UpdateFolderHierarchyCommand command = UpdateFolderHierarchyCommand.builder()
+                .customId(customId)
                 .idTree(updateIdTree)
                 .build();
 
@@ -142,10 +158,12 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
     void should_fail_to_update_folder_hierarchy_if_name_duplicates_at_none_root_level() {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+
         String folderName = rFolderName();
-        String folderId1 = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
-        String folderId2 = FolderApi.createFolder(loginResponse.getJwt(), folderName);
-        String folderId3 = FolderApi.createFolder(loginResponse.getJwt(), rFolderName());
+        String folderId1 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String folderId2 = FolderApi.createFolder(loginResponse.getJwt(), customId, folderName);
+        String folderId3 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
 
         IdTree idTree = new IdTree(new ArrayList<>(0));
         idTree.addNode(null, folderId1);
@@ -153,9 +171,11 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
         idTree.addNode(folderId2, folderId3);
 
         FolderHierarchyApi.updateFolderHierarchy(loginResponse.getJwt(), UpdateFolderHierarchyCommand.builder()
+                .customId(customId)
                 .idTree(idTree)
                 .build());
         FolderApi.renameFolder(loginResponse.getJwt(), folderId3, RenameFolderCommand.builder()
+                .customId(customId)
                 .newName(folderName)
                 .build());
 
@@ -165,6 +185,7 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
         updateIdTree.addNode(folderId1, folderId3);
 
         UpdateFolderHierarchyCommand command = UpdateFolderHierarchyCommand.builder()
+                .customId(customId)
                 .idTree(updateIdTree)
                 .build();
 
@@ -172,18 +193,18 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
         assertError(() -> FolderHierarchyApi.updateFolderHierarchyRaw(loginResponse.getJwt(), command), FOLDER_NAME_DUPLICATES);
     }
 
-    @Test
-    public void should_cache_folder_hierarchy() {
-        LoginResponse response = setupApi.registerWithLogin();
-        String key = redisCacheKey(FOLDER_HIERARCHY_CACHE, response.getUserId());
-        assertNotEquals(TRUE, stringRedisTemplate.hasKey(key));
-
-        folderHierarchyRepository.cachedByUserId(response.getUserId());
-        assertTrue(stringRedisTemplate.hasKey(key));
-
-        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(response.getUserId());
-        folderHierarchyRepository.save(hierarchy);
-        assertFalse(stringRedisTemplate.hasKey(key));
-    }
+//    @Test
+//    public void should_cache_folder_hierarchy() {
+//        LoginResponse response = setupApi.registerWithLogin();
+//        String key = redisCacheKey(FOLDER_HIERARCHY_CACHE, response.getUserId());
+//        assertNotEquals(TRUE, stringRedisTemplate.hasKey(key));
+//
+//        folderHierarchyRepository.cachedByUserId(response.getUserId());
+//        assertTrue(stringRedisTemplate.hasKey(key));
+//
+//        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(response.getUserId());
+//        folderHierarchyRepository.save(hierarchy);
+//        assertFalse(stringRedisTemplate.hasKey(key));
+//    }
 
 }

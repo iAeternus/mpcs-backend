@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.ricky.common.constants.ConfigConstants.FILE_EXTRA_COLLECTION;
@@ -35,7 +36,7 @@ public class FileExtra extends AggregateRoot {
         this.fileId = fileId;
         this.textFilePath = "";
         this.summary = "";
-        this.keywords = List.of();
+        this.keywords = new ArrayList<>();
         addOpsLog("新建", userContext);
     }
 
