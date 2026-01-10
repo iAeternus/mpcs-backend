@@ -54,6 +54,8 @@ public class MpcsSystemInitializer implements ApplicationListener<ApplicationRea
         createCollection(SHEDLOCK_COLLECTION);
         createCollection(VERIFICATION_COLLECTION);
         createCollection(UPLOAD_SESSION_COLLECTION);
+        createCollection(FILE_EXTRA_COLLECTION);
+        createCollection(GROUP_COLLECTION);
         createCollection(PUBLISHING_DOMAIN_EVENT_COLLECTION);
         createCollection(CONSUMING_DOMAIN_EVENT_COLLECTION);
     }
@@ -68,6 +70,7 @@ public class MpcsSystemInitializer implements ApplicationListener<ApplicationRea
         ensurePublishingDomainEventIndex();
         ensureConsumingDomainEventIndex();
         ensureFileIndex();
+        ensureFileExtraIndex();
         ensureFolderHierarchyIndex();
     }
 
@@ -88,8 +91,14 @@ public class MpcsSystemInitializer implements ApplicationListener<ApplicationRea
         indexOperations.createIndex(new Index().on("hash", DESC));
     }
 
+    private void ensureFileExtraIndex() {
+        IndexOperations indexOperations = mongoTemplate.indexOps(FILE_EXTRA_COLLECTION);
+        indexOperations.createIndex(new Index().on("fileId", DESC));
+    }
+
     private void ensureFolderHierarchyIndex() {
         IndexOperations indexOperations = mongoTemplate.indexOps(FOLDER_HIERARCHY_COLLECTION);
         indexOperations.createIndex(new Index().on("customId", DESC));
+        indexOperations.createIndex(new Index().on("userId", DESC));
     }
 }

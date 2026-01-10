@@ -60,8 +60,8 @@ public class FolderHierarchy extends AggregateRoot {
     public static String defaultCustomId(SpaceType spaceType) {
         String uuid = UuidGenerator.newShortUuid();
         return switch (spaceType) {
-            case PERSONAL -> PERSONAL.getPrefix() + uuid;
-            case PUBLIC -> PUBLIC.getPrefix() + uuid;
+            case PERSONAL -> toCustomId(PERSONAL, uuid);
+            case PUBLIC -> toCustomId(PUBLIC, uuid);
             default -> throw new IllegalStateException("团队空间customId应由用户指定");
         };
     }

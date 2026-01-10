@@ -20,6 +20,7 @@ import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
+import com.ricky.group.domain.GroupRepository;
 import com.ricky.upload.domain.StorageService;
 import com.ricky.user.domain.UserRepository;
 import com.ricky.verification.domain.VerificationCodeRepository;
@@ -86,6 +87,7 @@ public abstract class BaseApiTest {
 
     @Autowired
     protected PublishingDomainEventDao publishingDomainEventDao;
+
     @Autowired
     protected ConsumingDomainEventDao<DomainEvent> consumingDomainEventDao;
 
@@ -121,6 +123,9 @@ public abstract class BaseApiTest {
 
     @Autowired
     protected FileExtraRepository fileExtraRepository;
+
+    @Autowired
+    protected GroupRepository groupRepository;
 
     @LocalServerPort
     protected int port;

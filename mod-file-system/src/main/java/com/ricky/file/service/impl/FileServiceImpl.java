@@ -28,6 +28,8 @@ public class FileServiceImpl implements FileService {
         File file = fileRepository.byId(fileId);
         file.rename(command.getNewName(), userContext);
         fileRepository.save(file);
+
+        log.info("Renamed file[{}]", fileId);
     }
 
     @Override
@@ -39,5 +41,7 @@ public class FileServiceImpl implements FileService {
         file.onDelete(userContext);
         fileRepository.delete(file);
         fileDomainService.deleteFileForce(file, userContext);
+
+        log.info("Deleted File[{}] force", fileId);
     }
 }

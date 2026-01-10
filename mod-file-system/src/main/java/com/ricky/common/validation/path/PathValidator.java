@@ -18,6 +18,11 @@ public class PathValidator implements ConstraintValidator<Path, String> {
             return true;
         }
 
+        return isPath(path);
+    }
+
+    public static boolean isPath(String path) {
         return PATTERN.matcher(path).matches();
     }
+
 }

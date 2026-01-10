@@ -11,9 +11,9 @@ import lombok.Getter;
 @Getter
 public enum SpaceType {
 
-    PERSONAL("个人空间", "PERSONAL-"),
-    TEAM("团队空间", "TEAM-"),
-    PUBLIC("公共空间", "PUBLIC-"),
+    PERSONAL("个人空间", "PERSONAL"),
+    TEAM("团队空间", "TEAM"),
+    PUBLIC("公共空间", "PUBLIC"),
     ;
 
     private final String desc;
@@ -24,7 +24,15 @@ public enum SpaceType {
         this.prefix = prefix;
     }
 
-    public static SpaceType fromPrefix(String prefix) {
+    public static String toCustomId(SpaceType spaceType, String uuid) {
+        return spaceType.prefix + "-" + uuid;
+    }
+
+    public static SpaceType fromCustomId(String customId) {
+        return fromPrefix(customId.split("-")[0]);
+    }
+
+    private static SpaceType fromPrefix(String prefix) {
         if (ValidationUtils.equals(prefix, PERSONAL.getPrefix())) {
             return PERSONAL;
         } else if (ValidationUtils.equals(prefix, TEAM.getPrefix())) {

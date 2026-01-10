@@ -1,5 +1,7 @@
 package com.ricky;
 
+import com.apifan.common.random.source.AreaSource;
+import com.apifan.common.random.source.OtherSource;
 import com.apifan.common.random.source.PersonInfoSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -52,6 +54,14 @@ public class RandomTestFixture {
 
     public static String rFilename() {
         return RandomStringUtils.secure().nextAlphabetic(6) + "文件";
+    }
+
+    public static String rGroupName() {
+        return rRawGroupName() + RandomStringUtils.secure().nextAlphabetic(10);
+    }
+
+    public static String rRawGroupName() {
+        return AreaSource.getInstance().randomCity(",").split(",")[1] + OtherSource.getInstance().randomCompanyDepartment();
     }
 
 }

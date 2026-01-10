@@ -8,9 +8,12 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -67,5 +70,19 @@ public class MongoUserRepository extends MongoBaseRepository<User> implements Us
 
         Query query = query(where("mobile").is(mobile));
         return mongoTemplate.exists(query, User.class);
+    }
+
+    @Override
+    public boolean allUserExists(List<String> userIds) {
+        requireNonNull(userIds, "User IDs must not be null");
+
+        if (isEmpty(userIds)) {
+            return true;
+        }
+
+        Query query = query(where("_id").in(userIds));
+        long count = mongoTemplate.count(query, User.class);
+
+        return count == userIds.size();
     }
 }

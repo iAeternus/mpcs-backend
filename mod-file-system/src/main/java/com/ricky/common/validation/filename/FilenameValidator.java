@@ -18,6 +18,10 @@ public class FilenameValidator implements ConstraintValidator<Filename, String> 
             return true;
         }
 
+        return isFilename(filename);
+    }
+
+    public static boolean isFilename(String filename) {
         return PATTERN.matcher(filename).matches();
     }
 }

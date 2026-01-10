@@ -1,5 +1,6 @@
 package com.ricky.user.domain;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository {
@@ -17,4 +18,7 @@ public interface UserRepository {
     Optional<User> byMobileOrEmailOptional(String mobileOrEmail);
 
     boolean existsByMobile(String mobile);
+
+    boolean allUserExists(List<String> userIds);
+
 }

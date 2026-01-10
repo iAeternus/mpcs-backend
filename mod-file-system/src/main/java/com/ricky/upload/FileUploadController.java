@@ -35,7 +35,7 @@ public class FileUploadController {
     @Operation(summary = "普通上传")
     @PostMapping(consumes = MULTIPART_FORM_DATA_VALUE)
     public FileUploadResponse upload(@RequestParam("file") @NotNull MultipartFile file,
-                                     @RequestParam("parentId") @Id(pre = FOLDER_ID_PREFIX) @NotBlank String parentId,
+                                     @RequestParam("parentId") @Id(FOLDER_ID_PREFIX) @NotBlank String parentId,
                                      @AuthenticationPrincipal UserContext userContext) {
         return fileUploadService.upload(file, parentId, userContext);
     }
@@ -49,7 +49,7 @@ public class FileUploadController {
 
     @Operation(summary = "上传分片")
     @PostMapping(value = "/chunk", consumes = MULTIPART_FORM_DATA_VALUE)
-    public UploadChunkResponse uploadChunk(@RequestParam @Id(pre = UPLOAD_SESSION_ID_PREFIX) @NotBlank String uploadId,
+    public UploadChunkResponse uploadChunk(@RequestParam @Id(UPLOAD_SESSION_ID_PREFIX) @NotBlank String uploadId,
                                            @RequestParam @NotNull @NonNegIndex Integer chunkIndex,
                                            @RequestParam @NotNull MultipartFile chunk,
                                            @AuthenticationPrincipal UserContext userContext) {

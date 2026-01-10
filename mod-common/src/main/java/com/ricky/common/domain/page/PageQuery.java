@@ -1,6 +1,6 @@
 package com.ricky.common.domain.page;
 
-import com.ricky.common.domain.marker.Command;
+import com.ricky.common.domain.marker.Query;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -8,6 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import static com.ricky.common.constants.MessageConstants.PARAMS_FORMAT_ERROR;
@@ -23,8 +24,9 @@ import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
  */
 @Getter
 @SuperBuilder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PageCommand implements Command {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+public class PageQuery implements Query {
 
     /**
      * 页号

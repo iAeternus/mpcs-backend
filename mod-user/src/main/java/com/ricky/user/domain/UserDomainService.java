@@ -6,6 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+import static com.ricky.common.exception.ErrorCodeEnum.NOT_ALL_USERS_EXIST;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_WITH_MOBILE_OR_EMAIL_ALREADY_EXISTS;
 import static com.ricky.common.utils.CommonUtils.isMobileNumber;
 import static com.ricky.common.utils.CommonUtils.maskMobileOrEmail;
@@ -40,6 +43,12 @@ public class UserDomainService {
     public void recordUserFailedLogin(User user) {
         user.recordFailedLogin();
         userRepository.save(user);
+    }
+
+    public void checkAllUsersExists(List<String> userIds) {
+        if(!userRepository.allUserExists(userIds)) {
+            throw new MyException(NOT_ALL_USERS_EXIST, "有用户不存在。", "userIds", userIds);
+        }
     }
 
 }

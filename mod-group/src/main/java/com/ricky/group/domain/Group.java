@@ -38,6 +38,11 @@ public class Group extends AggregateRoot {
     private Map<String, Set<Permission>> grants; // 资源ID -> 权限集合
     private InheritancePolicy inheritancePolicy; // 继承策略
 
+    public Group(String name, UserContext userContext) {
+        super(newGroupId(), userContext);
+        init(name, userContext);
+    }
+
     private void init(String name, UserContext userContext) {
         this.name = name;
         this.active = true;
@@ -170,12 +175,12 @@ public class Group extends AggregateRoot {
         addOpsLog("禁用", userContext);
     }
 
-    public boolean containsManager(String memberId) {
-        return this.managers.contains(memberId);
+    public boolean containsManager(String userId) {
+        return this.managers.contains(userId);
     }
 
-    public boolean containsMember(String memberId) {
-        return containsManager(memberId) || this.members.contains(memberId);
+    public boolean containsMember(String userId) {
+        return containsManager(userId) || this.members.contains(userId);
     }
 
     public Set<String> allManagerIds() {

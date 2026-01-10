@@ -28,7 +28,7 @@ public class FolderHierarchyFactory {
      * 创建团队空间
      */
     public FolderHierarchy createTeamSpace(String customId, UserContext userContext) {
-        checkCustomIdDuplication(customId);
+        checkCustomIdDuplication(customId, userContext.getUid());
         return new FolderHierarchy(customId, userContext);
     }
 
@@ -39,8 +39,8 @@ public class FolderHierarchyFactory {
         return new FolderHierarchy(defaultCustomId(PUBLIC), userContext);
     }
 
-    private void checkCustomIdDuplication(String customId) {
-        if (isNotBlank(customId) && folderHierarchyRepository.existsByCustomId(customId)) {
+    private void checkCustomIdDuplication(String customId, String userId) {
+        if (folderHierarchyRepository.cachedExistsByCustomId(customId, userId)) {
             throw new MyException(FOLDER_HIERARCHY_WITH_CUSTOM_ID_ALREADY_EXISTS, "自定义编号已被占用。", "customId", customId);
         }
     }

@@ -53,7 +53,7 @@ public class FolderServiceImpl implements FolderService {
         folderRepository.save(folder);
         folderHierarchyRepository.save(folderHierarchy);
 
-        log.info("Created folder[{}].", folder.getId());
+        log.info("Created folder[{}]", folder.getId());
         return folder.getId();
     }
 
@@ -65,7 +65,7 @@ public class FolderServiceImpl implements FolderService {
         Folder folder = folderRepository.byIdAndCheckUserShip(folderId, userContext);
         folderDomainService.renameFolder(command.getCustomId(), folder, command.getNewName(), userContext);
         folderRepository.save(folder);
-        log.info("Renamed folder[{}].", folderId);
+        log.info("Renamed folder[{}]", folderId);
     }
 
     @Override
@@ -87,6 +87,6 @@ public class FolderServiceImpl implements FolderService {
 
         hierarchy.removeFolder(folderId, userContext);
         folderHierarchyRepository.save(hierarchy);
-        log.info("Deleted folder[{}].", folderId);
+        log.info("Deleted folder[{}]", folderId);
     }
 }

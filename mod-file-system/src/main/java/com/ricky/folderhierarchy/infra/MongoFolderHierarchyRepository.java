@@ -3,6 +3,7 @@ package com.ricky.folderhierarchy.infra;
 import com.ricky.common.domain.SpaceType;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.mongo.MongoBaseRepository;
+import com.ricky.common.utils.ValidationUtils;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.RequiredArgsConstructor;
@@ -66,6 +67,7 @@ public class MongoFolderHierarchyRepository extends MongoBaseRepository<FolderHi
     public void save(FolderHierarchy folderHierarchy) {
         super.save(folderHierarchy);
         cachedFolderHierarchyRepository.evictFolderHierarchyCache(folderHierarchy.getCustomId());
+        cachedFolderHierarchyRepository.evictUserFolderHierarchiesCache(folderHierarchy.getUserId());
     }
 
     @Override
@@ -80,5 +82,14 @@ public class MongoFolderHierarchyRepository extends MongoBaseRepository<FolderHi
 
         Query query = query(where("customId").is(customId)); // 需要索引
         return mongoTemplate.exists(query, FolderHierarchy.class);
+    }
+
+    @Override
+    public boolean cachedExistsByCustomId(String customId, String userId) {
+        requireNotBlank(customId, "Custom ID must not be blank.");
+        requireNotBlank(userId, "User ID must not be blank.");
+
+        return cachedFolderHierarchyRepository.cachedUserAllFolderHierarchies(userId).stream()
+                .anyMatch(fh -> ValidationUtils.equals(fh.getCustomId(), customId));
     }
 }

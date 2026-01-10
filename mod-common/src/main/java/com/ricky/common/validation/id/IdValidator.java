@@ -24,7 +24,7 @@ public class IdValidator implements ConstraintValidator<Id, String> {
 
     @Override
     public void initialize(Id id) {
-        this.prefixes = id.pre();
+        this.prefixes = id.value();
         this.message = id.message();
     }
 

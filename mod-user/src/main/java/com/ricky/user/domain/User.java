@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
@@ -75,6 +74,20 @@ public class User extends AggregateRoot {
 
     public void recordFailedLogin() {
         this.failedLoginCount.recordFailedLogin();
+    }
+
+    public void addGroup(String groupId, UserContext userContext) {
+        this.groupIds.add(groupId);
+        addOpsLog("创建权限组", userContext);
+    }
+
+    public void removeGroup(String groupId, UserContext userContext) {
+        this.groupIds.remove(groupId);
+        addGroup("删除权限组", userContext);
+    }
+
+    public boolean containsGroup(String groupId) {
+        return this.groupIds.contains(groupId);
     }
 
     @Getter

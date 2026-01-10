@@ -19,7 +19,7 @@ import static com.ricky.common.constants.ConfigConstants.FOLDER_ID_PREFIX;
 public class CompleteUploadCommand implements Command {
 
     @NotBlank
-    @Id(pre = FOLDER_ID_PREFIX)
+    @Id(FOLDER_ID_PREFIX)
     String parentId;
 
     @NotBlank

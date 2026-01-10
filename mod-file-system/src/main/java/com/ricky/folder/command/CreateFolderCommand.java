@@ -1,12 +1,10 @@
 package com.ricky.folder.command;
 
-import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.marker.Command;
 import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.id.custom.CustomId;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -32,7 +30,7 @@ public class CreateFolderCommand implements Command {
      * 父文件夹ID
      */
     @Nullable
-    @Id(pre = FOLDER_ID_PREFIX)
+    @Id(FOLDER_ID_PREFIX)
     String parentId;
 
     @NotBlank

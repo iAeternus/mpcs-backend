@@ -10,11 +10,15 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 import static com.ricky.common.constants.ConfigConstants.FOLDER_HIERARCHY_CACHE;
+import static com.ricky.common.constants.ConfigConstants.USER_FOLDER_HIERARCHY_CACHE;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_NOT_FOUND;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Slf4j
 @Repository
@@ -41,11 +45,26 @@ public class MongoCachedFolderHierarchyRepository extends MongoBaseRepository<Fo
 //        log.debug("Evicted folder hierarchy cache for user[{}].", userId);
 //    }
 
+    @Cacheable(value = USER_FOLDER_HIERARCHY_CACHE, key = "#userId")
+    public List<FolderHierarchy> cachedUserAllFolderHierarchies(String userId) {
+        requireNotBlank(userId, "User ID must not be blank.");
+
+        Query query = query(where("userId").is(userId));
+        return mongoTemplate.find(query, FolderHierarchy.class);
+    }
+
+    @Caching(evict = {@CacheEvict(value = USER_FOLDER_HIERARCHY_CACHE, key = "#userId")})
+    public void evictUserFolderHierarchiesCache(String userId) {
+        requireNotBlank(userId, "User ID must not be blank.");
+
+        log.debug("Evicted user folder hierarchy cache for userId[{}].", userId);
+    }
+
     @Cacheable(value = FOLDER_HIERARCHY_CACHE, key = "#customId")
     public FolderHierarchy cachedByCustomId(String customId) {
         requireNotBlank(customId, "Custom ID must not be blank.");
 
-        Query query = Query.query(where("customId").is(customId));
+        Query query = query(where("customId").is(customId));
         FolderHierarchy hierarchy = mongoTemplate.findOne(query, FolderHierarchy.class);
 
         if (isNull(hierarchy)) {

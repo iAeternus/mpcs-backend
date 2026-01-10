@@ -24,7 +24,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Documented
 public @interface Id {
 
-    String[] pre();
+    String[] value();
 
     String message() default DEFAULT_MESSAGE;
 

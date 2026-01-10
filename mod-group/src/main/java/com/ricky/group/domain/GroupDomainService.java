@@ -1,8 +1,9 @@
 package com.ricky.group.domain;
 
 import com.ricky.common.auth.Permission;
+import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.exception.MyException;
 import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
-import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +13,9 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
+import static com.ricky.common.exception.ErrorCodeEnum.GROUP_WITH_NAME_ALREADY_EXISTS;
+import static com.ricky.common.exception.ErrorCodeEnum.NO_MORE_THAN_ONE_VISIBLE_GROUP_LEFT;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
 
 @Service
 @RequiredArgsConstructor
@@ -59,4 +63,34 @@ public class GroupDomainService {
                 .collect(toImmutableSet());
     }
 
+    public void rename(Group group, String newName, UserContext userContext) {
+        if (groupRepository.cachedExistsByName(newName, userContext.getUid())) {
+            throw new MyException(GROUP_WITH_NAME_ALREADY_EXISTS, "重命名失败，名称已被占用。",
+                    "groupId", group.getId(), "name", newName);
+        }
+
+        group.rename(newName, userContext);
+    }
+
+    public void checkDeleteGroups(User user, Set<String> tobeDeletedGroupIds) {
+        checkAtLeastOneVisibleGroupExists(user, tobeDeletedGroupIds, "删除");
+    }
+
+    public void checkDeactivateGroups(User user, Set<String> tobeDeactivatedGroupIds) {
+        checkAtLeastOneVisibleGroupExists(user, tobeDeactivatedGroupIds, "禁用");
+    }
+
+    private void checkAtLeastOneVisibleGroupExists(User user, Set<String> excludedGroupIds, String ops) {
+        Set<String> remainActiveGroupIds = groupRepository.cachedUserAllGroups(user.getId()).stream()
+                .filter(group -> !excludedGroupIds.contains(group.getId()))
+                .filter(UserCachedGroup::isVisible)
+                .map(UserCachedGroup::getId)
+                .collect(toImmutableSet());
+
+        if (isEmpty(remainActiveGroupIds)) {
+            throw new MyException(NO_MORE_THAN_ONE_VISIBLE_GROUP_LEFT,
+                    ops + "失败，必须保留至少一个可见（非禁用）的权限组。",
+                    "userId", user.getId());
+        }
+    }
 }

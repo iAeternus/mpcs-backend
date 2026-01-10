@@ -109,6 +109,7 @@ public class FileUploadServiceImpl implements FileUploadService {
                     return session;
                 });
 
+        log.info("Init file upload via chunks with UploadSession[{}]", uploadSession.getId());
         return InitUploadResponse.notFastUploaded(uploadSession.getId(), uploadSession.getUploadedChunks());
     }
 
@@ -128,6 +129,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             uploadSessionRepository.save(uploadSession);
         }
 
+        log.info("Chunk[{}] upload complete for UploadSession[{}]", chunkIndex, uploadId);
         return UploadChunkResponse.builder().chunkIndex(chunkIndex).build();
     }
 

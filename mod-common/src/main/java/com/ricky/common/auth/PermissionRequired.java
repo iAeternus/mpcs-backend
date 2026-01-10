@@ -22,7 +22,9 @@ public @interface PermissionRequired {
     Permission[] value();
 
     /**
-     * 资源字段名
+     * SpEL 表达式
+     * 单资源: {"#customId", "#folderId"}
+     * 批量资源: {"#customId", "#folderIds"}
      */
     String[] resources();
 

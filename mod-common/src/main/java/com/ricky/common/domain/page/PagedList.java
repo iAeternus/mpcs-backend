@@ -18,7 +18,7 @@ import java.util.List;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PageResponse<T> implements Response {
+public class PagedList<T> implements Response {
 
     /**
      * 总数量

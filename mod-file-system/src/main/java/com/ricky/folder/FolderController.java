@@ -44,7 +44,7 @@ public class FolderController {
     @PostMapping("/{folderId}/name")
     @Operation(summary = "文件夹重命名")
     @PermissionRequired(value = WRITE, resources = {"#command.customId", "#folderId"})
-    public void renameFolder(@PathVariable @NotBlank @Id(pre = FOLDER_ID_PREFIX) String folderId,
+    public void renameFolder(@PathVariable @NotBlank @Id(FOLDER_ID_PREFIX) String folderId,
                              @RequestBody @Valid RenameFolderCommand command,
                              @AuthenticationPrincipal UserContext userContext) {
         folderService.renameFolder(folderId, command, userContext);
@@ -53,7 +53,7 @@ public class FolderController {
     @Operation(summary = "彻底删除文件夹")
     @DeleteMapping("/{folderId}/delete-force")
     @PermissionRequired(value = DELETE_FORCE, resources = {"#command.customId", "#folderId"})
-    public void deleteFolderForce(@PathVariable @NotBlank @Id(pre = FOLDER_ID_PREFIX) String folderId,
+    public void deleteFolderForce(@PathVariable @NotBlank @Id(FOLDER_ID_PREFIX) String folderId,
                                   @RequestBody @Valid DeleteFolderForceCommand command,
                                   @AuthenticationPrincipal UserContext userContext) {
         folderService.deleteFolderForce(folderId, command, userContext);

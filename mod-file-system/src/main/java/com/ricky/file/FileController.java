@@ -31,7 +31,7 @@ public class FileController {
 
     @PutMapping("/{fileId}/name")
     @Operation(summary = "重命名文件")
-    public void renameFile(@PathVariable @NotBlank @Id(pre = FILE_ID_PREFIX) String fileId,
+    public void renameFile(@PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
                            @RequestBody @Valid RenameFileCommand command,
                            @AuthenticationPrincipal UserContext userContext) {
         fileService.renameFile(fileId, command, userContext);

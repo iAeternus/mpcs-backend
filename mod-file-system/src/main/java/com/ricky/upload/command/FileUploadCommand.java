@@ -26,7 +26,7 @@ public class FileUploadCommand implements Command {
     MultipartFile file;
 
     @NotBlank
-    @Id(pre = FOLDER_ID_PREFIX)
+    @Id(FOLDER_ID_PREFIX)
     String parentId;
 
     @NotBlank
