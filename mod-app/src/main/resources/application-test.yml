@@ -6,7 +6,7 @@ spring:
     connection-timeout: 1s
   data:
     mongodb:
-      uri: mongodb://admin:123456@localhost:27019/mpcs-dev?authSource=admin
+      uri: mongodb://admin:123456@localhost:27018/mpcs-dev?authSource=admin
       database: mpcs-dev
     redis:
       database: 0
@@ -25,18 +25,21 @@ spring:
       max-file-size: 300MB
       max-request-size: 500MB
   ai:
-    openai:
+    dashscope:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
       api-key: your-api-key
-      base-url: https://api.deepseek.com
-      chat:
-        options:
-          model: deepseek-reasoner
-          temperature: 0.7 # 控制生成文本的随机性，取值范围0 - 1，值越大越随机
+      chat.options:
+        model: qwen-plus
+        temperature: 0.7
 
 management:
   health:
     elasticsearch:
       enabled: false  # 禁用默认的健康检查
+
+logging:
+  level:
+    com.alibaba.cloud.ai.dashscope.api: DEBUG
 
 #cloud:
 #  elasticsearch:
@@ -48,6 +51,7 @@ mpcs:
     limit-rate: false
     base-domain-name: mpcs.com  # TODO
     https-enabled: false
+    auth: true
   jwt:
     issuer: mpcs-local-issuer
     secret: ckxGdnjP6bGmQyrGJaW32s8CtxyGVgeK

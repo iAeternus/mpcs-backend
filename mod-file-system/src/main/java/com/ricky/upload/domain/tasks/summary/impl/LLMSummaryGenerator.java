@@ -1,9 +1,11 @@
 package com.ricky.upload.domain.tasks.summary.impl;
 
 import cn.hutool.core.date.StopWatch;
+import com.ricky.common.constants.LLMChatConstants;
 import com.ricky.common.exception.MyException;
-import com.ricky.common.llm.AICommand;
-import com.ricky.common.llm.LLMService;
+import com.ricky.common.llm.domain.LLMChatRequest;
+import com.ricky.common.llm.domain.LLMChatResponse;
+import com.ricky.common.llm.service.LLMChatService;
 import com.ricky.upload.domain.tasks.summary.SummaryGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,10 +14,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 
-import static com.ricky.common.constants.ConfigConstants.*;
-import static com.ricky.common.constants.LLMPromptConstants.FILE_SUMMARY_PROMPT;
+import static com.ricky.common.constants.ConfigConstants.DEFAULT_CHARSET;
+import static com.ricky.common.constants.ConfigConstants.MAX_INPUT_TEXT_LENGTH;
+import static com.ricky.common.constants.LLMChatConstants.GENERATE_SUMMARY_PROMPT;
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_READ_FAILED;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
 
@@ -24,7 +26,7 @@ import static com.ricky.common.utils.ValidationUtils.isBlank;
 @RequiredArgsConstructor
 public class LLMSummaryGenerator implements SummaryGenerator {
 
-    private final LLMService llmService;
+    private final LLMChatService llmChatService;
 
     /**
      * 基于已生成的文本文件路径生成摘要
@@ -94,14 +96,13 @@ public class LLMSummaryGenerator implements SummaryGenerator {
      * 调用 LLM 生成摘要
      */
     private String generateSummaryWithAI(String text) {
-        AICommand command = AICommand.builder()
-                .systemPrompt(FILE_SUMMARY_PROMPT)
-                .userPrompt("Please generate a concise summary for the following text:\n\n" + text)
+        LLMChatRequest req = LLMChatRequest.builder()
+                .userMessage(text)
+                .systemPrompt(GENERATE_SUMMARY_PROMPT)
                 .build();
 
-        return llmService.chat(command)
-                .getContent()
-                .trim();
+        LLMChatResponse resp = llmChatService.chat(req);
+        return resp.getContent();
     }
 
     /**

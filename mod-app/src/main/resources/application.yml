@@ -21,3 +21,4 @@ logging:
   level:
     org:
       ansj: DEBUG  # TODO 这里配置不了日志级别
+      com.alibaba.cloud.ai.dashscope: DEBUG

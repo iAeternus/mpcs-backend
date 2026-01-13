@@ -40,6 +40,13 @@
     <logger name="io.lettuce.core" level="INFO"/>
     <logger name="org.springframework.data.redis" level="INFO"/>
 
+    <!-- AI测试 -->
+    <logger name="com.alibaba.cloud.ai.dashscope.api" level="DEBUG"/>
+    <logger name="com.alibaba.cloud.ai.dashscope.client" level="DEBUG"/>
+    <logger name="com.alibaba.cloud.ai.dashscope.chat" level="DEBUG"/>
+    <logger name="org.springframework.web.client" level="DEBUG"/>
+    <logger name="org.springframework.http.client" level="DEBUG"/>
+
     <!-- Root Logger -->
     <root level="${LOG_ROOT_LEVEL}">
         <appender-ref ref="CONSOLE"/>
