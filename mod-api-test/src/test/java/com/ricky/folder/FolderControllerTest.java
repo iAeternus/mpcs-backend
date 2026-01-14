@@ -3,13 +3,12 @@ package com.ricky.folder;
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
-import com.ricky.folder.command.CreateFolderCommand;
-import com.ricky.folder.command.DeleteFolderForceCommand;
-import com.ricky.folder.command.RenameFolderCommand;
+import com.ricky.folder.command.*;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.UserCachedFolder;
 import com.ricky.folder.domain.event.FolderCreatedEvent;
 import com.ricky.folder.domain.event.FolderDeletedEvent;
+import com.ricky.folder.query.FolderContentResponse;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
 import com.ricky.upload.FileUploadApi;
@@ -286,6 +285,105 @@ public class FolderControllerTest extends BaseApiTest {
         assertFalse(fileRepository.exists(dbFile.getId()));
         assertFalse(storageService.exists(dbFile.getStorageId()));
         assertFalse(fileExtraRepository.existsByFileId(dbFile.getId()));
+    }
+
+    @Test
+    void should_move_folder() throws IOException {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+
+        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId2 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId1);
+        String folderId3 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId1);
+        String folderId4 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId2);
+        String folderId5 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId4);
+
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        setupApi.deleteFileWithSameHash(file);
+        String fileId = FileUploadApi.upload(manager.getJwt(), file, folderId4).getFileId();
+
+        // When
+        MoveFolderResponse response = FolderApi.moveFolder(manager.getJwt(), MoveFolderCommand.builder()
+                .customId(customId)
+                .folderId(folderId4)
+                .newParentId(folderId3)
+                .build());
+
+        // Then
+        assertEquals(2, response.getMovedFolderCount());
+        assertEquals(1, response.getMovedFileCount());
+
+        Folder folder4 = folderRepository.byId(folderId4);
+        assertEquals(folderId3, folder4.getParentId());
+
+        Folder folder5 = folderRepository.byId(folderId5);
+        assertEquals(folderId4, folder5.getParentId());
+
+        File dbFile = fileRepository.byId(fileId);
+        assertEquals(folderId4, dbFile.getParentId());
+    }
+
+    @Test
+    void should_move_folder_to_root() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+
+        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId2 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId1);
+
+        // When
+        FolderApi.moveFolder(manager.getJwt(), MoveFolderCommand.builder()
+                .customId(customId)
+                .folderId(folderId2)
+                .build());
+
+        // Then
+        Folder folder2 = folderRepository.byId(folderId2);
+        assertNull(folder2.getParentId());
+    }
+
+    @Test
+    void should_fail_to_move_folder_if_folder_name_duplicated() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+
+        String folderName = rFolderName();
+        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, folderName);
+        String folderId2 = FolderApi.createFolderWithParent(manager.getJwt(), customId, folderName, folderId1);
+
+        // When & Then
+        assertError(() -> FolderApi.moveFolderRaw(manager.getJwt(), MoveFolderCommand.builder()
+                .customId(customId)
+                .folderId(folderId2)
+                .build()), FOLDER_NAME_DUPLICATES);
+    }
+
+    @Test
+    void should_fetch_folder_content() throws IOException {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+
+        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId2 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId1);
+
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        setupApi.deleteFileWithSameHash(file);
+        String fileId = FileUploadApi.upload(manager.getJwt(), file, folderId1).getFileId();
+
+        // When
+        FolderContentResponse response = FolderApi.fetchFolderContent(manager.getJwt(), customId, folderId1);
+
+        // Then
+        assertEquals(1, response.getFolders().size());
+        assertEquals(1, response.getFiles().size());
+        assertEquals(folderId2, response.getFolders().get(0).getId());
+        assertEquals(fileId, response.getFiles().get(0).getId());
     }
 
 //    @Test

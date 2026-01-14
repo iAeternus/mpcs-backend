@@ -2,9 +2,8 @@ package com.ricky.folder;
 
 import com.ricky.BaseApiTest;
 import com.ricky.common.domain.dto.resp.IdResponse;
-import com.ricky.folder.command.CreateFolderCommand;
-import com.ricky.folder.command.DeleteFolderForceCommand;
-import com.ricky.folder.command.RenameFolderCommand;
+import com.ricky.folder.command.*;
+import com.ricky.folder.query.FolderContentResponse;
 import io.restassured.response.Response;
 
 public class FolderApi {
@@ -66,6 +65,31 @@ public class FolderApi {
         deleteFolderForceRaw(token, folderId, command)
                 .then()
                 .statusCode(200);
+    }
+
+    public static Response moveFolderRaw(String token, MoveFolderCommand command) {
+        return BaseApiTest.given(token)
+                .body(command)
+                .when()
+                .put(ROOT_URL + "/move");
+    }
+
+    public static MoveFolderResponse moveFolder(String token, MoveFolderCommand command) {
+        return moveFolderRaw(token, command)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(MoveFolderResponse.class);
+    }
+
+    public static FolderContentResponse fetchFolderContent(String token, String customId, String folderId) {
+        return BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{customId}/{folderId}", customId, folderId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(FolderContentResponse.class);
     }
 
 }

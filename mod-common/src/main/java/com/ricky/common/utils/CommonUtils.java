@@ -5,10 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.ricky.common.constants.ConfigConstants.CHINA_TIME_ZONE;
 import static java.util.regex.Pattern.matches;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -89,6 +93,10 @@ public class CommonUtils {
                     .collect(toImmutableList());
         }
         throw new IllegalArgumentException("类型必须是List<String>");
+    }
+
+    public static LocalDateTime instantToLocalDateTime(Instant instant) {
+        return instant.atZone(ZoneId.of(CHINA_TIME_ZONE)).toLocalDateTime();
     }
 
 }

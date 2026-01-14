@@ -38,10 +38,8 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
         String folderId2 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
         String folderId3 = FolderApi.createFolderWithParent(loginResponse.getJwt(), customId, rFolderName(), folderId1);
 
-        FolderHierarchy personalSpace = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId());
-
         // When
-        FolderHierarchyResponse response = FolderHierarchyApi.fetchFolderHierarchy(loginResponse.getJwt(), personalSpace.getCustomId());
+        FolderHierarchyResponse response = FolderHierarchyApi.fetchFolderHierarchy(loginResponse.getJwt(), customId);
 
         // Then
         List<String> folderIds = response.getAllFolders().stream()
@@ -69,11 +67,9 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
         idTree.addNode(null, folderId3);
         idTree.addNode(folderId2, folderId1);
 
-        FolderHierarchy personalSpace = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId());
-
         // When
         FolderHierarchyApi.updateFolderHierarchy(loginResponse.getJwt(), UpdateFolderHierarchyCommand.builder()
-                .customId(personalSpace.getCustomId())
+                .customId(customId)
                 .idTree(idTree)
                 .build());
 
@@ -107,10 +103,8 @@ public class FolderHierarchyControllerTest extends BaseApiTest {
                     idTree.addNode(parentId, currId);
                 });
 
-        FolderHierarchy personalSpace = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId());
-
         UpdateFolderHierarchyCommand command = UpdateFolderHierarchyCommand.builder()
-                .customId(personalSpace.getCustomId())
+                .customId(customId)
                 .idTree(idTree)
                 .build();
 

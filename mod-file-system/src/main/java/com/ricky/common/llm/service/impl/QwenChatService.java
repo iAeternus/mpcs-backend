@@ -35,7 +35,7 @@ public class QwenChatService implements LLMChatService {
                 .stream()
                 .chatResponse()
                 .map(resp -> {
-                    String delta = resp.getResult() != null && resp.getResult().getOutput() != null ? resp.getResult().getOutput().getContent() : "";
+                    String delta = resp.getResult() != null && resp.getResult().getOutput() != null ? resp.getResult().getOutput().getText() : "";
                     return LLMStreamChunk.builder()
                             .model(resp.getMetadata().getModel())
                             .delta(delta)

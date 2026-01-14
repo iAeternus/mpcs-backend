@@ -4,17 +4,13 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileDomainService;
-import com.ricky.file.domain.FileRepository;
-import com.ricky.folder.command.CreateFolderCommand;
-import com.ricky.folder.command.DeleteFolderForceCommand;
-import com.ricky.folder.command.RenameFolderCommand;
+import com.ricky.folder.command.*;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.folder.domain.FolderFactory;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folder.service.FolderService;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +70,7 @@ public class FolderServiceImpl implements FolderService {
         rateLimiter.applyFor("Folder:DeleteFolder", 10);
 
         FolderHierarchy hierarchy = folderHierarchyRepository.byCustomId(command.getCustomId());
-        FolderDomainService.DeleteFolderContext ctx = folderDomainService.collectContext(folderId, hierarchy);
+        FolderDomainService.DeleteFolderContext ctx = folderDomainService.collectDeleteFolderContext(folderId, hierarchy);
 
         List<Folder> folders = ctx.getFolders();
         List<File> files = ctx.getFiles();
@@ -88,5 +84,27 @@ public class FolderServiceImpl implements FolderService {
         hierarchy.removeFolder(folderId, userContext);
         folderHierarchyRepository.save(hierarchy);
         log.info("Deleted folder[{}]", folderId);
+    }
+
+    @Override
+    @Transactional
+    public MoveFolderResponse moveFolder(MoveFolderCommand command, UserContext userContext) {
+        rateLimiter.applyFor("Folder:MoveFolder", 10);
+
+        FolderDomainService.FolderFileCount count = folderDomainService.moveFolder(
+                command.getCustomId(),
+                command.getFolderId(),
+                command.getNewParentId()
+        );
+
+        Folder folder = folderRepository.byId(command.getFolderId());
+        folder.updateParentId(command.getNewParentId(), userContext);
+        folderRepository.save(folder);
+
+        log.info("Moved folder[{}]", command.getFolderId());
+        return MoveFolderResponse.builder()
+                .movedFolderCount(count.getFolderCount())
+                .movedFileCount(count.getFileCount())
+                .build();
     }
 }

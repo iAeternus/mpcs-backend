@@ -13,6 +13,7 @@ public enum Permission {
     WRITE("写入"),
     DELETE("删除"),
     DELETE_FORCE("彻底删除"),
+    MOVE("移动"),
     SHARE("分享"),
     MANAGE("管理"),
     DOWNLOAD("下载"),

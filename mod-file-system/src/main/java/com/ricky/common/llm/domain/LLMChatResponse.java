@@ -13,25 +13,25 @@ import org.springframework.ai.chat.model.ChatResponse;
 public class LLMChatResponse implements Response {
 
     String model;
-    String content;
+    String text;
     Usage usage;
 
     @Value
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Usage {
-        Long promptTokens;
-        Long generationTokens;
-        Long totalTokens;
+        Integer promptTokens;
+        Integer completionTokens;
+        Integer totalTokens;
     }
 
     public static LLMChatResponse fromChatResponse(ChatResponse chatResponse) {
         return LLMChatResponse.builder()
                 .model(chatResponse.getMetadata().getModel())
-                .content(chatResponse.getResult().getOutput().getContent())
+                .text(chatResponse.getResult().getOutput().getText())
                 .usage(Usage.builder()
                         .promptTokens(chatResponse.getMetadata().getUsage().getPromptTokens())
-                        .generationTokens(chatResponse.getMetadata().getUsage().getGenerationTokens())
+                        .completionTokens(chatResponse.getMetadata().getUsage().getCompletionTokens())
                         .totalTokens(chatResponse.getMetadata().getUsage().getTotalTokens())
                         .build())
                 .build();

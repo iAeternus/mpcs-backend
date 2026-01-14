@@ -1,7 +1,6 @@
 package com.ricky.upload.domain.tasks.summary.impl;
 
 import cn.hutool.core.date.StopWatch;
-import com.ricky.common.constants.LLMChatConstants;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.llm.domain.LLMChatRequest;
 import com.ricky.common.llm.domain.LLMChatResponse;
@@ -102,7 +101,7 @@ public class LLMSummaryGenerator implements SummaryGenerator {
                 .build();
 
         LLMChatResponse resp = llmChatService.chat(req);
-        return resp.getContent();
+        return resp.getText();
     }
 
     /**

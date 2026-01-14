@@ -28,7 +28,7 @@ import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class File extends AggregateRoot {
 
-    private String parentId; // 父文件夹ID，根目录也是文件夹
+    private String parentId; // 父文件夹ID，不能为空，即根目录下不允许有文件
     private StorageId storageId; // 文件内容存储ID
     private String filename;
     private long size; // 文件大小，单位：byte

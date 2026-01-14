@@ -1,7 +1,6 @@
 package com.ricky.folder.domain;
 
 import com.ricky.common.domain.AggregateRoot;
-import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.common.utils.ValidationUtils;
@@ -30,7 +29,7 @@ public class Folder extends AggregateRoot {
 
     private String parentId; // 父文件夹ID
     private String folderName;
-    private Set<String> fileIds; // 该文件夹下所有文件ID
+    private Set<String> fileIds; // 该文件夹直接child文件ID
 
     public Folder(String parentId, String folderName, UserContext userContext) {
         super(newFolderId(), userContext);
@@ -64,5 +63,10 @@ public class Folder extends AggregateRoot {
 
     public void onDelete(UserContext userContext) {
         raiseEvent(new FolderDeletedEvent(this.getId(), userContext));
+    }
+
+    public void updateParentId(String newParentId, UserContext userContext) {
+        this.parentId = newParentId;
+        addOpsLog("移动文件夹到[" + newParentId + "]下", userContext);
     }
 }

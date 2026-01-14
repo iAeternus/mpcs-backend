@@ -4,9 +4,10 @@ import com.ricky.common.auth.PermissionRequired;
 import com.ricky.common.domain.dto.resp.IdResponse;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.validation.id.Id;
-import com.ricky.folder.command.CreateFolderCommand;
-import com.ricky.folder.command.DeleteFolderForceCommand;
-import com.ricky.folder.command.RenameFolderCommand;
+import com.ricky.common.validation.id.custom.CustomId;
+import com.ricky.folder.command.*;
+import com.ricky.folder.query.FolderContentResponse;
+import com.ricky.folder.service.FolderQueryService;
 import com.ricky.folder.service.FolderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +31,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 public class FolderController {
 
     private final FolderService folderService;
+    private final FolderQueryService folderQueryService;
 
     @PostMapping
     @ResponseStatus(CREATED)
@@ -57,6 +59,22 @@ public class FolderController {
                                   @RequestBody @Valid DeleteFolderForceCommand command,
                                   @AuthenticationPrincipal UserContext userContext) {
         folderService.deleteFolderForce(folderId, command, userContext);
+    }
+
+    @PutMapping("/move")
+    @Operation(summary = "移动文件夹")
+    @PermissionRequired(value = MOVE, resources = {"#command.customId", "#command.folderId"})
+    public MoveFolderResponse moveFolder(@RequestBody @Valid MoveFolderCommand command,
+                                         @AuthenticationPrincipal UserContext userContext) {
+        return folderService.moveFolder(command, userContext);
+    }
+
+    @Operation(summary = "获取文件夹内容")
+    @GetMapping("/{customId}/{folderId}")
+    public FolderContentResponse fetchFolderContent(@PathVariable @NotBlank @CustomId String customId,
+                                                    @PathVariable @NotBlank @Id(FOLDER_ID_PREFIX) String folderId,
+                                                    @AuthenticationPrincipal UserContext userContext) {
+        return folderQueryService.fetchFolderContent(customId, folderId, userContext);
     }
 
 }

@@ -1,22 +1,22 @@
 package com.ricky.folder.domain;
 
-import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.*;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
+import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NAME_DUPLICATES;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_WITH_NAME_ALREADY_EXISTS;
 
 @Service
@@ -59,7 +59,7 @@ public class FolderDomainService {
                 .collect(toImmutableSet());
     }
 
-    public DeleteFolderContext collectContext(String rootFolderId, FolderHierarchy hierarchy) {
+    public DeleteFolderContext collectDeleteFolderContext(String rootFolderId, FolderHierarchy hierarchy) {
         Set<String> folderIds = hierarchy.withAllSubFolderIdsOf(rootFolderId);
         List<Folder> folders = folderRepository.byIds(folderIds);
 
@@ -73,12 +73,43 @@ public class FolderDomainService {
                 .build();
     }
 
+    public FolderFileCount moveFolder(String customId, String folderId, String newParentId) {
+        FolderHierarchy hierarchy = folderHierarchyRepository.byCustomId(customId);
+        Folder dbFolder = folderRepository.byId(folderId);
+
+        Set<String> directChildFolderIds = hierarchy.directChildFolderIdsUnder(newParentId);
+        boolean duplication = folderRepository.byIds(directChildFolderIds).stream()
+                .map(Folder::getFolderName)
+                .anyMatch(folderName -> folderName.equals(dbFolder.getFolderName()));
+        if(duplication) {
+            throw new MyException(FOLDER_NAME_DUPLICATES, "移动失败，存在名称重复。", "newParentId", newParentId);
+        }
+
+        Set<String> subFolderIds = hierarchy.withAllSubFolderIdsOf(folderId);
+        long fileCount = folderRepository.byIds(subFolderIds).stream()
+                .mapToLong(folder -> folder.getFileIds().size())
+                .sum();
+
+        return FolderFileCount.builder()
+                .folderCount(subFolderIds.size())
+                .fileCount(fileCount)
+                .build();
+    }
+
     @Value
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class DeleteFolderContext {
         List<Folder> folders;
         List<File> files;
+    }
+
+    @Value
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class FolderFileCount {
+        int folderCount;
+        long fileCount;
     }
 
 }
