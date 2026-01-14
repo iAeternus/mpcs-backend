@@ -23,7 +23,7 @@ public class FolderContentResponse implements Response {
     public static class File {
         String id;
         String filename;
-        LocalDateTime lastModifiedAt;
+        LocalDateTime updateTime;
         Long size;
     }
 
@@ -33,7 +33,7 @@ public class FolderContentResponse implements Response {
     public static class Folder {
         String id;
         String folderName;
-        LocalDateTime lastModifiedAt;
+        LocalDateTime updatedTime;
     }
 
 }

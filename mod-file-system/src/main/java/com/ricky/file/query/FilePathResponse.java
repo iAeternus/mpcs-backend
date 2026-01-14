@@ -9,7 +9,7 @@ import lombok.Value;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class FetchFilePathResponse implements Response {
+public class FilePathResponse implements Response {
 
     String path;
 

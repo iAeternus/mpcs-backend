@@ -40,7 +40,7 @@ public class FolderQueryServiceImpl implements FolderQueryService {
                 .map(folder -> FolderContentResponse.Folder.builder()
                         .id(folder.getId())
                         .folderName(folder.getFolderName())
-                        .lastModifiedAt(instantToLocalDateTime(folder.getUpdatedAt()))
+                        .updatedTime(instantToLocalDateTime(folder.getUpdatedAt()))
                         .build())
                 .collect(toImmutableList());
 
@@ -51,7 +51,7 @@ public class FolderQueryServiceImpl implements FolderQueryService {
                 .map(file -> FolderContentResponse.File.builder()
                         .id(file.getId())
                         .filename(file.getFilename())
-                        .lastModifiedAt(instantToLocalDateTime(file.getUpdatedAt()))
+                        .updateTime(instantToLocalDateTime(file.getUpdatedAt()))
                         .size(file.getSize())
                         .build())
                 .collect(toImmutableList());

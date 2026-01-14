@@ -4,8 +4,10 @@ import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.common.utils.ValidationUtils;
+import com.ricky.common.validation.id.Id;
 import com.ricky.file.domain.event.FileDeletedEvent;
 import com.ricky.upload.domain.event.FileUploadedEvent;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -92,4 +94,8 @@ public class File extends AggregateRoot {
         raiseEvent(new FileDeletedEvent(this.getId(), userContext));
     }
 
+    public void updateParentId(String newParentId, UserContext userContext) {
+        this.parentId = newParentId;
+        addOpsLog("移动文件到[" + newParentId + "]下", userContext);
+    }
 }

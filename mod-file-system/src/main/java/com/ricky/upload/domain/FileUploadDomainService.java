@@ -31,7 +31,8 @@ public class FileUploadDomainService {
                 .map(File::getFilename)
                 .collect(toImmutableList());
         if (filenames.contains(filename)) {
-            throw new MyException(FILE_NAME_DUPLICATES, "文件名不能重复。", "filename", filename);
+            throw new MyException(FILE_NAME_DUPLICATES, "文件名不能重复。",
+                    "parentId", parentId, "filename", filename);
         }
     }
 }

@@ -69,7 +69,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         fileRepository.save(file);
 
         Folder parentFolder = folderRepository.cachedById(parentId);
-        parentFolder.addFile(file.getId());
+        parentFolder.addFile(file.getId(), userContext);
         folderRepository.save(parentFolder);
 
         FileExtra fileExtra = new FileExtra(file.getId(), userContext);
@@ -172,7 +172,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         fileRepository.save(file);
 
         Folder parentFolder = folderRepository.cachedById(command.getParentId());
-        parentFolder.addFile(file.getId());
+        parentFolder.addFile(file.getId(), userContext);
         folderRepository.save(parentFolder);
 
         FileExtra fileExtra = new FileExtra(file.getId(), userContext);

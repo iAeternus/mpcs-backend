@@ -1,8 +1,11 @@
 package com.ricky.file.domain;
 
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.exception.MyException;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
+import com.ricky.folder.domain.Folder;
+import com.ricky.folder.domain.FolderRepository;
 import com.ricky.upload.domain.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -11,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.ricky.common.exception.ErrorCodeEnum.FILE_NAME_DUPLICATES;
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static com.ricky.common.utils.ValidationUtils.isNotEmpty;
 
@@ -21,6 +25,7 @@ public class FileDomainService {
     private final StorageService storageService;
     private final FileRepository fileRepository;
     private final FileExtraRepository fileExtraRepository;
+    private final FolderRepository folderRepository;
 
     // 注意deleteFileForce和deleteFilesForce逻辑并不一样
     // 前者需要调用者先删除File聚合根，listByStorageId将查询出空集合，表明无聚合根指向文件内容，才能级联删除文件内容
@@ -57,5 +62,16 @@ public class FileDomainService {
         List<FileExtra> fileExtras = fileExtraRepository.listByFileIds(fileIds);
         fileExtras.forEach(fileExtra -> fileExtra.onDelete(userContext));
         fileExtraRepository.delete(fileExtras);
+    }
+
+    public void checkFileNameDuplicates(File file, String newParentId) {
+        Folder newParentFolder = folderRepository.byId(newParentId);
+        boolean folderNameDuplication = fileRepository.byIds(newParentFolder.getFileIds()).stream()
+                .map(File::getFilename)
+                .anyMatch(filename -> filename.equals(file.getFilename()));
+        if(folderNameDuplication) {
+            throw new MyException(FILE_NAME_DUPLICATES, "移动失败，文件名不能重复。",
+                    "newParentId", newParentId, "filename", file.getFilename());
+        }
     }
 }

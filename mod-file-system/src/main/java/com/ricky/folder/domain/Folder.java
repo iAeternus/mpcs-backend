@@ -48,8 +48,18 @@ public class Folder extends AggregateRoot {
         return FOLDER_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
     }
 
-    public void addFile(String fileId) {
+    public void addFile(String fileId, UserContext userContext) {
         this.fileIds.add(fileId);
+        addOpsLog("新增文件[" + fileId + "]", userContext);
+    }
+
+    public void removeFile(String fileId, UserContext userContext) {
+        this.fileIds.remove(fileId);
+        addOpsLog("移除文件[" + fileId + "]", userContext);
+    }
+
+    public boolean containsFile(String fileId) {
+        return this.fileIds.contains(fileId);
     }
 
     public void rename(String newName, UserContext userContext) {
