@@ -1,12 +1,10 @@
 package com.ricky.group.infra;
 
-import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.group.domain.Group;
 import com.ricky.group.domain.GroupRepository;
 import com.ricky.group.domain.UserCachedGroup;
-import com.ricky.group.domain.UserCachedGroups;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

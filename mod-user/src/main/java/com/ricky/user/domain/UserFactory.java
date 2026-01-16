@@ -1,13 +1,10 @@
 package com.ricky.user.domain;
 
-import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.FolderHierarchyFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import static com.ricky.common.domain.SpaceType.PERSONAL;
 
 @Component
 @RequiredArgsConstructor

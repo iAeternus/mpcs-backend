@@ -13,7 +13,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.ricky.common.constants.ConfigConstants.*;
+import static com.ricky.common.constants.ConfigConstants.GROUP_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.USER_GROUPS_CACHE;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;

@@ -4,7 +4,6 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import com.ricky.folderhierarchy.query.FolderHierarchyResponse;
 import com.ricky.folderhierarchy.service.FolderHierarchyQueryService;

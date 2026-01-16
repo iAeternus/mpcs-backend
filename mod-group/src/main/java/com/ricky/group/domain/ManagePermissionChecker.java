@@ -1,7 +1,6 @@
 package com.ricky.group.domain;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.common.exception.MyException;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,7 @@ public class ManagePermissionChecker {
         requireNonNull(group, "Group must not be null.");
         requireNonNull(userContext, "UserContext must not be null.");
 
-        if(!canManageGroup(group, userContext)) {
+        if (!canManageGroup(group, userContext)) {
             throw accessDeniedException();
         }
     }

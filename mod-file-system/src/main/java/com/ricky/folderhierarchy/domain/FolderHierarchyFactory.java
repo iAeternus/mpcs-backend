@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 import static com.ricky.common.domain.SpaceType.PERSONAL;
 import static com.ricky.common.domain.SpaceType.PUBLIC;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_WITH_CUSTOM_ID_ALREADY_EXISTS;
-import static com.ricky.common.utils.ValidationUtils.isNotBlank;
 import static com.ricky.folderhierarchy.domain.FolderHierarchy.defaultCustomId;
 
 @Component

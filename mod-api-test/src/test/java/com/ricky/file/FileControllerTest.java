@@ -3,7 +3,6 @@ package com.ricky.file;
 import com.ricky.BaseApiTest;
 import com.ricky.TextFileContext;
 import com.ricky.common.domain.dto.resp.LoginResponse;
-import com.ricky.common.utils.CommonUtils;
 import com.ricky.file.command.MoveFileCommand;
 import com.ricky.file.command.RenameFileCommand;
 import com.ricky.file.domain.File;

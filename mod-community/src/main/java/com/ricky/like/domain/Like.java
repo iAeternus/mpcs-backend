@@ -29,7 +29,7 @@ public class Like extends AggregateRoot {
         this.liked = true;
     }
 
-    private void init(String  postId, UserContext userContext) {
+    private void init(String postId, UserContext userContext) {
         this.postId = postId;
         raiseEvent(new LikedEvent(getUserId(), getPostId(), userContext));
         addOpsLog("点赞", userContext);
@@ -40,7 +40,7 @@ public class Like extends AggregateRoot {
     }
 
     public void unlike(UserContext userContext) {
-        if(!liked) {
+        if (!liked) {
             return;
         }
 
@@ -50,7 +50,7 @@ public class Like extends AggregateRoot {
     }
 
     public void like(UserContext userContext) {
-        if(liked) {
+        if (liked) {
             return;
         }
 

@@ -12,8 +12,6 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 import static com.ricky.common.constants.ConfigConstants.*;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_NOT_FOUND;
 import static com.ricky.common.utils.ValidationUtils.isNull;

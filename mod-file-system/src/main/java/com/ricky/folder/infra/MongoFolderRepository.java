@@ -6,8 +6,6 @@ import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folder.domain.UserCachedFolder;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

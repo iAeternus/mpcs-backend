@@ -9,7 +9,6 @@ import com.ricky.file.domain.FileDomainService;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.file.service.FileService;
 import com.ricky.folder.domain.Folder;
-import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.folder.domain.FolderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

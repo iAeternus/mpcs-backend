@@ -69,7 +69,7 @@ public class FileDomainService {
         boolean folderNameDuplication = fileRepository.byIds(newParentFolder.getFileIds()).stream()
                 .map(File::getFilename)
                 .anyMatch(filename -> filename.equals(file.getFilename()));
-        if(folderNameDuplication) {
+        if (folderNameDuplication) {
             throw new MyException(FILE_NAME_DUPLICATES, "移动失败，文件名不能重复。",
                     "newParentId", newParentId, "filename", file.getFilename());
         }

@@ -21,13 +21,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_ORIGINAL_NAME_MUST_NOT_BE_BLANK;
 import static com.ricky.common.exception.ErrorCodeEnum.UPLOAD_ALREADY_COMPLETED;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
-import static com.ricky.common.utils.ValidationUtils.isNotEmpty;
 
 @Slf4j
 @Service

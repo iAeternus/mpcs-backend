@@ -46,7 +46,7 @@ public class UserDomainService {
     }
 
     public void checkAllUsersExists(List<String> userIds) {
-        if(!userRepository.allUserExists(userIds)) {
+        if (!userRepository.allUserExists(userIds)) {
             throw new MyException(NOT_ALL_USERS_EXIST, "有用户不存在。", "userIds", userIds);
         }
     }

@@ -1,7 +1,5 @@
 package com.ricky.group.domain;
 
-import com.ricky.common.domain.user.UserContext;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;

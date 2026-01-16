@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
@@ -81,7 +80,7 @@ public class FolderDomainService {
         boolean duplication = folderRepository.byIds(directChildFolderIds).stream()
                 .map(Folder::getFolderName)
                 .anyMatch(folderName -> folderName.equals(dbFolder.getFolderName()));
-        if(duplication) {
+        if (duplication) {
             throw new MyException(FOLDER_NAME_DUPLICATES, "移动失败，存在名称重复。", "newParentId", newParentId);
         }
 
