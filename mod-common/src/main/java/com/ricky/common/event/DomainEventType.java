@@ -25,6 +25,11 @@ public enum DomainEventType {
     FILE_EXTRA_DELETED(FILE_EXTRA),
     GROUP_DELETED(GROUP),
     GROUP_MEMBERS_CHANGED(GROUP),
+    FILE_PUBLISHED(PUBLIC_FILE),
+    FILE_WITHDREW(PUBLIC_FILE),
+    LIKED(LIKE),
+    UNLIKED(LIKE),
+    ;
     // add here...
     ;
 

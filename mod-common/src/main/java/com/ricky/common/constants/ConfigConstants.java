@@ -34,6 +34,7 @@ public interface ConfigConstants {
     String UPLOAD_SESSION_COLLECTION = "upload_sessions";
     String FILE_EXTRA_COLLECTION = "file_extra";
     String GROUP_COLLECTION = "groups";
+    String LIKE_COLLECTION = "likes";
     String SENSITIVE_WORD_COLLECTION = "sensitive_words";
 
     String PUBLISHING_DOMAIN_EVENT_COLLECTION = "publishing_domain_event";
@@ -48,19 +49,20 @@ public interface ConfigConstants {
     String UPLOAD_SESSION_ID_PREFIX = "UPL";
     String FILE_EXTRA_ID_PREFIX = "EXT";
     String GROUP_ID_PREFIX = "GRP";
+    String POST_ID_PREFIX = "PUB";
+    String LIKE_ID_PREFIX = "LIK";
     String SENSITIVE_WORD_ID_PREFIX = "SST";
 
     // Cache
     String USER_CACHE = "USER";
     String FILE_CACHE = "FILE";
     String UPLOAD_SESSION_CACHE = "UPLOAD_SESSION";
-    String HASH_STORAGES_CACHE = "HASH_STORAGES";
     String USER_FOLDERS_CACHE = "USER_FOLDERS";
     String FOLDER_CACHE = "FOLDER";
-    String USER_FOLDER_HIERARCHY_CACHE = "USER_FOLDER_HIERARCHY";
+    String USER_FOLDER_HIERARCHIES_CACHE = "USER_FOLDER_HIERARCHIES";
     String FOLDER_HIERARCHY_CACHE = "FOLDER_HIERARCHY";
     String FILE_EXTRA_CACHE = "FILE_EXTRA";
-    String USER_GROUP_CACHE = "USER_GROUP";
+    String USER_GROUPS_CACHE = "USER_GROUPS";
 
     String REDIS_DOMAIN_EVENT_CONSUMER_GROUP = "domain.event.group";
     String REDIS_WEBHOOK_CONSUMER_GROUP = "webhook.group";
@@ -79,6 +81,10 @@ public interface ConfigConstants {
     String FILE_EXTRA_DELETED_EVENT_NAME = "FILE_EXTRA_DELETED";
     String GROUP_DELETED_EVENT_NAME = "GROUP_DELETED";
     String GROUP_MEMBERS_CHANGED_EVENT_NAME = "GROUP_MEMBERS_CHANGED";
+    String FILE_PUBLISHED_EVENT_NAME = "FILE_PUBLISHED";
+    String FILE_WITHDREW_EVENT_NAME = "FILE_WITHDREW";
+    String LIKED_EVENT_NAME = "LIKED";
+    String UNLIKED_EVENT_NAME = "UNLIKED";
 
     String[] AVATAR_TYPES = {"image/png", "image/jpeg", "image/gif"};
 

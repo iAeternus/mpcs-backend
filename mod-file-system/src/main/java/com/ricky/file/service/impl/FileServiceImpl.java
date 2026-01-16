@@ -9,6 +9,7 @@ import com.ricky.file.domain.FileDomainService;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.file.service.FileService;
 import com.ricky.folder.domain.Folder;
+import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.folder.domain.FolderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,10 @@ public class FileServiceImpl implements FileService {
         file.onDelete(userContext);
         fileRepository.delete(file);
         fileDomainService.deleteFileForce(file, userContext);
+
+        Folder folder = folderRepository.byId(file.getParentId());
+        folder.removeFile(file.getId(), userContext);
+        folderRepository.save(folder);
 
         log.info("Deleted File[{}] force", fileId);
     }

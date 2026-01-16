@@ -1,4 +1,4 @@
-package com.ricky.group.query;
+package com.ricky.publicfile.query;
 
 import com.ricky.common.domain.page.PageQuery;
 import jakarta.validation.constraints.NotNull;
@@ -11,10 +11,10 @@ import lombok.experimental.SuperBuilder;
 @Value
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class PageGroupFoldersQuery extends PageQuery {
+public class PublicFilePageQuery extends PageQuery {
 
     /**
-     * 搜索字段，目前支持groupId
+     * 搜索字段，目前支持TODO
      */
     @Size(max = 50)
     String search;

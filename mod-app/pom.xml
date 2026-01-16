@@ -34,6 +34,11 @@
             <artifactId>mod-group</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>com.ricky</groupId>
+            <artifactId>mod-community</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>

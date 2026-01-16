@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_ORIGINAL_NAME_MUST_NOT_BE_BLANK;
 import static com.ricky.common.exception.ErrorCodeEnum.UPLOAD_ALREADY_COMPLETED;
@@ -60,9 +61,11 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         // 存储文件内容
         String hash = fileHasherFactory.getFileHasher().hash(multipartFile);
-        StorageId storageId = fileRepository.cachedByFileHash(hash).getStorageIds().stream()
-                .findFirst()
+        StorageId storageId = fileRepository.byFileHashOptional(hash)
                 .orElseGet(() -> storageService.store(multipartFile));
+//        StorageId storageId = fileRepository.cachedByFileHash(hash).getStorageIds().stream()
+//                .findFirst()
+//                .orElseGet(() -> storageService.store(multipartFile));
 
         // 落库聚合根
         File file = fileFactory.create(parentId, storageId, multipartFile, hash, userContext);
@@ -87,10 +90,11 @@ public class FileUploadServiceImpl implements FileUploadService {
         rateLimiter.applyFor("Upload:InitUpload", 10);
 
         // 秒传判断
-        List<StorageId> storageIds = fileRepository.cachedByFileHash(command.getFileHash()).getStorageIds();
-        if (isNotEmpty(storageIds)) { // 文件已存在
-            StorageId storageId = storageIds.get(0);
-            return InitUploadResponse.fastUploaded(storageId);
+//        List<StorageId> storageIds = fileRepository.cachedByFileHash(command.getFileHash()).getStorageIds();
+        Optional<StorageId> storageId = fileRepository.byFileHashOptional(command.getFileHash());
+        if (storageId.isPresent()) { // 文件已存在
+//            StorageId storageId = storageIds.get(0);
+            return InitUploadResponse.fastUploaded(storageId.get());
         }
 
         // 查找UploadSession，不存在则创建

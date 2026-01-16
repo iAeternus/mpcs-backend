@@ -3,6 +3,8 @@ package com.ricky.folderhierarchy.infra;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folderhierarchy.domain.UserCachedFolderHierarchies;
+import com.ricky.folderhierarchy.domain.UserCachedFolderHierarchy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -12,8 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.ricky.common.constants.ConfigConstants.FOLDER_HIERARCHY_CACHE;
-import static com.ricky.common.constants.ConfigConstants.USER_FOLDER_HIERARCHY_CACHE;
+import static com.ricky.common.constants.ConfigConstants.*;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_NOT_FOUND;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
@@ -24,36 +25,19 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @Repository
 public class MongoCachedFolderHierarchyRepository extends MongoBaseRepository<FolderHierarchy> {
 
-//    @Cacheable(value = FOLDER_HIERARCHY_CACHE, key = "#userId")
-//    public FolderHierarchy cachedByUserId(String userId) {
-//        requireNotBlank(userId, "User ID must not be blank.");
-//
-//        Query query = Query.query(where("userId").is(userId));
-//        FolderHierarchy hierarchy = mongoTemplate.findOne(query, FolderHierarchy.class);
-//
-//        if (isNull(hierarchy)) {
-//            throw new MyException(FOLDER_HIERARCHY_NOT_FOUND, "未找到文件夹层级。", "userId", userId);
-//        }
-//
-//        return hierarchy;
-//    }
-//
-//    @Caching(evict = {@CacheEvict(value = FOLDER_HIERARCHY_CACHE, key = "#userId")})
-//    public void evictFolderHierarchyCache(String userId) {
-//        requireNotBlank(userId, "User ID must not be blank.");
-//
-//        log.debug("Evicted folder hierarchy cache for user[{}].", userId);
-//    }
-
-    @Cacheable(value = USER_FOLDER_HIERARCHY_CACHE, key = "#userId")
-    public List<FolderHierarchy> cachedUserAllFolderHierarchies(String userId) {
+    @Cacheable(value = USER_FOLDER_HIERARCHIES_CACHE, key = "#userId")
+    public UserCachedFolderHierarchies cachedUserAllFolderHierarchies(String userId) {
         requireNotBlank(userId, "User ID must not be blank.");
 
         Query query = query(where("userId").is(userId));
-        return mongoTemplate.find(query, FolderHierarchy.class);
+        query.fields().include("customId", "idTree", "hierarchy");
+        var hierarchies = mongoTemplate.find(query, UserCachedFolderHierarchy.class, FOLDER_HIERARCHY_COLLECTION);
+        return UserCachedFolderHierarchies.builder()
+                .hierarchies(hierarchies)
+                .build();
     }
 
-    @Caching(evict = {@CacheEvict(value = USER_FOLDER_HIERARCHY_CACHE, key = "#userId")})
+    @Caching(evict = {@CacheEvict(value = USER_FOLDER_HIERARCHIES_CACHE, key = "#userId")})
     public void evictUserFolderHierarchiesCache(String userId) {
         requireNotBlank(userId, "User ID must not be blank.");
 

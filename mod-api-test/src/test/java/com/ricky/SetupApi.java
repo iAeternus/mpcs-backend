@@ -7,6 +7,7 @@ import com.ricky.file.domain.FileRepository;
 import com.ricky.folder.FolderApi;
 import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.login.LoginApi;
+import com.ricky.upload.FileUploadApi;
 import com.ricky.upload.domain.StorageService;
 import com.ricky.user.UserApi;
 import com.ricky.user.command.RegisterCommand;
@@ -14,6 +15,7 @@ import com.ricky.user.command.RegisterResponse;
 import com.ricky.verification.VerificationCodeApi;
 import com.ricky.verification.domain.VerificationCodeRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -64,6 +66,28 @@ public class SetupApi {
 
     public LoginResponse registerWithLogin() {
         return registerWithLogin(rMobile(), rPassword());
+    }
+
+    public TextFileContext registerWithFile(String path) throws IOException {
+        LoginResponse manager = registerWithLogin();
+        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+
+        ClassPathResource resource = new ClassPathResource(path);
+        java.io.File file = resource.getFile();
+
+        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+
+        String fileHash = deleteFileWithSameHash(file);
+        String fileId = FileUploadApi.upload(manager.getJwt(), file, parentId).getFileId();
+
+        return TextFileContext.builder()
+                .manager(manager)
+                .customId(customId)
+                .parentId(parentId)
+                .fileHash(fileHash)
+                .fileId(fileId)
+                .originalFile(file)
+                .build();
     }
 
     public String deleteFileWithSameHash(java.io.File file) throws IOException {

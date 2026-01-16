@@ -1,4 +1,4 @@
-package com.ricky.file.domain;
+package com.ricky.folderhierarchy.domain;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -10,8 +10,8 @@ import java.util.List;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class HashCachedStorageIds {
+public class UserCachedFolderHierarchies {
 
-    List<StorageId> storageIds;
+    List<UserCachedFolderHierarchy> hierarchies;
 
 }

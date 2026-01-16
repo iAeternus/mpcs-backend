@@ -2,9 +2,12 @@ package com.ricky.common.cache;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ricky.file.domain.File;
-import com.ricky.file.domain.HashCachedStorageIds;
+import com.ricky.fileextra.domain.FileExtra;
+import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.UserCachedFolders;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folderhierarchy.domain.UserCachedFolderHierarchies;
+import com.ricky.group.domain.UserCachedGroups;
 import com.ricky.upload.domain.UploadSession;
 import com.ricky.user.domain.User;
 import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer;
@@ -42,12 +45,15 @@ public class CacheConfiguration {
         objectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
         GenericJackson2JsonRedisSerializer defaultSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
 
-        var userCachedMembersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, User.class);
-        var fileCachedMembersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, File.class);
-        var uploadCachedMembersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UploadSession.class);
-        var hashCachedMembersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, HashCachedStorageIds.class);
-        var userFolderCachedMembersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserCachedFolders.class);
-        var folderHierarchyCachedMembersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, FolderHierarchy.class);
+        var userCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, User.class);
+        var fileCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, File.class);
+        var uploadSessionCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UploadSession.class);
+        var userCachedFoldersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserCachedFolders.class);
+        var folderCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Folder.class);
+        var userCachedFolderHierarchiesSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserCachedFolderHierarchies.class);
+        var folderHierarchyCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, FolderHierarchy.class);
+        var fileExtraCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, FileExtra.class);
+        var userCachedGroupSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserCachedGroups.class);
 
         return builder -> builder.cacheDefaults(defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
@@ -55,27 +61,40 @@ public class CacheConfiguration {
                         .entryTtl(ofDays(1)))
                 .withCacheConfiguration(USER_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
-                        .serializeValuesWith(fromSerializer(userCachedMembersSerializer))
+                        .serializeValuesWith(fromSerializer(userCacheSerializer))
                         .entryTtl(ofDays(7)))
                 .withCacheConfiguration(FILE_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
-                        .serializeValuesWith(fromSerializer(fileCachedMembersSerializer))
+                        .serializeValuesWith(fromSerializer(fileCacheSerializer))
                         .entryTtl(ofDays(7)))
                 .withCacheConfiguration(UPLOAD_SESSION_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
-                        .serializeValuesWith(fromSerializer(uploadCachedMembersSerializer))
-                        .entryTtl(ofDays(7)))
-                .withCacheConfiguration(HASH_STORAGES_CACHE, defaultCacheConfig()
-                        .prefixCacheNameWith(CACHE_PREFIX)
-                        .serializeValuesWith(fromSerializer(hashCachedMembersSerializer))
+                        .serializeValuesWith(fromSerializer(uploadSessionCacheSerializer))
                         .entryTtl(ofDays(7)))
                 .withCacheConfiguration(USER_FOLDERS_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
-                        .serializeValuesWith(fromSerializer(userFolderCachedMembersSerializer))
+                        .serializeValuesWith(fromSerializer(userCachedFoldersSerializer))
+                        .entryTtl(ofDays(7)))
+                .withCacheConfiguration(FOLDER_CACHE, defaultCacheConfig()
+                        .prefixCacheNameWith(CACHE_PREFIX)
+                        .serializeValuesWith(fromSerializer(folderCacheSerializer))
+                        .entryTtl(ofDays(7)))
+                .withCacheConfiguration(USER_FOLDER_HIERARCHIES_CACHE, defaultCacheConfig()
+                        .prefixCacheNameWith(CACHE_PREFIX)
+                        .serializeValuesWith(fromSerializer(userCachedFolderHierarchiesSerializer))
                         .entryTtl(ofDays(7)))
                 .withCacheConfiguration(FOLDER_HIERARCHY_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
-                        .serializeValuesWith(fromSerializer(folderHierarchyCachedMembersSerializer))
-                        .entryTtl(ofDays(7)));
+                        .serializeValuesWith(fromSerializer(folderHierarchyCacheSerializer))
+                        .entryTtl(ofDays(7)))
+                .withCacheConfiguration(FILE_EXTRA_CACHE, defaultCacheConfig()
+                        .prefixCacheNameWith(CACHE_PREFIX)
+                        .serializeValuesWith(fromSerializer(fileExtraCacheSerializer))
+                        .entryTtl(ofDays(7)))
+                .withCacheConfiguration(USER_GROUPS_CACHE, defaultCacheConfig()
+                        .prefixCacheNameWith(CACHE_PREFIX)
+                        .serializeValuesWith(fromSerializer(userCachedGroupSerializer))
+                        .entryTtl(ofDays(7)))
+                ;
     }
 }

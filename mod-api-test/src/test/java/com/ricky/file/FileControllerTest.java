@@ -1,6 +1,7 @@
 package com.ricky.file;
 
 import com.ricky.BaseApiTest;
+import com.ricky.TextFileContext;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.utils.CommonUtils;
 import com.ricky.file.command.MoveFileCommand;
@@ -29,16 +30,9 @@ public class FileControllerTest extends BaseApiTest {
     @Test
     void should_rename_file() throws IOException {
         // Given
-        LoginResponse manager = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
-
-        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
-        java.io.File file = resource.getFile();
-
-        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-
-        setupApi.deleteFileWithSameHash(file);
-        String fileId = FileUploadApi.upload(manager.getJwt(), file, parentId).getFileId();
+        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse manager = ctx.getManager();
+        String fileId = ctx.getFileId();
 
         String newName = rFilename();
 
@@ -55,15 +49,10 @@ public class FileControllerTest extends BaseApiTest {
     @Test
     void should_delete_file_force() throws IOException, InterruptedException {
         // Given
-        LoginResponse manager = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse manager = ctx.getManager();
+        String fileId = ctx.getFileId();
 
-        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
-        java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-
-        setupApi.deleteFileWithSameHash(file);
-        String fileId = FileUploadApi.upload(manager.getJwt(), file, parentId).getFileId();
         File dbFile = fileRepository.byId(fileId);
 
         // 这里必须sleep，直接删除会导致文件上传事件还未处理完，导致mongodb写冲突
@@ -76,6 +65,9 @@ public class FileControllerTest extends BaseApiTest {
         assertFalse(fileRepository.exists(dbFile.getId()));
         assertFalse(storageService.exists(dbFile.getStorageId()));
         assertFalse(fileExtraRepository.existsByFileId(dbFile.getId()));
+
+        Folder parentFolder = folderRepository.byId(dbFile.getParentId());
+        assertFalse(parentFolder.containsFile(dbFile.getId()));
     }
 
     @Test
@@ -161,15 +153,10 @@ public class FileControllerTest extends BaseApiTest {
     @Test
     void should_fetch_file_info() throws IOException {
         // Given
-        LoginResponse manager = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse manager = ctx.getManager();
+        String fileId = ctx.getFileId();
 
-        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
-        java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-
-        setupApi.deleteFileWithSameHash(file);
-        String fileId = FileUploadApi.upload(manager.getJwt(), file, parentId).getFileId();
         File dbFile = fileRepository.byId(fileId);
 
         // When

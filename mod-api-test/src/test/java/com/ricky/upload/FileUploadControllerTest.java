@@ -2,6 +2,7 @@ package com.ricky.upload;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.ricky.BaseApiTest;
+import com.ricky.TextFileContext;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileStatus;
@@ -80,17 +81,13 @@ class FileUploadControllerTest extends BaseApiTest {
     @Test
     void should_fail_to_upload_file_if_file_name_duplicates_at_same_folder() throws IOException {
         // Given
-        LoginResponse loginResponse = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
-
-        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
-        java.io.File file = resource.getFile();
-
-        String parentId = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
-        FileUploadApi.upload(loginResponse.getJwt(), file, parentId);
+        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse manager = ctx.getManager();
+        java.io.File originalFile = ctx.getOriginalFile();
+        String parentId = ctx.getParentId();
 
         // When & Then
-        assertError(() -> FileUploadApi.uploadRaw(loginResponse.getJwt(), file, parentId), FILE_NAME_DUPLICATES);
+        assertError(() -> FileUploadApi.uploadRaw(manager.getJwt(), originalFile, parentId), FILE_NAME_DUPLICATES);
     }
 
     @Test
@@ -171,30 +168,26 @@ class FileUploadControllerTest extends BaseApiTest {
         assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
     }
 
-    // TODO：文本文件应该指向storageId，而不是每个文件聚合根都有
     @Test
     void should_fast_upload_when_hash_exists() throws IOException {
         // Given
-        LoginResponse loginResponse = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt"); // 先上传文件，抢占 storageId
+        LoginResponse manager = ctx.getManager();
+        String fileId = ctx.getFileId();
+        String fileHash = ctx.getFileHash();
+        java.io.File originalFile = ctx.getOriginalFile();
 
-        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
-        java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
-
-        // 先上传文件，抢占 storageId
-        FileUploadResponse first = FileUploadApi.upload(loginResponse.getJwt(), file, parentId);
-
-        File dbFile = fileRepository.byId(first.getFileId());
-        String fileHash = dbFile.getHash();
+        File dbFile2 = fileRepository.byId(fileId);
+        String fileHash2 = dbFile2.getHash();
+        assertEquals(fileHash, fileHash2);
 
         // When init upload
         InitUploadResponse initResp = FileUploadApi.initUpload(
-                loginResponse.getJwt(),
+                manager.getJwt(),
                 InitUploadCommand.builder()
-                        .fileName(file.getName())
+                        .fileName(originalFile.getName())
                         .fileHash(fileHash)
-                        .totalSize(file.length())
+                        .totalSize(originalFile.length())
                         .chunkSize(fileProperties.getUpload().getChunkSize())
                         .totalChunks(1)
                         .build()
@@ -204,6 +197,8 @@ class FileUploadControllerTest extends BaseApiTest {
         assertTrue(initResp.isUploaded());
         assertNull(initResp.getUploadId());
         assertNull(initResp.getUploadedChunks());
+
+        File dbFile = fileRepository.byId(fileId);
         assertEquals(dbFile.getStorageId(), initResp.getStorageId());
     }
 

@@ -1,7 +1,6 @@
 package com.ricky.group.infra;
 
 import com.ricky.common.mongo.MongoBaseRepository;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.group.domain.Group;
 import com.ricky.group.domain.UserCachedGroup;
 import com.ricky.group.domain.UserCachedGroups;
@@ -23,7 +22,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @Repository
 public class MongoCachedGroupRepository extends MongoBaseRepository<Group> {
 
-    @Cacheable(value = USER_GROUP_CACHE, key = "#userId")
+    @Cacheable(value = USER_GROUPS_CACHE, key = "#userId")
     public UserCachedGroups cachedUserAllGroups(String userId) {
         requireNotBlank(userId, "User ID must not be blank.");
 
@@ -35,7 +34,7 @@ public class MongoCachedGroupRepository extends MongoBaseRepository<Group> {
                 .build();
     }
 
-    @Caching(evict = {@CacheEvict(value = USER_GROUP_CACHE, key = "#userId")})
+    @Caching(evict = {@CacheEvict(value = USER_GROUPS_CACHE, key = "#userId")})
     public void evictUserGroupsCache(String userId) {
         requireNotBlank(userId, "User ID must not be blank.");
 

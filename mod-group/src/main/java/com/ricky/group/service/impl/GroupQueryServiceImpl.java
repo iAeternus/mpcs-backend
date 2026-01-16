@@ -4,7 +4,7 @@ import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.group.query.GroupFoldersResponse;
 import com.ricky.group.query.GroupMembersResponse;
-import com.ricky.group.query.PageGroupFoldersQuery;
+import com.ricky.group.query.GroupFoldersPageQuery;
 import com.ricky.group.service.GroupQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
     }
 
     @Override
-    public PagedList<GroupFoldersResponse> pageGroupFolders(String groupId, PageGroupFoldersQuery query, UserContext userContext) {
+    public PagedList<GroupFoldersResponse> pageGroupFolders(String groupId, GroupFoldersPageQuery query, UserContext userContext) {
         return null;
     }
 }

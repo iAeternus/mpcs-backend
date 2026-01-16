@@ -2,6 +2,7 @@ package com.ricky.file.domain;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -17,7 +18,7 @@ public interface FileRepository {
 
     File byId(String fileId);
 
-    HashCachedStorageIds cachedByFileHash(String hash);
+    Optional<StorageId> byFileHashOptional(String hash);
 
     List<File> listByFileHash(String hash);
 

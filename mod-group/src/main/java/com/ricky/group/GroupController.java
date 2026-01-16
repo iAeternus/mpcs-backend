@@ -10,7 +10,7 @@ import com.ricky.group.command.CreateGroupCommand;
 import com.ricky.group.command.RenameGroupCommand;
 import com.ricky.group.query.GroupFoldersResponse;
 import com.ricky.group.query.GroupMembersResponse;
-import com.ricky.group.query.PageGroupFoldersQuery;
+import com.ricky.group.query.GroupFoldersPageQuery;
 import com.ricky.group.service.GroupQueryService;
 import com.ricky.group.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -126,7 +126,7 @@ public class GroupController {
     @PostMapping("/{groupId}/folders")
     @Operation(summary = "获取权限组管理的文件夹列表")
     public PagedList<GroupFoldersResponse> pageGroupFolders(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
-                                                            @RequestBody @Valid PageGroupFoldersQuery query,
+                                                            @RequestBody @Valid GroupFoldersPageQuery query,
                                                             @AuthenticationPrincipal UserContext userContext) {
         return groupQueryService.pageGroupFolders(groupId, query, userContext);
     }

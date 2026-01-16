@@ -21,6 +21,7 @@ import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import com.ricky.group.domain.GroupRepository;
+import com.ricky.publicfile.domain.PublicFileRepository;
 import com.ricky.upload.domain.StorageService;
 import com.ricky.user.domain.UserRepository;
 import com.ricky.verification.domain.VerificationCodeRepository;
@@ -126,6 +127,9 @@ public abstract class BaseApiTest {
 
     @Autowired
     protected GroupRepository groupRepository;
+
+    @Autowired
+    protected PublicFileRepository publicFileRepository;
 
     @LocalServerPort
     protected int port;

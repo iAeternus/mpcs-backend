@@ -9,6 +9,8 @@ public enum AggregateRootType {
     COMMUNITY_POST,
     FILE_EXTRA,
     GROUP,
+    PUBLIC_FILE,
+    LIKE,
     ;
 
 }

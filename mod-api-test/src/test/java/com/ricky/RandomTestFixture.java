@@ -6,6 +6,8 @@ import com.apifan.common.random.source.PersonInfoSource;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 public class RandomTestFixture {
 
     public static String rMobile() {
@@ -62,6 +64,28 @@ public class RandomTestFixture {
 
     public static String rRawGroupName() {
         return AreaSource.getInstance().randomCity(",").split(",")[1] + OtherSource.getInstance().randomCompanyDepartment();
+    }
+
+    public static String rDescription() {
+        return rSentence(100);
+    }
+
+    public static String rSentence(int maxLength) {
+        if (maxLength < 5) {
+            return RandomStringUtils.secure().next(maxLength);
+        }
+
+        String sentence = OtherSource.getInstance().randomChinese(RandomUtils.secure().randomInt(1, 5000));
+        if (sentence.length() > maxLength) {
+            return sentence.substring(0, maxLength - 1).trim();
+        }
+
+        String trimed = sentence.trim();
+        if (isBlank(trimed)) {
+            return RandomStringUtils.secure().next(maxLength);
+        }
+
+        return trimed;
     }
 
 }

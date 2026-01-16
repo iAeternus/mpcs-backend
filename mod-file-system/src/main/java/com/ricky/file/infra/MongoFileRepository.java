@@ -3,16 +3,12 @@ package com.ricky.file.infra;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.file.domain.HashCachedStorageIds;
 import com.ricky.file.domain.StorageId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.ricky.common.utils.ValidationUtils.*;
@@ -44,9 +40,17 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
     }
 
     @Override
-    public HashCachedStorageIds cachedByFileHash(String hash) {
+    public Optional<StorageId> byFileHashOptional(String hash) {
         requireNotBlank(hash, "File hash must not be blank");
-        return cachedFileRepository.cachedByFileHash(hash);
+
+        Query query = query(where("hash").is(hash));
+        query.fields().include("storageId");
+
+        File file = mongoTemplate.findOne(query, File.class);
+        if (isNull(file)) {
+            return Optional.empty();
+        }
+        return Optional.of(file.getStorageId());
     }
 
     @Override

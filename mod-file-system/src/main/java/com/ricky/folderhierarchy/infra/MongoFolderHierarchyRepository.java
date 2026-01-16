@@ -89,7 +89,8 @@ public class MongoFolderHierarchyRepository extends MongoBaseRepository<FolderHi
         requireNotBlank(customId, "Custom ID must not be blank.");
         requireNotBlank(userId, "User ID must not be blank.");
 
-        return cachedFolderHierarchyRepository.cachedUserAllFolderHierarchies(userId).stream()
+        var hierarchies = cachedFolderHierarchyRepository.cachedUserAllFolderHierarchies(userId);
+        return hierarchies.getHierarchies().stream()
                 .anyMatch(fh -> ValidationUtils.equals(fh.getCustomId(), customId));
     }
 }

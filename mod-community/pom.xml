@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>com.ricky</groupId>
-            <artifactId>mod-common</artifactId>
+            <artifactId>mod-user</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
