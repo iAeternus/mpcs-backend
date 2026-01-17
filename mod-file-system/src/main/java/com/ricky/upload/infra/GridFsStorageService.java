@@ -109,7 +109,7 @@ public class GridFsStorageService implements StorageService {
 
     private GridFSFile findGridFSFile(StorageId storageId) {
         try {
-            ObjectId objectId = new ObjectId(storageId.getValue());
+            ObjectId objectId = storageId.toObjectId();
             return gridFsTemplate.findOne(query(where("_id").is(objectId)));
         } catch (IllegalArgumentException e) {
             return null;
@@ -119,12 +119,12 @@ public class GridFsStorageService implements StorageService {
 
     @Override
     public InputStream getFileStream(StorageId storageId) {
-        return gridFSBucket.openDownloadStream(new ObjectId(storageId.getValue()));
+        return gridFSBucket.openDownloadStream(storageId.toObjectId());
     }
 
     @Override
     public void delete(StorageId storageId) {
-        ObjectId objectId = new ObjectId(storageId.getValue());
+        ObjectId objectId = storageId.toObjectId();
         Query query = query(where("_id").is(objectId));
         gridFsTemplate.delete(query);
     }
@@ -132,7 +132,7 @@ public class GridFsStorageService implements StorageService {
     @Override
     public void delete(List<StorageId> storageIds) {
         List<ObjectId> objectIds = storageIds.stream()
-                .map(storageId -> new ObjectId(storageId.getValue()))
+                .map(StorageId::toObjectId)
                 .collect(toImmutableList());
         Query query = query(where("_id").in(objectIds));
         gridFsTemplate.delete(query);

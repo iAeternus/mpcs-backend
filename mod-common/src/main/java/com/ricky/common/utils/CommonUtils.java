@@ -74,17 +74,6 @@ public class CommonUtils {
         return mobile.replaceAll("(\\w{3})\\w*(\\w{4})", "$1****$2");
     }
 
-    public static String redisCacheKey(String cacheName, String userId) {
-        return "Cache:" + cacheName + "::" + userId;
-    }
-
-    public static String objectToString(Object obj) {
-        if (obj instanceof String str) {
-            return str;
-        }
-        throw new IllegalArgumentException("类型必须是String");
-    }
-
     public static List<String> objectToListString(Object obj) {
         if (obj instanceof Collection<?> coll) {
             return coll.stream()

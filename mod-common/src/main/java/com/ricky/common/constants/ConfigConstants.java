@@ -2,6 +2,12 @@ package com.ricky.common.constants;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.text.Collator;
+import java.time.format.DateTimeFormatter;
+
+import static java.time.ZoneId.systemDefault;
+import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.Locale.CHINA;
 
 /**
  * @author Ricky
@@ -12,15 +18,16 @@ import java.nio.charset.StandardCharsets;
  */
 public interface ConfigConstants {
 
-    String CHINA_TIME_ZONE = "Asia/Shanghai";
     Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
     String AUTHORIZATION = "Authorization";
     String BEARER = "Bearer ";
     String AUTH_COOKIE_NAME = "mpcstoken";
     String NO_USER_ID = "NO_USER_ID";
-
-    String LOCAL_DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
+    String CHINA_TIME_ZONE = "Asia/Shanghai";
+    DateTimeFormatter DATE_TIME_FORMATTER = ofPattern("yyyy-MM-dd HH:mm").withZone(systemDefault());
+    DateTimeFormatter DATE_FORMATTER = ofPattern("yyyy-MM-dd").withZone(systemDefault());
+    Collator CHINESE_COLLATOR = Collator.getInstance(CHINA);
 
     // MongoDB集合名
     String USER_COLLECTION = "users";
@@ -54,15 +61,18 @@ public interface ConfigConstants {
     String SENSITIVE_WORD_ID_PREFIX = "SST";
 
     // Cache
-    String USER_CACHE = "USER";
-    String FILE_CACHE = "FILE";
-    String UPLOAD_SESSION_CACHE = "UPLOAD_SESSION";
+    String USER_CACHE = "USERS";
+    String FILE_CACHE = "FILES";
+    String UPLOAD_SESSION_CACHE = "UPLOAD_SESSIONS";
     String USER_FOLDERS_CACHE = "USER_FOLDERS";
-    String FOLDER_CACHE = "FOLDER";
+    String FOLDER_CACHE = "FOLDERS";
     String USER_FOLDER_HIERARCHIES_CACHE = "USER_FOLDER_HIERARCHIES";
-    String FOLDER_HIERARCHY_CACHE = "FOLDER_HIERARCHY";
-    String FILE_EXTRA_CACHE = "FILE_EXTRA";
+    String FOLDER_HIERARCHY_CACHE = "FOLDER_HIERARCHIES";
+    String FILE_EXTRA_CACHE = "FILE_EXTRAS";
     String USER_GROUPS_CACHE = "USER_GROUPS";
+    String LIKE_CACHE = "LIKES";
+    String LIKED_COUNT_CACHE = "LIKED_COUNTS";
+    String PUBLIC_FILE_CACHE = "PUBLIC_FILES";
 
     String REDIS_DOMAIN_EVENT_CONSUMER_GROUP = "domain.event.group";
     String REDIS_WEBHOOK_CONSUMER_GROUP = "webhook.group";

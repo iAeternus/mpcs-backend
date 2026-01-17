@@ -97,20 +97,12 @@ public class PublicFile extends AggregateRoot {
         addOpsLog("审查未通过，发布失败", userContext);
     }
 
-    public void like() {
-        this.likeCount++;
+    public void updateLikeCount(int newCount) {
+        this.likeCount = newCount;
     }
 
-    public void unlike() {
-        this.likeCount--;
-    }
-
-    public void comment() {
-        this.commentCount++;
-    }
-
-    public void deleteComment() {
-        this.commentCount--;
+    public void updateCommentCount(int newCount) {
+        this.commentCount = newCount;
     }
 
 }

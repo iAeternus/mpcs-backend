@@ -8,6 +8,7 @@ import com.ricky.folder.domain.UserCachedFolders;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.UserCachedFolderHierarchies;
 import com.ricky.group.domain.UserCachedGroups;
+import com.ricky.publicfile.domain.PublicFile;
 import com.ricky.upload.domain.UploadSession;
 import com.ricky.user.domain.User;
 import org.springframework.boot.autoconfigure.cache.RedisCacheManagerBuilderCustomizer;
@@ -54,6 +55,7 @@ public class CacheConfiguration {
         var folderHierarchyCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, FolderHierarchy.class);
         var fileExtraCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, FileExtra.class);
         var userCachedGroupSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserCachedGroups.class);
+        var publicFileSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, PublicFile.class);
 
         return builder -> builder.cacheDefaults(defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
@@ -94,6 +96,10 @@ public class CacheConfiguration {
                 .withCacheConfiguration(USER_GROUPS_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
                         .serializeValuesWith(fromSerializer(userCachedGroupSerializer))
+                        .entryTtl(ofDays(7)))
+                .withCacheConfiguration(PUBLIC_FILE_CACHE, defaultCacheConfig()
+                        .prefixCacheNameWith(CACHE_PREFIX)
+                        .serializeValuesWith(fromSerializer(publicFileSerializer))
                         .entryTtl(ofDays(7)))
                 ;
     }
