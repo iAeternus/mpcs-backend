@@ -11,6 +11,7 @@ public enum AggregateRootType {
     GROUP,
     PUBLIC_FILE,
     LIKE,
+    COMMENT,
     ;
 
 }

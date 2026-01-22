@@ -138,7 +138,7 @@ public class FolderHierarchy extends AggregateRoot {
             this.hierarchy = this.idTree.buildHierarchy(MAX_FOLDER_HIERARCHY_LEVEL);
         } catch (IdNodeLevelOverflowException ex) {
             String msg = "文件夹层级最多不能超过" + MAX_FOLDER_HIERARCHY_LEVEL + "层。";
-            throw new MyException(FOLDER_HIERARCHY_TOO_DEEP, msg, "userId", this.getUserId());
+            throw new MyException(FOLDER_HIERARCHY_TOO_DEEP, msg, "customId", this.getCustomId());
         }
     }
 

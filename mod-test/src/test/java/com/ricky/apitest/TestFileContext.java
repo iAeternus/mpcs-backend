@@ -5,13 +5,14 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
+import lombok.experimental.SuperBuilder;
 
 import java.io.File;
 
 @Value
 @Builder
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class TextFileContext {
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
+public class TestFileContext {
 
     LoginResponse manager;
     String customId;
@@ -19,4 +20,5 @@ public class TextFileContext {
     String fileHash;
     String fileId;
     File originalFile;
+
 }

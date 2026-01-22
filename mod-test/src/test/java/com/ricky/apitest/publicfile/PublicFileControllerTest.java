@@ -1,7 +1,7 @@
 package com.ricky.apitest.publicfile;
 
 import com.ricky.apitest.BaseApiTest;
-import com.ricky.apitest.TextFileContext;
+import com.ricky.apitest.TestFileContext;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
 import com.ricky.publicfile.command.EditDescriptionCommand;
@@ -26,7 +26,7 @@ public class PublicFileControllerTest extends BaseApiTest {
     @Test
     void should_post_file() throws IOException {
         // Given
-        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
 
@@ -57,7 +57,7 @@ public class PublicFileControllerTest extends BaseApiTest {
     @Test
     void should_withdraw_file() throws IOException {
         // Given
-        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
         String postId = PublicFileApi.post(manager.getJwt(), fileId).getPostId();
@@ -76,7 +76,7 @@ public class PublicFileControllerTest extends BaseApiTest {
     @Test
     void should_update_title() throws IOException {
         // Given
-        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
         String postId = PublicFileApi.post(manager.getJwt(), fileId).getPostId();
@@ -97,7 +97,7 @@ public class PublicFileControllerTest extends BaseApiTest {
     @Test
     void should_edit_description() throws IOException {
         // Given
-        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
         String postId = PublicFileApi.post(manager.getJwt(), fileId).getPostId();

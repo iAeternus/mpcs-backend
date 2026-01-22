@@ -68,7 +68,7 @@ public class SetupApi {
         return registerWithLogin(rMobile(), rPassword());
     }
 
-    public TextFileContext registerWithFile(String path) throws IOException {
+    public TestFileContext registerWithFile(String path) throws IOException {
         LoginResponse manager = registerWithLogin();
         String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
 
@@ -80,7 +80,7 @@ public class SetupApi {
         String fileHash = deleteFileWithSameHash(file);
         String fileId = FileUploadApi.upload(manager.getJwt(), file, parentId).getFileId();
 
-        return TextFileContext.builder()
+        return TestFileContext.builder()
                 .manager(manager)
                 .customId(customId)
                 .parentId(parentId)

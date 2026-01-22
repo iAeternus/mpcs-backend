@@ -7,6 +7,8 @@ import com.ricky.publicfile.command.EditDescriptionCommand;
 import com.ricky.publicfile.command.ModifyTitleCommand;
 import com.ricky.publicfile.command.PostCommand;
 import com.ricky.publicfile.command.PostResponse;
+import com.ricky.publicfile.query.CommentCountResponse;
+import com.ricky.publicfile.query.LikeCountResponse;
 import com.ricky.publicfile.query.PublicFilePageQuery;
 import com.ricky.publicfile.query.PublicFileResponse;
 import com.ricky.publicfile.service.PublicFileQueryService;
@@ -66,6 +68,18 @@ public class PublicFileController {
     public PagedList<PublicFileResponse> page(@RequestBody @Valid PublicFilePageQuery query,
                                               @AuthenticationPrincipal UserContext userContext) {
         return publicFileQueryService.page(query, userContext);
+    }
+
+    @GetMapping("/{postId}/comment")
+    @Operation(summary = "获取发布物评论数")
+    public CommentCountResponse fetchCommentCount(@PathVariable @NotBlank @Id(POST_ID_PREFIX) String postId) {
+        return publicFileQueryService.fetchCommentCount(postId);
+    }
+
+    @GetMapping("/{postId}/like")
+    @Operation(summary = "获取发布物点赞数")
+    public LikeCountResponse fetchLikeCount(@PathVariable @NotBlank @Id(POST_ID_PREFIX) String postId) {
+        return publicFileQueryService.fetchLikeCount(postId);
     }
 
 }

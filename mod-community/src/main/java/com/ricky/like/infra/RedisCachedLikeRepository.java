@@ -16,8 +16,8 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.ricky.common.constants.ConfigConstants.LIKED_COUNT_CACHE;
-import static com.ricky.common.constants.ConfigConstants.LIKE_CACHE;
+import static com.ricky.common.constants.ConfigConstants.LIKED_COUNT_KEY;
+import static com.ricky.common.constants.ConfigConstants.LIKE_KEY;
 import static com.ricky.common.constants.LuaScriptConstants.*;
 import static com.ricky.common.utils.RedisKeyUtils.SEPARATE;
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
@@ -43,7 +43,7 @@ public class RedisCachedLikeRepository implements CachedLikeRepository {
 
         Long result = stringRedisTemplate.execute(
                 TRY_LIKE_SCRIPT,
-                List.of(LIKE_CACHE, LIKED_COUNT_CACHE),
+                List.of(LIKE_KEY, LIKED_COUNT_KEY),
                 userPostKey,
                 postId,
                 String.valueOf(LikeStatus.LIKE.getCode())
@@ -58,7 +58,7 @@ public class RedisCachedLikeRepository implements CachedLikeRepository {
 
         Long result = stringRedisTemplate.execute(
                 TRY_UNLIKE_SCRIPT,
-                List.of(LIKE_CACHE, LIKED_COUNT_CACHE),
+                List.of(LIKE_KEY, LIKED_COUNT_KEY),
                 userPostKey,
                 postId,
                 String.valueOf(LikeStatus.LIKE.getCode()),
@@ -70,10 +70,10 @@ public class RedisCachedLikeRepository implements CachedLikeRepository {
 
     @Override
     public LikedCount cachedById(String postId) {
-        Object value = stringRedisTemplate.opsForHash().get(LIKED_COUNT_CACHE, postId);
+        Object value = stringRedisTemplate.opsForHash().get(LIKED_COUNT_KEY, postId);
         if (isNull(value)) {
             PublicFile publicFile = publicFileRepository.cachedById(postId);
-            stringRedisTemplate.opsForHash().put(LIKED_COUNT_CACHE, postId, publicFile.getLikeCount());
+            stringRedisTemplate.opsForHash().put(LIKED_COUNT_KEY, postId, String.valueOf(publicFile.getLikeCount()));
             return LikedCount.builder()
                     .postId(postId)
                     .count(publicFile.getLikeCount())
@@ -89,7 +89,7 @@ public class RedisCachedLikeRepository implements CachedLikeRepository {
 
     @Override
     public List<LikeRecord> listAllLike() {
-        List<Object> result = stringRedisTemplate.execute(HGETALL_AND_DEL_SCRIPT, singletonList(LIKE_CACHE));
+        List<Object> result = stringRedisTemplate.execute(HGETALL_AND_DEL_SCRIPT, singletonList(LIKE_KEY));
         if (isEmpty(result)) {
             return List.of();
         }
@@ -115,7 +115,7 @@ public class RedisCachedLikeRepository implements CachedLikeRepository {
 
     @Override
     public List<LikedCount> listAllLikedCount() {
-        List<Object> result = stringRedisTemplate.execute(HGETALL_AND_DEL_SCRIPT, singletonList(LIKED_COUNT_CACHE));
+        List<Object> result = stringRedisTemplate.execute(HGETALL_AND_DEL_SCRIPT, singletonList(LIKED_COUNT_KEY));
         if (isEmpty(result)) {
             return List.of();
         }

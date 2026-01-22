@@ -1,7 +1,7 @@
 package com.ricky.apitest.file;
 
 import com.ricky.apitest.BaseApiTest;
-import com.ricky.apitest.TextFileContext;
+import com.ricky.apitest.TestFileContext;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.command.MoveFileCommand;
 import com.ricky.file.command.RenameFileCommand;
@@ -29,7 +29,7 @@ public class FileControllerTest extends BaseApiTest {
     @Test
     void should_rename_file() throws IOException {
         // Given
-        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
 
@@ -48,7 +48,7 @@ public class FileControllerTest extends BaseApiTest {
     @Test
     void should_delete_file_force() throws IOException, InterruptedException {
         // Given
-        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
 
@@ -152,7 +152,7 @@ public class FileControllerTest extends BaseApiTest {
     @Test
     void should_fetch_file_info() throws IOException {
         // Given
-        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
 

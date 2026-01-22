@@ -29,6 +29,8 @@ public enum DomainEventType {
     FILE_WITHDREW(PUBLIC_FILE),
     LIKED(LIKE),
     UNLIKED(LIKE),
+    COMMENT_CREATED(COMMENT),
+    COMMENT_DELETED(COMMENT),
     ;
     // add here...
     ;

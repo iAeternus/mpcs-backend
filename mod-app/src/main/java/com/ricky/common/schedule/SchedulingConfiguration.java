@@ -1,5 +1,6 @@
 package com.ricky.common.schedule;
 
+import com.ricky.comment.job.SyncCommentCountsJob;
 import com.ricky.common.event.DomainEventJobs;
 import com.ricky.common.event.publish.DomainEventPublisher;
 import com.ricky.like.job.SyncLikeRecordsJob;
@@ -24,6 +25,7 @@ public class SchedulingConfiguration {
     private final DomainEventPublisher domainEventPublisher;
     private final DomainEventJobs domainEventJobs;
     private final SyncLikeRecordsJob syncLikeRecordsJob;
+    private final SyncCommentCountsJob syncCommentCountsJob;
 
     // 定时任务尽量放到前半个小时运行，以将后半个多小时留给部署时间
 
@@ -41,6 +43,13 @@ public class SchedulingConfiguration {
     @SchedulerLock(name = "syncLikeRecords", lockAtMostFor = "40m", lockAtLeastFor = "1m")
     public void syncLikeRecords() {
         syncLikeRecordsJob.run(now());
+    }
+
+    // 将评论数同步至数据库，每小时第5分钟运行，为了和syncLikeRecords错开
+    @Scheduled(cron = "0 4 */1 * * ?")
+    @SchedulerLock(name = "syncCommentCounts", lockAtMostFor = "40m", lockAtLeastFor = "1m")
+    public void syncCommentCounts() {
+        syncCommentCountsJob.run(now());
     }
 
     // add here...

@@ -80,29 +80,40 @@ public class PublicFile extends AggregateRoot {
         raiseEvent(new FileWithdrewEvent(getId(), userContext));
     }
 
-    //
+    // TODO 领域事件中调用
     public void approve(UserContext userContext) {
-        if (this.status != UNDER_REVIEW) {
-            throw new MyException(PUBLIC_FILE_STATUS_ERROR, "社区文件状态错误。", "postId", getId());
-        }
+        ensureStatus(UNDER_REVIEW);
         this.status = PUBLISHED;
         addOpsLog("审查通过，发布成功", userContext);
     }
 
+    // TODO 领域事件中调用
     public void reject(UserContext userContext) {
-        if (this.status != UNDER_REVIEW) {
-            throw new MyException(PUBLIC_FILE_STATUS_ERROR, "社区文件状态错误。", "postId", getId());
-        }
-        this.status = PUBLISH_FAILED;
+        ensureStatus(UNDER_REVIEW);
+        this.status = REJECTED;
         addOpsLog("审查未通过，发布失败", userContext);
     }
 
-    public void updateLikeCount(int newCount) {
-        this.likeCount = newCount;
+    private void ensureStatus(PublicFileStatus status) {
+        if (this.status != status) {
+            throw new MyException(PUBLIC_FILE_STATUS_ERROR, "社区文件状态错误。", "postId", getId());
+        }
     }
 
-    public void updateCommentCount(int newCount) {
+    public void updateLikeCount(int newCount, UserContext userContext) {
+        if (this.likeCount == newCount) {
+            return;
+        }
+        this.likeCount = newCount;
+        addOpsLog("更新点赞数为 " + newCount, userContext);
+    }
+
+    public void updateCommentCount(int newCount, UserContext userContext) {
+        if (this.commentCount == newCount) {
+            return;
+        }
         this.commentCount = newCount;
+        addOpsLog("更新评论数为 " + newCount, userContext);
     }
 
 }

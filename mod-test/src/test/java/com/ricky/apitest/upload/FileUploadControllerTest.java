@@ -2,7 +2,7 @@ package com.ricky.apitest.upload;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.ricky.apitest.BaseApiTest;
-import com.ricky.apitest.TextFileContext;
+import com.ricky.apitest.TestFileContext;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileStatus;
@@ -81,7 +81,7 @@ class FileUploadControllerTest extends BaseApiTest {
     @Test
     void should_fail_to_upload_file_if_file_name_duplicates_at_same_folder() throws IOException {
         // Given
-        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         java.io.File originalFile = ctx.getOriginalFile();
         String parentId = ctx.getParentId();
@@ -171,7 +171,7 @@ class FileUploadControllerTest extends BaseApiTest {
     @Test
     void should_fast_upload_when_hash_exists() throws IOException {
         // Given
-        TextFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt"); // 先上传文件，抢占 storageId
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt"); // 先上传文件，抢占 storageId
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
         String fileHash = ctx.getFileHash();

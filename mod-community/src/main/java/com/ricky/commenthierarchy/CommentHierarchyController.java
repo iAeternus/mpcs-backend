@@ -14,4 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "评论层次结构模块")
 @RequestMapping("/comment-hierarchy")
 public class CommentHierarchyController {
+
+    // TODO 回复某条评论
+    // TODO 分页获取某评论的所有回复
+
 }

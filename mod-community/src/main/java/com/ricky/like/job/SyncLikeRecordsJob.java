@@ -43,7 +43,7 @@ public class SyncLikeRecordsJob {
         Map<String, Integer> likeCountsMap = likedCounts.stream()
                 .collect(Collectors.toMap(LikedCount::getPostId, LikedCount::getCount));
         List<PublicFile> publicFiles = publicFileRepository.byIds(likeCountsMap.keySet());
-        publicFiles.forEach(pf -> pf.updateLikeCount(likeCountsMap.getOrDefault(pf.getId(), 0)));
+        publicFiles.forEach(pf -> pf.updateLikeCount(likeCountsMap.getOrDefault(pf.getId(), 0), NOUSER));
         publicFileRepository.save(publicFiles);
     }
 

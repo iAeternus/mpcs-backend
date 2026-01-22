@@ -88,4 +88,8 @@ public class RandomTestFixture {
         return trimed;
     }
 
+    public static String rCommentContent() {
+        return rSentence(64);
+    }
+
 }

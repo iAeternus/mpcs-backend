@@ -15,6 +15,7 @@ import static com.ricky.common.event.DomainEventType.FOLDER_HIERARCHY_CHANGED;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FolderHierarchyChangedEvent extends DomainEvent {
 
+    // TODO 谁 change 了什么
     private String userId;
 
     public FolderHierarchyChangedEvent(String userId, UserContext userContext) {
