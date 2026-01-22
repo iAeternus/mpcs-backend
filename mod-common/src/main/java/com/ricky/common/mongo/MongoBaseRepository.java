@@ -4,6 +4,8 @@ import com.google.common.collect.Maps;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.event.DomainEvent;
+import com.ricky.common.event.LocalDomainEvent;
+import com.ricky.common.event.local.TransactionalLocalEventPublisher;
 import com.ricky.common.event.publish.PublishingDomainEventDao;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.ValidationUtils;
@@ -49,6 +51,9 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
     @Autowired
     protected PublishingDomainEventDao publishingDomainEventDao;
 
+    @Autowired
+    protected TransactionalLocalEventPublisher localEventPublisher;
+
     /**
      * 保存聚合根<br>
      * 文档已存在则更新，如果不存在则插入<br>
@@ -63,6 +68,8 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
 
         mongoTemplate.save(ar);
         saveEvents(ar.getEvents());
+
+        localEventPublisher.publishAfterCommit(ar.pullLocalEvents());
     }
 
     /**
@@ -81,14 +88,19 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
 
         checkSameUser(ars);
         List<DomainEvent> events = new ArrayList<>();
+        List<LocalDomainEvent> localEvents = new ArrayList<>();
         ars.forEach(ar -> {
             if (isNotEmpty(ar.getEvents())) {
                 events.addAll(ar.getEvents());
+            }
+            if (isNotEmpty(ar.getLocalEvents())) {
+                localEvents.addAll(ar.pullLocalEvents());
             }
             mongoTemplate.save(ar);
         });
 
         saveEvents(events);
+        localEventPublisher.publishAfterCommit(localEvents);
     }
 
     /**

@@ -15,4 +15,5 @@ public interface CommentRepository {
     List<Comment> byIds(Set<String> commentIds);
 
     boolean exists(String commentId);
+
 }

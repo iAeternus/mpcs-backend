@@ -4,6 +4,9 @@ import com.ricky.comment.domain.Comment;
 import com.ricky.comment.domain.CommentRepository;
 import com.ricky.common.mongo.MongoBaseRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

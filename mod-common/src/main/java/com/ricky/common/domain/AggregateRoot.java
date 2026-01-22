@@ -3,6 +3,7 @@ package com.ricky.common.domain;
 import com.ricky.common.domain.marker.Identified;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.event.DomainEvent;
+import com.ricky.common.event.LocalDomainEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -84,6 +85,12 @@ public abstract class AggregateRoot implements Identified {
      */
     @Transient
     private List<DomainEvent> events;
+
+    /**
+     * 本地领域事件列表，提供轻量级的事务后处理方案
+     */
+    @Transient
+    private List<LocalDomainEvent> localEvents;
 
     /**
      * 操作日志
@@ -177,5 +184,31 @@ public abstract class AggregateRoot implements Identified {
             this.events = new ArrayList<>();
         }
         return events;
+    }
+
+    /**
+     * 触发本地事件
+     */
+    protected void raiseLocalEvent(LocalDomainEvent event) {
+        allLocalEvents().add(event);
+    }
+
+    /**
+     * 拉取所有本地领域事件，会清空聚合根本地领域事件列表
+     */
+    public List<LocalDomainEvent> pullLocalEvents() {
+        if (localEvents == null) {
+            return List.of();
+        }
+        List<LocalDomainEvent> copy = List.copyOf(localEvents);
+        localEvents.clear();
+        return copy;
+    }
+
+    private List<LocalDomainEvent> allLocalEvents() {
+        if (isNull(localEvents)) {
+            this.localEvents = new ArrayList<>();
+        }
+        return localEvents;
     }
 }

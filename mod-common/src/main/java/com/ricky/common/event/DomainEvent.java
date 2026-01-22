@@ -80,7 +80,7 @@ public abstract class DomainEvent {
      *
      * @return 事件id
      */
-    public String newEventId() {
+    public static String newEventId() {
         return "EVT" + SnowflakeIdGenerator.newSnowflakeId();
     }
 

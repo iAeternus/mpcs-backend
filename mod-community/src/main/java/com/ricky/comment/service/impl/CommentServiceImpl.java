@@ -5,10 +5,13 @@ import com.ricky.comment.command.CreateCommentResponse;
 import com.ricky.comment.command.DeleteCommentCommand;
 import com.ricky.comment.domain.Comment;
 import com.ricky.comment.domain.CommentRepository;
+import com.ricky.comment.domain.event.LocalCommentCreatedEvent;
+import com.ricky.comment.domain.event.LocalCommentDeletedEvent;
 import com.ricky.comment.service.CommentService;
 import com.ricky.commenthierarchy.domain.CommentHierarchy;
 import com.ricky.commenthierarchy.domain.CommentHierarchyRepository;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.event.local.TransactionalLocalEventPublisher;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.publicfile.domain.PublicFileDomainService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class CommentServiceImpl implements CommentService {
     private final PublicFileDomainService publicFileDomainService;
     private final CommentRepository commentRepository;
     private final CommentHierarchyRepository commentHierarchyRepository;
+    private final TransactionalLocalEventPublisher transactionalLocalEventPublisher;
 
     @Override
     @Transactional
