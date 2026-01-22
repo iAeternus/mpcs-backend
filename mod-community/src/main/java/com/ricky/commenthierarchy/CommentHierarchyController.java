@@ -1,21 +1,33 @@
 package com.ricky.commenthierarchy;
 
+import com.ricky.commenthierarchy.command.ReplyCommand;
+import com.ricky.commenthierarchy.command.ReplyResponse;
+import com.ricky.commenthierarchy.service.CommentHierarchyService;
+import com.ricky.common.domain.user.UserContext;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Validated
 @CrossOrigin
 @RestController
 @RequiredArgsConstructor
 @Tag(name = "评论层次结构模块")
-@RequestMapping("/comment-hierarchy")
+@RequestMapping("/replies")
 public class CommentHierarchyController {
 
-    // TODO 回复某条评论
-    // TODO 分页获取某评论的所有回复
+    private final CommentHierarchyService commentHierarchyService;
 
+    @PostMapping
+    @Operation(summary = "回复某条评论")
+    public ReplyResponse reply(@RequestBody @Valid ReplyCommand command,
+                               @AuthenticationPrincipal UserContext userContext) {
+        return commentHierarchyService.reply(command, userContext);
+    }
+
+    // TODO 分页获取某评论的所有回复
 }

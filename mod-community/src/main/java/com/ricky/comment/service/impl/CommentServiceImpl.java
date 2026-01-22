@@ -3,21 +3,18 @@ package com.ricky.comment.service.impl;
 import com.ricky.comment.command.CreateCommentCommand;
 import com.ricky.comment.command.CreateCommentResponse;
 import com.ricky.comment.command.DeleteCommentCommand;
-import com.ricky.comment.domain.CachedCommentRepository;
 import com.ricky.comment.domain.Comment;
-import com.ricky.comment.domain.CommentDomainService;
 import com.ricky.comment.domain.CommentRepository;
 import com.ricky.comment.service.CommentService;
 import com.ricky.commenthierarchy.domain.CommentHierarchy;
 import com.ricky.commenthierarchy.domain.CommentHierarchyRepository;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
+import com.ricky.publicfile.domain.PublicFileDomainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.Set;
@@ -28,7 +25,7 @@ import java.util.Set;
 public class CommentServiceImpl implements CommentService {
 
     private final RateLimiter rateLimiter;
-    private final CommentDomainService commentDomainService;
+    private final PublicFileDomainService publicFileDomainService;
     private final CommentRepository commentRepository;
     private final CommentHierarchyRepository commentHierarchyRepository;
 
@@ -37,7 +34,7 @@ public class CommentServiceImpl implements CommentService {
     public CreateCommentResponse createComment(CreateCommentCommand command, UserContext userContext) {
         rateLimiter.applyFor("Comment:CreateComment", 50);
 
-        commentDomainService.checkPostIdExists(command.getPostId(), userContext);
+        publicFileDomainService.checkExists(command.getPostId(), userContext);
 
         // TODO 敏感词检测
 
@@ -58,7 +55,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional
     public void deleteComment(DeleteCommentCommand command, UserContext userContext) {
-        rateLimiter.applyFor("Comment:DeleteComment", 50);
+        rateLimiter.applyFor("Comment:DeleteComment", 10);
 
         CommentHierarchy hierarchy = commentHierarchyRepository.byPostId(command.getPostId());
         Set<String> commentIds = hierarchy.withAllChildIdsOf(command.getCommentId());

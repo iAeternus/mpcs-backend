@@ -31,23 +31,23 @@ public class CommentControllerTest extends BaseApiTest {
         TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
 
-        PostResponse postResponse = PublicFileApi.post(manager.getJwt(), ctx.getFileId());
+        String postId = PublicFileApi.post(manager.getJwt(), ctx.getFileId()).getPostId();
 
         // When
         CreateCommentResponse response = CommentApi.createComment(manager.getJwt(), CreateCommentCommand.builder()
-                .postId(postResponse.getPostId())
+                .postId(postId)
                 .content(rCommentContent())
                 .build());
 
         // Then
         Comment comment = commentRepository.byId(response.getCommentId());
-        assertEquals(postResponse.getPostId(), comment.getPostId());
+        assertEquals(postId, comment.getPostId());
 
-        CommentHierarchy hierarchy = commentHierarchyRepository.byPostId(postResponse.getPostId());
-        assertTrue(hierarchy.containsCommentId(comment.getId()));
+        CommentHierarchy hierarchy = commentHierarchyRepository.byPostId(postId);
+        assertTrue(hierarchy.containsCommentId(response.getCommentId()));
 
         CommentCreatedEvent evt = latestEventFor(comment.getId(), COMMENT_CREATED, CommentCreatedEvent.class);
-        assertEquals(postResponse.getPostId(), evt.getPostId());
+        assertEquals(postId, evt.getPostId());
     }
 
     @Test
