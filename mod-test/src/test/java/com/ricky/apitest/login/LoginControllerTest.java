@@ -1,14 +1,14 @@
 package com.ricky.apitest.login;
 
 import com.ricky.apitest.BaseApiTest;
+import com.ricky.apitest.user.UserApi;
+import com.ricky.apitest.verification.VerificationCodeApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.login.command.MobileOrEmailLoginCommand;
 import com.ricky.login.command.VerificationCodeLoginCommand;
-import com.ricky.apitest.user.UserApi;
 import com.ricky.user.command.RegisterResponse;
 import com.ricky.user.domain.User;
 import com.ricky.user.query.UserInfoResponse;
-import com.ricky.apitest.verification.VerificationCodeApi;
 import com.ricky.verification.domain.VerificationCode;
 import com.ricky.verification.domain.dto.cmd.CreateLoginVerificationCodeCommand;
 import lombok.extern.slf4j.Slf4j;

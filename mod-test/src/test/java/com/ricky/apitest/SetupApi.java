@@ -1,18 +1,18 @@
 package com.ricky.apitest;
 
+import com.ricky.apitest.folder.FolderApi;
+import com.ricky.apitest.login.LoginApi;
+import com.ricky.apitest.upload.FileUploadApi;
+import com.ricky.apitest.user.UserApi;
+import com.ricky.apitest.verification.VerificationCodeApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.apitest.folder.FolderApi;
 import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
-import com.ricky.apitest.login.LoginApi;
-import com.ricky.apitest.upload.FileUploadApi;
 import com.ricky.upload.domain.StorageService;
-import com.ricky.apitest.user.UserApi;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
-import com.ricky.apitest.verification.VerificationCodeApi;
 import com.ricky.verification.domain.VerificationCodeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;

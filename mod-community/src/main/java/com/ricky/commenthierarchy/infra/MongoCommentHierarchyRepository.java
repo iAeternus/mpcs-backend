@@ -27,7 +27,7 @@ public class MongoCommentHierarchyRepository extends MongoBaseRepository<Comment
 
         Query query = query(where("postId").is(postId));
         CommentHierarchy hierarchy = mongoTemplate.findOne(query, CommentHierarchy.class);
-        if(isNull(hierarchy)) {
+        if (isNull(hierarchy)) {
             throw new MyException(COMMENT_HIERARCHY_NOT_FOUND, "评论层次结构不存在", "postId", postId);
         }
 

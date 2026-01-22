@@ -26,7 +26,7 @@ public class TransactionalLocalEventPublisher {
 
     // 线程安全的事件队列，用于批量处理
     private final ThreadLocal<ConcurrentLinkedQueue<LocalDomainEvent>> eventQueue =
-        ThreadLocal.withInitial(ConcurrentLinkedQueue::new);
+            ThreadLocal.withInitial(ConcurrentLinkedQueue::new);
 
     /**
      * 发布事务后事件
@@ -88,7 +88,7 @@ public class TransactionalLocalEventPublisher {
     private void publishEvent(LocalDomainEvent event) {
         try {
             log.debug("Publishing local domain event: {} for aggregate: {}",
-                event.getClass().getSimpleName(), event.getAggregateId());
+                    event.getClass().getSimpleName(), event.getAggregateId());
             applicationEventPublisher.publishEvent(event);
         } catch (Exception e) {
             log.error("Failed to publish local domain event: {}", event, e);

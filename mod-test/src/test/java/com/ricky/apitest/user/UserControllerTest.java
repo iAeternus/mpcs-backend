@@ -1,12 +1,12 @@
 package com.ricky.apitest.user;
 
 import com.ricky.apitest.BaseApiTest;
+import com.ricky.apitest.verification.VerificationCodeApi;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.event.UserCreatedEvent;
-import com.ricky.apitest.verification.VerificationCodeApi;
 import org.junit.jupiter.api.Test;
 
 import static com.ricky.apitest.RandomTestFixture.*;

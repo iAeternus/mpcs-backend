@@ -13,9 +13,9 @@ import java.time.Instant;
 import java.util.stream.IntStream;
 
 import static com.ricky.apitest.RandomTestFixture.*;
+import static com.ricky.apitest.verification.VerificationCodeApi.*;
 import static com.ricky.common.constants.ConfigConstants.NO_USER_ID;
 import static com.ricky.common.domain.user.UserContext.NOUSER;
-import static com.ricky.apitest.verification.VerificationCodeApi.*;
 import static com.ricky.verification.domain.VerificationCodeType.LOGIN;
 import static java.time.temporal.ChronoUnit.MINUTES;
 import static org.junit.jupiter.api.Assertions.*;

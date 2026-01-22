@@ -1,6 +1,5 @@
 package com.ricky.comment.domain;
 
-import java.util.List;
 import java.util.Map;
 
 public interface CachedCommentRepository {

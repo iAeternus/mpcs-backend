@@ -1,6 +1,5 @@
 package com.ricky.common.event.local;
 
-import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.event.LocalDomainEvent;
 
 public interface LocalDomainEventHandler<E extends LocalDomainEvent> {

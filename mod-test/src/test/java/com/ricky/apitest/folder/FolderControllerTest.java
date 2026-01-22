@@ -1,6 +1,7 @@
 package com.ricky.apitest.folder;
 
 import com.ricky.apitest.BaseApiTest;
+import com.ricky.apitest.upload.FileUploadApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
 import com.ricky.folder.command.*;
@@ -11,7 +12,6 @@ import com.ricky.folder.domain.event.FolderDeletedEvent;
 import com.ricky.folder.query.FolderContentResponse;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
-import com.ricky.apitest.upload.FileUploadApi;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 

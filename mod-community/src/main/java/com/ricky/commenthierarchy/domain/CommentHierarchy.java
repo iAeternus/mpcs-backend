@@ -1,6 +1,5 @@
 package com.ricky.commenthierarchy.domain;
 
-import com.ricky.comment.command.CreateCommentCommand;
 import com.ricky.comment.domain.Comment;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.idtree.IdTree;
@@ -9,9 +8,6 @@ import com.ricky.common.domain.idtree.exception.IdNodeLevelOverflowException;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.SnowflakeIdGenerator;
-import com.ricky.common.validation.id.Id;
-import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +18,8 @@ import java.util.ArrayList;
 import java.util.Set;
 
 import static com.ricky.common.constants.ConfigConstants.*;
-import static com.ricky.common.exception.ErrorCodeEnum.*;
+import static com.ricky.common.exception.ErrorCodeEnum.COMMENT_HIERARCHY_TOO_DEEP;
+import static com.ricky.common.exception.ErrorCodeEnum.COMMENT_NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Getter

@@ -15,7 +15,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +35,7 @@ public class CommentController {
     @PostMapping
     @Operation(summary = "创建一级评论")
     public CreateCommentResponse createComment(@RequestBody @Valid CreateCommentCommand command,
-                                        @AuthenticationPrincipal UserContext userContext) {
+                                               @AuthenticationPrincipal UserContext userContext) {
         return commentService.createComment(command, userContext);
     }
 

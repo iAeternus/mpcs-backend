@@ -4,7 +4,6 @@ import com.ricky.common.domain.page.PageQuery;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
 

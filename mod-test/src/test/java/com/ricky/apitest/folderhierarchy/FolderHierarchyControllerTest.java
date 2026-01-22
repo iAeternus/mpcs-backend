@@ -1,9 +1,9 @@
 package com.ricky.apitest.folderhierarchy;
 
 import com.ricky.apitest.BaseApiTest;
+import com.ricky.apitest.folder.FolderApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.domain.idtree.IdTree;
-import com.ricky.apitest.folder.FolderApi;
 import com.ricky.folder.command.RenameFolderCommand;
 import com.ricky.folderhierarchy.command.UpdateFolderHierarchyCommand;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;

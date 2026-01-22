@@ -14,7 +14,7 @@ public class StorageId {
     @NotNull
     String value;
 
-    public ObjectId toObjectId(){
+    public ObjectId toObjectId() {
         return new ObjectId(value);
     }
 

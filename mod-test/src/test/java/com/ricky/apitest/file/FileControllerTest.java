@@ -2,16 +2,16 @@ package com.ricky.apitest.file;
 
 import com.ricky.apitest.BaseApiTest;
 import com.ricky.apitest.TestFileContext;
+import com.ricky.apitest.folder.FolderApi;
+import com.ricky.apitest.upload.FileUploadApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.command.MoveFileCommand;
 import com.ricky.file.command.RenameFileCommand;
 import com.ricky.file.domain.File;
 import com.ricky.file.query.FileInfoResponse;
 import com.ricky.file.query.FilePathResponse;
-import com.ricky.apitest.folder.FolderApi;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.apitest.upload.FileUploadApi;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 

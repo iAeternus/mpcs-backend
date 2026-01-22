@@ -5,8 +5,6 @@ import com.ricky.comment.command.CreateCommentResponse;
 import com.ricky.comment.command.DeleteCommentCommand;
 import com.ricky.comment.domain.Comment;
 import com.ricky.comment.domain.CommentRepository;
-import com.ricky.comment.domain.event.LocalCommentCreatedEvent;
-import com.ricky.comment.domain.event.LocalCommentDeletedEvent;
 import com.ricky.comment.service.CommentService;
 import com.ricky.commenthierarchy.domain.CommentHierarchy;
 import com.ricky.commenthierarchy.domain.CommentHierarchyRepository;
