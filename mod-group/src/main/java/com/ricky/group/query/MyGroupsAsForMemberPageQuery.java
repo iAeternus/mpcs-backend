@@ -5,22 +5,23 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.SuperBuilder;
 
 @Value
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GroupFoldersPageQuery extends PageQuery {
+public class MyGroupsAsForMemberPageQuery extends PageQuery {
 
     /**
-     * 搜索字段，目前支持groupId
+     * 搜索字段，目前支持groupId/name
      */
     @Size(max = 50)
     String search;
 
     /**
-     * 排序字段，目前支持TODO
+     * 排序字段，目前支持name/createdAt/active
      */
     @Size(max = 50)
     String sortedBy;

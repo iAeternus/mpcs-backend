@@ -40,4 +40,16 @@ public class PagedList<T> implements Response {
      */
     List<T> data;
 
+    public static <E> PagedList<E> pagedList(Pagination pagination, int count, List<E> data) {
+        return PagedList.<E>builder()
+                .totalCnt(count)
+                .pageIndex(pagination.getPageIndex())
+                .pageSize(pagination.getPageSize())
+                .data(data)
+                .build();
+    }
+
+    public int size() {
+        return data.size();
+    }
 }

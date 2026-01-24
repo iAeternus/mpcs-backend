@@ -254,7 +254,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
         }
 
         List<AR> ars = mongoTemplate.find(query(where("_id").in(ids)), arClass());
-        checkSameUser(ars);
+//        checkSameUser(ars);
         return List.copyOf(ars);
     }
 

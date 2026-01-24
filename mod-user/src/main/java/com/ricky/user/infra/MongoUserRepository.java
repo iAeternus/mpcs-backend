@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
@@ -84,5 +85,10 @@ public class MongoUserRepository extends MongoBaseRepository<User> implements Us
         long count = mongoTemplate.count(query, User.class);
 
         return count == userIds.size();
+    }
+
+    @Override
+    public List<User> byIds(Set<String> ids) {
+        return super.byIds(ids);
     }
 }

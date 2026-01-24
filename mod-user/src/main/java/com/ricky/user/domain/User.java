@@ -17,6 +17,8 @@ import java.util.Set;
 import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.USER_ID_PREFIX;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_ALREADY_LOCKED;
+import static com.ricky.common.exception.ErrorCodeEnum.USER_MOBILE_AND_EMAIL_BOTH_BLANK;
+import static com.ricky.common.utils.ValidationUtils.isBlank;
 import static java.time.LocalDate.now;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -34,7 +36,7 @@ public class User extends AggregateRoot {
     private String mobile; // 手机号，全局唯一，与email不能同时为空
     private String email; // 邮箱，全局唯一，与mobile不能同时为空
     private String password;
-    private String avatarUrl;
+    private String avatarUrl; // TODO
     private Role role;
     private boolean mobileIdentified; // 是否已验证手机号
     private FailedLoginCount failedLoginCount; // 登录失败次数
@@ -60,6 +62,23 @@ public class User extends AggregateRoot {
 
     public static String newUserId() {
         return USER_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
+    }
+
+    /**
+     * 获取手机号或邮箱
+     *
+     * @return 若都存在，则返回手机号，若都不存在，则抛出异常
+     */
+    public String getMobileOrEmail() {
+        boolean mobileIsBlank = isBlank(mobile);
+        boolean emailIsBlank = isBlank(email);
+        if (mobileIsBlank && emailIsBlank) {
+            throw new MyException(USER_MOBILE_AND_EMAIL_BOTH_BLANK, "用户手机号与邮箱不能同时为空", "userId", this.getId());
+        } else if (mobileIsBlank) {
+            return email;
+        } else {
+            return mobile;
+        }
     }
 
     public void checkActive() {

@@ -1,5 +1,7 @@
 package com.ricky.folder.infra;
 
+import com.ricky.common.exception.ErrorCodeEnum;
+import com.ricky.common.exception.MyException;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.UserCachedFolder;
@@ -14,6 +16,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 import static com.ricky.common.constants.ConfigConstants.*;
+import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NOT_FOUND;
+import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -48,7 +52,12 @@ public class MongoCachedFolderRepository extends MongoBaseRepository<Folder> {
         requireNotBlank(folderId, "Folder ID must not be blank.");
 
         Query query = query(where("_id").is(folderId));
-        return mongoTemplate.findOne(query, Folder.class);
+        Folder folder = mongoTemplate.findOne(query, Folder.class);
+        if(isNull(folder)) {
+            throw new MyException(FOLDER_NOT_FOUND, "文件夹不存在", "folderId", folderId);
+        }
+
+        return folder;
     }
 
     @Caching(evict = {@CacheEvict(value = FOLDER_CACHE, key = "#folderId")})

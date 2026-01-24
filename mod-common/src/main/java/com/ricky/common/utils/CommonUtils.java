@@ -13,6 +13,7 @@ import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.common.constants.ConfigConstants.CHINA_TIME_ZONE;
+import static java.util.Arrays.copyOfRange;
 import static java.util.regex.Pattern.matches;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -86,6 +87,18 @@ public class CommonUtils {
 
     public static LocalDateTime instantToLocalDateTime(Instant instant) {
         return instant.atZone(ZoneId.of(CHINA_TIME_ZONE)).toLocalDateTime();
+    }
+
+    /**
+     * 按空格分割搜索词，提取前三个
+     */
+    public static String[] splitSearchBySpace(String search) {
+        if (isBlank(search)) {
+            return new String[0];
+        }
+
+        String[] split = search.trim().split("\\s+");
+        return split.length > 3 ? copyOfRange(split, 0, 3) : split;
     }
 
 }

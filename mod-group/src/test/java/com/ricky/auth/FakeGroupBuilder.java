@@ -75,13 +75,12 @@ public class FakeGroupBuilder {
         when(g.appliesTo(any()))
                 .thenReturn(true);
 
-        when(g.permissionsOf(any(), any()))
+        when(g.permissionsOf(any()))
                 .thenAnswer(inv -> {
-                    String folderId = inv.getArgument(0);
-                    List<String> ancestors = inv.getArgument(1);
+                    List<String> ancestors = inv.getArgument(0);
 
                     return switch (policy) {
-                        case NONE -> grants.getOrDefault(folderId, Set.of());
+                        case NONE -> grants.getOrDefault(ancestors.get(0), Set.of());
                         // SELECTIVE暂时与FULL坐一桌
                         case FULL, SELECTIVE -> ancestors.stream()
                                 .filter(grants::containsKey)

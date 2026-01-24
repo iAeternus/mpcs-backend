@@ -1,19 +1,28 @@
 package com.ricky.apitest.group;
 
 import com.ricky.apitest.BaseApiTest;
+import com.ricky.apitest.folder.FolderApi;
+import com.ricky.common.auth.Permission;
 import com.ricky.common.domain.dto.resp.LoginResponse;
-import com.ricky.group.command.AddGroupManagersCommand;
-import com.ricky.group.command.AddGroupMembersCommand;
-import com.ricky.group.command.CreateGroupCommand;
-import com.ricky.group.command.RenameGroupCommand;
+import com.ricky.common.domain.page.PagedList;
+import com.ricky.folder.domain.Folder;
+import com.ricky.group.command.*;
 import com.ricky.group.domain.Group;
 import com.ricky.group.domain.event.GroupMembersChangedEvent;
+import com.ricky.group.query.GroupFoldersResponse;
+import com.ricky.group.query.GroupResponse;
+import com.ricky.group.query.MyGroupsAsForManaberPageQuery;
+import com.ricky.group.query.MyGroupsAsForMemberPageQuery;
 import com.ricky.user.domain.User;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
+import static com.ricky.apitest.RandomTestFixture.rFolderName;
 import static com.ricky.apitest.RandomTestFixture.rGroupName;
+import static com.ricky.common.auth.Permission.DOWNLOAD;
+import static com.ricky.common.auth.Permission.PREVIEW;
 import static com.ricky.common.event.DomainEventType.GROUP_MEMBERS_CHANGED;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -345,6 +354,201 @@ public class GroupControllerTest extends BaseApiTest {
 
         // When & Then
         assertError(() -> GroupApi.deactivateGroupRaw(manager.getJwt(), groupId), NO_MORE_THAN_ONE_VISIBLE_GROUP_LEFT);
+    }
+
+    @Test
+    void should_add_grant() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+
+        String groupId = GroupApi.createGroup(manager.getJwt());
+
+        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        Set<Permission> permissions = Set.of(PREVIEW, DOWNLOAD);
+
+        // When
+        GroupApi.addGrant(manager.getJwt(), AddGrantCommand.builder()
+                .groupId(groupId)
+                .folderId(folderId)
+                .permissions(Set.of(PREVIEW, DOWNLOAD))
+                .build());
+
+        // Then
+        Group group = groupRepository.byId(groupId);
+        assertTrue(group.containsFolder(folderId));
+
+        Set<Permission> dbPermissions = group.permissionsOf(List.of(folderId));
+        assertEquals(permissions, dbPermissions);
+    }
+
+    @Test
+    void should_fail_to_add_grant_if_folder_not_exists() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String groupId = GroupApi.createGroup(manager.getJwt());
+
+        // When & Then
+        assertError(() -> GroupApi.addGrantRaw(manager.getJwt(), AddGrantCommand.builder()
+                .groupId(groupId)
+                .folderId(Folder.newFolderId())
+                .permissions(Set.of(PREVIEW, DOWNLOAD))
+                .build()), NOT_ALL_FOLDERS_EXIST);
+    }
+
+    @Test
+    void should_add_grants() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+
+        String groupId = GroupApi.createGroup(manager.getJwt());
+
+        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        Set<Permission> permissions = Set.of(PREVIEW, DOWNLOAD);
+
+        // When
+        GroupApi.addGrants(manager.getJwt(), AddGrantsCommand.builder()
+                .groupId(groupId)
+                .folderIds(List.of(folderId1, folderId2))
+                .permissions(Set.of(PREVIEW, DOWNLOAD))
+                .build());
+
+        // Then
+        Group group = groupRepository.byId(groupId);
+        assertTrue(group.containsFolder(folderId1));
+        assertTrue(group.containsFolder(folderId2));
+
+        Set<Permission> dbPermissions1 = group.permissionsOf(List.of(folderId1));
+        assertEquals(permissions, dbPermissions1);
+
+        Set<Permission> dbPermissions2 = group.permissionsOf(List.of(folderId2));
+        assertEquals(permissions, dbPermissions2);
+    }
+
+    @Test
+    void should_fail_to_add_grants_if_folder_not_all_exists() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String groupId = GroupApi.createGroup(manager.getJwt());
+
+        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+
+        // When & Then
+        assertError(() -> GroupApi.addGrantsRaw(manager.getJwt(), AddGrantsCommand.builder()
+                .groupId(groupId)
+                .folderIds(List.of(folderId, Folder.newFolderId()))
+                .permissions(Set.of(PREVIEW, DOWNLOAD))
+                .build()), NOT_ALL_FOLDERS_EXIST);
+    }
+
+    @Test
+    void should_fetch_group_folders() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+
+        String groupId = GroupApi.createGroup(manager.getJwt());
+        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+
+        GroupApi.addGrant(manager.getJwt(), groupId, folderId);
+
+        // When
+        GroupFoldersResponse response = GroupApi.fetchGroupFolders(manager.getJwt(), groupId);
+
+        // Then
+        var groupFolders = response.getGroupFolders();
+        assertEquals(1, groupFolders.size());
+        assertEquals(folderId, groupFolders.get(0).getFolderId());
+    }
+
+    @Test
+    void should_fetch_group_ordinary_members() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String userId1 = setupApi.registerWithLogin().getUserId();
+        String userId2 = setupApi.registerWithLogin().getUserId();
+
+        String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, userId1);
+        GroupApi.addGroupManager(manager.getJwt(), groupId, userId2);
+
+        // When
+        var response = GroupApi.fetchGroupOrdinaryMembers(manager.getJwt(), groupId);
+
+        // Then
+        var groupOrdinaryMembers = response.getGroupOrdinaryMembers();
+        assertEquals(1, groupOrdinaryMembers.size());
+
+        User user = userRepository.byId(userId1);
+        assertEquals(user.getUsername(), groupOrdinaryMembers.get(0).getUsername());
+    }
+
+    @Test
+    void should_fetch_group_managers() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String userId = setupApi.registerWithLogin().getUserId();
+
+        String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupManager(manager.getJwt(), groupId, userId);
+
+        // When
+        var response = GroupApi.fetchGroupManagers(manager.getJwt(), groupId);
+
+        // Then
+        var groupManagers = response.getGroupManagers();
+        assertEquals(2, groupManagers.size());
+    }
+
+    @Test
+    void should_page_my_groups_as_for_manager() {
+        // Given
+        LoginResponse manager1 = setupApi.registerWithLogin();
+        LoginResponse manager2 = setupApi.registerWithLogin();
+
+        String groupNamePrefix = "Group";
+        String groupId1 = GroupApi.createGroup(manager1.getJwt(), groupNamePrefix + "1");
+        String groupId2 = GroupApi.createGroup(manager2.getJwt(), groupNamePrefix + "2");
+        GroupApi.addGroupManager(manager2.getJwt(), groupId2, manager1.getUserId());
+
+        // When
+        PagedList<GroupResponse> pagedList = GroupApi.pageMyGroupsAsForManager(manager1.getJwt(), MyGroupsAsForManaberPageQuery.builder()
+                .search(groupNamePrefix)
+                .ascSort(false)
+                .pageIndex(1)
+                .pageSize(10)
+                .build());
+
+        // Then
+        assertEquals(2, pagedList.size());
+    }
+
+    @Test
+    void should_page_my_groups_as_for_member() {
+        // Given
+        LoginResponse manager1 = setupApi.registerWithLogin();
+        LoginResponse user1 = setupApi.registerWithLogin();
+        LoginResponse user2 = setupApi.registerWithLogin();
+
+        String groupId1 = GroupApi.createGroup(manager1.getJwt());
+        String groupId2 = GroupApi.createGroup(user1.getJwt());
+        String groupId3 = GroupApi.createGroup(user2.getJwt());
+
+        GroupApi.addGroupMembers(user1.getJwt(), groupId2, manager1.getUserId());
+        GroupApi.addGroupManager(user2.getJwt(), groupId3, manager1.getUserId());
+
+        // When
+        PagedList<GroupResponse> pagedList = GroupApi.pageMyGroupsAsForMember(manager1.getJwt(), MyGroupsAsForMemberPageQuery.builder()
+                .ascSort(false)
+                .pageIndex(1)
+                .pageSize(10)
+                .build());
+
+        // Then
+        assertEquals(3, pagedList.size());
     }
 
 }

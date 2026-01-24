@@ -92,4 +92,9 @@ public class RandomTestFixture {
         return rSentence(64);
     }
 
+    public static <T extends Enum<?>> T rEnumOf(Class<T> clazz) {
+        int x = RandomUtils.secure().randomInt(0, clazz.getEnumConstants().length);
+        return clazz.getEnumConstants()[x];
+    }
+
 }

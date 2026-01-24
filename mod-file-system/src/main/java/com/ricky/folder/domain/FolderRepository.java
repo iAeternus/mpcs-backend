@@ -26,4 +26,6 @@ public interface FolderRepository {
     Optional<Folder> byIdOptional(String folderId);
 
     Folder cachedById(String folderId);
+
+    boolean allExists(List<String> folderIds);
 }

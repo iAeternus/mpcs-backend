@@ -18,4 +18,6 @@ public interface GroupRepository {
     Group byId(String groupId);
 
     Optional<Group> byIdOptional(String groupId);
+
+    CachedGroup cachedById(String groupId);
 }

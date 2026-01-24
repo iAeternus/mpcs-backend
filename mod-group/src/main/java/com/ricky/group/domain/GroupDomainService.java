@@ -59,7 +59,7 @@ public class GroupDomainService {
                 .filter(Group::isActive)
                 .filter(group -> group.containsMember(userId))
                 .filter(group -> group.appliesTo(folderId))
-                .flatMap(group -> group.permissionsOf(folderId, ancestors).stream())
+                .flatMap(group -> group.permissionsOf(ancestors).stream())
                 .collect(toImmutableSet());
     }
 

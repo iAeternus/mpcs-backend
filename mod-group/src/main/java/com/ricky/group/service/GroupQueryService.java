@@ -2,12 +2,16 @@ package com.ricky.group.service;
 
 import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.group.query.GroupFoldersPageQuery;
-import com.ricky.group.query.GroupFoldersResponse;
-import com.ricky.group.query.GroupMembersResponse;
+import com.ricky.group.query.*;
 
 public interface GroupQueryService {
-    GroupMembersResponse listGroupMembers(String groupId, UserContext userContext);
+    GroupFoldersResponse fetchGroupFolders(String groupId);
 
-    PagedList<GroupFoldersResponse> pageGroupFolders(String groupId, GroupFoldersPageQuery query, UserContext userContext);
+    GroupOrdinaryMembersResponse fetchGroupOrdinaryMembers(String groupId, UserContext userContext);
+
+    GroupManagersResponse fetchGroupManagers(String groupId, UserContext userContext);
+
+    PagedList<GroupResponse> pageMyGroupsAsForManager(MyGroupsAsForManaberPageQuery pageQuery, UserContext userContext);
+
+    PagedList<GroupResponse> pageMyGroupsAsForMember(MyGroupsAsForMemberPageQuery query, UserContext userContext);
 }

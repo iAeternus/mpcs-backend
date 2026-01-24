@@ -34,7 +34,7 @@ public class FolderHierarchyController {
     }
 
     @GetMapping("/{customId}")
-    @Operation(summary = "获取用户文件层级结构")
+    @Operation(summary = "获取文件层级结构")
     public FolderHierarchyResponse fetchFolderHierarchy(@PathVariable @NotBlank @CustomId String customId,
                                                         @AuthenticationPrincipal UserContext userContext) {
         return folderHierarchyQueryService.fetchFolderHierarchy(customId, userContext);

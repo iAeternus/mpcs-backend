@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.constants.ConfigConstants.*;
 import static com.ricky.common.exception.ErrorCodeEnum.MAX_GROUP_MANAGER_REACHED;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static com.ricky.common.utils.ValidationUtils.notEquals;
 
 /**
@@ -191,14 +192,32 @@ public class Group extends AggregateRoot {
         return grants.containsKey(folderId);
     }
 
-    public Set<Permission> permissionsOf(String folderId, List<String> ancestors) {
+    /**
+     * 获取当前文件夹的权限集合
+     * @param ancestors 当前文件夹的祖先集合，包括自身
+     * @return 权限集合
+     */
+    public Set<Permission> permissionsOf(List<String> ancestors) {
         return PermissionInheritanceResolver.resolve(inheritancePolicy, grants, ancestors);
     }
 
-
-    public void grant(String folderId, Set<Permission> permissions, UserContext userContext) {
+    public void addGrant(String folderId, Set<Permission> permissions, UserContext userContext) {
         grants.put(folderId, new HashSet<>(permissions));
         addOpsLog("设置资源权限：" + folderId, userContext);
+    }
+
+    public void addGrants(List<String> folderIds, Set<Permission> permissions, UserContext userContext) {
+        if(isEmpty(folderIds)) {
+            return;
+        }
+        for (String folderId : folderIds) {
+            grants.put(folderId, new HashSet<>(permissions));
+        }
+        addOpsLog("批量设置资源权限", userContext);
+    }
+
+    public boolean containsFolder(String folderId) {
+        return grants.containsKey(folderId);
     }
 
     public void revoke(String folderId, UserContext userContext) {

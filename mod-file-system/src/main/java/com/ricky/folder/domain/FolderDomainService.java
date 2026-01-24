@@ -10,13 +10,15 @@ import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.*;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
-import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NAME_DUPLICATES;
-import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_WITH_NAME_ALREADY_EXISTS;
+import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
+import static com.ricky.common.exception.ErrorCodeEnum.*;
 
 @Service
 @RequiredArgsConstructor
@@ -93,6 +95,21 @@ public class FolderDomainService {
                 .folderCount(subFolderIds.size())
                 .fileCount(fileCount)
                 .build();
+    }
+
+    public String folderPath(String customId, String folderId) {
+        FolderHierarchy hierarchy = folderHierarchyRepository.cachedByCustomId(customId);
+        return Arrays.stream(hierarchy.schemaOf(folderId).split(NODE_ID_SEPARATOR))
+                .map(folderRepository::cachedById)
+                .map(Folder::getFolderName)
+                .collect(Collectors.joining(NODE_ID_SEPARATOR));
+    }
+
+    public void checkFoldersAllExists(List<String> folderIds) {
+        boolean allExists = folderRepository.allExists(folderIds);
+        if(!allExists) {
+            throw new MyException(NOT_ALL_FOLDERS_EXIST, "有文件夹不存在", "folderIds", folderIds);
+        }
     }
 
     @Value

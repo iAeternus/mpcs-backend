@@ -75,6 +75,7 @@ public interface ConfigConstants {
     String FILE_EXTRA_CACHE = "FILE_EXTRAS";
     String USER_GROUPS_CACHE = "USER_GROUPS";
     String PUBLIC_FILE_CACHE = "PUBLIC_FILES";
+    String GROUPS_CACHE = "GROUPS";
 
     String LIKE_KEY = "LIKES";
     String LIKED_COUNT_KEY = "LIKED_COUNTS";
@@ -123,6 +124,8 @@ public interface ConfigConstants {
     int MIN_PAGE_SIZE = 10;
 
     int MAX_GROUP_MANAGER_SIZE = 10;
+    int MAX_GROUP_FOLDER_SIZE = 1024;
+    int MAX_GRANT_PERMISSION_SIZE = 64;
 
     // LLM摘要生成
     int BUFFER_SIZE = 8192;

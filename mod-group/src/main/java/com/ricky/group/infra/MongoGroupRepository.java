@@ -2,6 +2,7 @@ package com.ricky.group.infra;
 
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.common.utils.ValidationUtils;
+import com.ricky.group.domain.CachedGroup;
 import com.ricky.group.domain.Group;
 import com.ricky.group.domain.GroupRepository;
 import com.ricky.group.domain.UserCachedGroup;
@@ -37,12 +38,14 @@ public class MongoGroupRepository extends MongoBaseRepository<Group> implements 
     public void save(Group group) {
         super.save(group);
         cachedGroupRepository.evictUserGroupsCache(group.getUserId());
+        cachedGroupRepository.evictGroupCache(group.getId());
     }
 
     @Override
     public void delete(Group group) {
         super.delete(group);
         cachedGroupRepository.evictUserGroupsCache(group.getUserId());
+        cachedGroupRepository.evictGroupCache(group.getId());
     }
 
     @Override
@@ -60,5 +63,10 @@ public class MongoGroupRepository extends MongoBaseRepository<Group> implements 
     @Override
     public Optional<Group> byIdOptional(String id) {
         return super.byIdOptional(id);
+    }
+
+    @Override
+    public CachedGroup cachedById(String groupId) {
+        return cachedGroupRepository.cachedById(groupId);
     }
 }

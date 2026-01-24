@@ -6,6 +6,7 @@ import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folder.domain.UserCachedFolder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,6 +15,8 @@ import java.util.Set;
 
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Repository
 @RequiredArgsConstructor
@@ -85,5 +88,14 @@ public class MongoFolderRepository extends MongoBaseRepository<Folder> implement
     public Folder cachedById(String folderId) {
         requireNotBlank(folderId, "Folder ID must not be blank.");
         return cachedFolderRepository.cachedById(folderId);
+    }
+
+    @Override
+    public boolean allExists(List<String> folderIds) {
+        if (isEmpty(folderIds)) {
+            return true;
+        }
+        Query query = query(where("_id").in(folderIds));
+        return mongoTemplate.count(query, Folder.class) == folderIds.size();
     }
 }

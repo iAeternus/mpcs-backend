@@ -8,6 +8,7 @@ import com.ricky.file.query.FileInfoResponse;
 import com.ricky.file.query.FilePathResponse;
 import com.ricky.file.service.FileQueryService;
 import com.ricky.folder.domain.Folder;
+import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
@@ -25,22 +26,17 @@ import static com.ricky.common.utils.CommonUtils.instantToLocalDateTime;
 public class FileQueryServiceImpl implements FileQueryService {
 
     private final RateLimiter rateLimiter;
+    private final FolderDomainService folderDomainService;
     private final FileRepository fileRepository;
-    private final FolderHierarchyRepository folderHierarchyRepository;
-    private final FolderRepository folderRepository;
 
     @Override
     public FilePathResponse fetchFilePath(String customId, String fileId, UserContext userContext) {
         rateLimiter.applyFor("File:FetchFilePath", 50);
 
         File file = fileRepository.cachedById(fileId);
-        FolderHierarchy hierarchy = folderHierarchyRepository.cachedByCustomId(customId);
-        String dirPath = Arrays.stream(hierarchy.schemaOf(file.getParentId()).split(NODE_ID_SEPARATOR))
-                .map(folderRepository::cachedById)
-                .map(Folder::getFolderName)
-                .collect(Collectors.joining(NODE_ID_SEPARATOR));
+        String folderPath = folderDomainService.folderPath(customId, file.getParentId());
+        String path = folderPath + NODE_ID_SEPARATOR + file.getFilename();
 
-        String path = dirPath + NODE_ID_SEPARATOR + file.getFilename();
         return FilePathResponse.builder()
                 .path(path)
                 .build();

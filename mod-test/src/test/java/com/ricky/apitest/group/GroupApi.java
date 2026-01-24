@@ -1,24 +1,30 @@
 package com.ricky.apitest.group;
 
 import com.ricky.apitest.BaseApiTest;
+import com.ricky.common.auth.Permission;
 import com.ricky.common.domain.dto.resp.IdResponse;
-import com.ricky.group.command.AddGroupManagersCommand;
-import com.ricky.group.command.AddGroupMembersCommand;
-import com.ricky.group.command.CreateGroupCommand;
-import com.ricky.group.command.RenameGroupCommand;
+import com.ricky.common.domain.page.PagedList;
+import com.ricky.group.command.*;
+import com.ricky.group.query.*;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
+import org.assertj.core.data.Percentage;
 
 import java.util.List;
+import java.util.Set;
 
+import static com.ricky.apitest.RandomTestFixture.rEnumOf;
 import static com.ricky.apitest.RandomTestFixture.rGroupName;
 
 public class GroupApi {
+
+    private static final String ROOT_URL = "/groups";
 
     public static Response createGroupRaw(String jwt, CreateGroupCommand command) {
         return BaseApiTest.given(jwt)
                 .body(command)
                 .when()
-                .post("/groups");
+                .post(ROOT_URL);
     }
 
     public static String createGroup(String jwt, CreateGroupCommand command) {
@@ -41,7 +47,7 @@ public class GroupApi {
         return BaseApiTest.given(jwt)
                 .body(command)
                 .when()
-                .put("/groups/{groupId}/name", groupId);
+                .put(ROOT_URL + "/{groupId}/name", groupId);
     }
 
     public static void renameGroup(String jwt, String groupId, RenameGroupCommand command) {
@@ -58,7 +64,7 @@ public class GroupApi {
         return BaseApiTest.given(jwt)
                 .body(command)
                 .when()
-                .put("/groups/{groupId}/members", groupId);
+                .put(ROOT_URL + "/{groupId}/members", groupId);
     }
 
     public static void addGroupMembers(String jwt, String groupId, AddGroupMembersCommand command) {
@@ -76,7 +82,7 @@ public class GroupApi {
     public static Response removeGroupMemberRaw(String jwt, String groupId, String memberId) {
         return BaseApiTest.given(jwt)
                 .when()
-                .delete("/groups/{groupId}/members/{memberId}", groupId, memberId);
+                .delete(ROOT_URL + "/{groupId}/members/{memberId}", groupId, memberId);
     }
 
     public static void removeGroupMember(String jwt, String groupId, String memberId) {
@@ -88,7 +94,7 @@ public class GroupApi {
     public static Response addGroupManagerRaw(String jwt, String groupId, String memberId) {
         return BaseApiTest.given(jwt)
                 .when()
-                .put("/groups/{groupId}/managers/{memberId}", groupId, memberId);
+                .put(ROOT_URL + "/{groupId}/managers/{memberId}", groupId, memberId);
     }
 
     public static void addGroupManager(String jwt, String groupId, String memberId) {
@@ -99,7 +105,7 @@ public class GroupApi {
         return BaseApiTest.given(jwt)
                 .body(command)
                 .when()
-                .put("/groups/{groupId}/managers", groupId);
+                .put(ROOT_URL + "/{groupId}/managers", groupId);
     }
 
     public static void addGroupManagers(String jwt, String groupId, AddGroupManagersCommand command) {
@@ -117,7 +123,7 @@ public class GroupApi {
     public static Response removeGroupManagerRaw(String jwt, String groupId, String memberId) {
         return BaseApiTest.given(jwt)
                 .when()
-                .delete("/groups/{groupId}/managers/{memberId}", groupId, memberId);
+                .delete(ROOT_URL + "/{groupId}/managers/{memberId}", groupId, memberId);
     }
 
     public static void removeGroupManager(String jwt, String groupId, String memberId) {
@@ -129,7 +135,7 @@ public class GroupApi {
     public static Response deleteGroupRaw(String jwt, String groupId) {
         return BaseApiTest.given(jwt)
                 .when()
-                .delete("/groups/{id}", groupId);
+                .delete(ROOT_URL + "/{groupId}", groupId);
     }
 
     public static void deleteGroup(String jwt, String groupId) {
@@ -141,7 +147,7 @@ public class GroupApi {
     public static void activateGroup(String jwt, String groupId) {
         BaseApiTest.given(jwt)
                 .when()
-                .put("/groups/{groupId}/activation", groupId)
+                .put(ROOT_URL + "/{groupId}/activation", groupId)
                 .then()
                 .statusCode(200);
     }
@@ -155,7 +161,95 @@ public class GroupApi {
     public static Response deactivateGroupRaw(String jwt, String groupId) {
         return BaseApiTest.given(jwt)
                 .when()
-                .put("/groups/{groupId}/deactivation", groupId);
+                .put(ROOT_URL + "/{groupId}/deactivation", groupId);
+    }
+
+    public static Response addGrantRaw(String token, AddGrantCommand command) {
+        return BaseApiTest.given(token)
+                .body(command)
+                .when()
+                .put(ROOT_URL + "/grant");
+    }
+
+    public static void addGrant(String token, AddGrantCommand command) {
+        addGrantRaw(token, command)
+                .then()
+                .statusCode(200);
+    }
+
+    public static void addGrant(String token, String groupId, String folderId) {
+        addGrant(token, AddGrantCommand.builder()
+                .groupId(groupId)
+                .folderId(folderId)
+                .permissions(Set.of(rEnumOf(Permission.class)))
+                .build());
+    }
+
+    public static Response addGrantsRaw(String token, AddGrantsCommand command) {
+        return BaseApiTest.given(token)
+                .body(command)
+                .when()
+                .put(ROOT_URL + "/grants");
+    }
+
+    public static void addGrants(String token, AddGrantsCommand command) {
+        addGrantsRaw(token, command)
+                .then()
+                .statusCode(200);
+    }
+
+    public static GroupFoldersResponse fetchGroupFolders(String token, String groupId) {
+        return BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{groupId}/folders", groupId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(GroupFoldersResponse.class);
+    }
+
+    public static GroupOrdinaryMembersResponse fetchGroupOrdinaryMembers(String token, String groupId) {
+        return BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{groupId}/ordinary-member", groupId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(GroupOrdinaryMembersResponse.class);
+    }
+
+    public static GroupManagersResponse fetchGroupManagers(String token, String groupId) {
+        return BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{groupId}/managers", groupId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(GroupManagersResponse.class);
+    }
+
+    public static PagedList<GroupResponse> pageMyGroupsAsForManager(String token, MyGroupsAsForManaberPageQuery query) {
+        return BaseApiTest.given(token)
+                .body(query)
+                .when()
+                .post(ROOT_URL + "/page/my-groups")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<>() {
+                });
+    }
+
+    public static PagedList<GroupResponse> pageMyGroupsAsForMember(String token, MyGroupsAsForMemberPageQuery query) {
+        return BaseApiTest.given(token)
+                .body(query)
+                .when()
+                .post(ROOT_URL + "/page/my-joined")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<>() {
+                });
     }
 
 }

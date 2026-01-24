@@ -11,16 +11,16 @@ import java.util.List;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GroupFoldersResponse implements Response {
+public class GroupOrdinaryMembersResponse implements Response {
 
-    List<GroupFolder> groupFolders;
+    List<OrdinaryMember> groupOrdinaryMembers;
 
     @Value
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class GroupFolder {
-        String folderId;
-        String folderName;
+    public static class OrdinaryMember {
+        String username;
+        String mobileOrEmail;
     }
 
 }

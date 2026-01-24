@@ -11,9 +11,16 @@ import java.util.List;
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GroupMembersResponse implements Response {
+public class GroupManagersResponse implements Response {
 
-    List<String> memberIds;
-    List<String> managerIds;
+    List<Manager> groupManagers;
+
+    @Value
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class Manager {
+        String username;
+        String mobileOrEmail;
+    }
 
 }

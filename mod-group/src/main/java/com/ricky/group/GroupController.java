@@ -4,13 +4,8 @@ import com.ricky.common.domain.dto.resp.IdResponse;
 import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.validation.id.Id;
-import com.ricky.group.command.AddGroupManagersCommand;
-import com.ricky.group.command.AddGroupMembersCommand;
-import com.ricky.group.command.CreateGroupCommand;
-import com.ricky.group.command.RenameGroupCommand;
-import com.ricky.group.query.GroupFoldersPageQuery;
-import com.ricky.group.query.GroupFoldersResponse;
-import com.ricky.group.query.GroupMembersResponse;
+import com.ricky.group.command.*;
+import com.ricky.group.query.*;
 import com.ricky.group.service.GroupQueryService;
 import com.ricky.group.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -80,7 +75,7 @@ public class GroupController {
     }
 
     @Operation(summary = "添加组管理员")
-    @PutMapping(value = "/{groupId}/managers/{memberId}")
+    @PutMapping("/{groupId}/managers/{memberId}")
     public void addGroupManager(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
                                 @PathVariable @NotBlank @Id(USER_ID_PREFIX) String memberId,
                                 @AuthenticationPrincipal UserContext userContext) {
@@ -88,7 +83,7 @@ public class GroupController {
     }
 
     @Operation(summary = "删除组管理员")
-    @DeleteMapping(value = "/{groupId}/managers/{memberId}")
+    @DeleteMapping("/{groupId}/managers/{memberId}")
     public void removeGroupManager(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
                                    @PathVariable @NotBlank @Id(USER_ID_PREFIX) String memberId,
                                    @AuthenticationPrincipal UserContext userContext) {
@@ -103,32 +98,65 @@ public class GroupController {
     }
 
     @Operation(summary = "启用权限组")
-    @PutMapping(value = "/{groupId}/activation")
+    @PutMapping("/{groupId}/activation")
     public void activateGroup(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
                               @AuthenticationPrincipal UserContext userContext) {
         groupService.activateGroup(groupId, userContext);
     }
 
     @Operation(summary = "禁用权限组")
-    @PutMapping(value = "/{groupId}/deactivation")
+    @PutMapping("/{groupId}/deactivation")
     public void deactivateGroup(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
                                 @AuthenticationPrincipal UserContext userContext) {
         groupService.deactivateGroup(groupId, userContext);
     }
 
-    @GetMapping("/{groupId}/members")
-    @Operation(summary = "获取权限组成员列表")
-    public GroupMembersResponse listGroupMembers(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
-                                                 @AuthenticationPrincipal UserContext userContext) {
-        return groupQueryService.listGroupMembers(groupId, userContext);
+    @PutMapping("/grant")
+    @Operation(summary = "添加文件夹并指定权限集合")
+    public void addGrant(@RequestBody @Valid AddGrantCommand command,
+                         @AuthenticationPrincipal UserContext userContext) {
+        groupService.addGrant(command, userContext);
     }
 
-    @PostMapping("/{groupId}/folders")
-    @Operation(summary = "获取权限组管理的文件夹列表")
-    public PagedList<GroupFoldersResponse> pageGroupFolders(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
-                                                            @RequestBody @Valid GroupFoldersPageQuery query,
+    @PutMapping("/grants")
+    @Operation(summary = "批量添加文件夹并指定权限集合")
+    public void addGrants(@RequestBody @Valid AddGrantsCommand command,
+                          @AuthenticationPrincipal UserContext userContext) {
+        groupService.addGrants(command, userContext);
+    }
+
+    @GetMapping("/{groupId}/folders")
+    @Operation(summary = "获取权限组管理的文件夹")
+    public GroupFoldersResponse fetchGroupFolders(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId) {
+        return groupQueryService.fetchGroupFolders(groupId);
+    }
+
+    @GetMapping("/{groupId}/ordinary-member")
+    @Operation(summary = "获取权限组普通成员列表")
+    public GroupOrdinaryMembersResponse fetchGroupOrdinaryMembers(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
+                                                                  @AuthenticationPrincipal UserContext userContext) {
+        return groupQueryService.fetchGroupOrdinaryMembers(groupId, userContext);
+    }
+
+    @GetMapping("/{groupId}/managers")
+    @Operation(summary = "获取权限组管理员列表")
+    public GroupManagersResponse fetchGroupManagers(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
+                                                    @AuthenticationPrincipal UserContext userContext) {
+        return groupQueryService.fetchGroupManagers(groupId, userContext);
+    }
+
+    @PostMapping("/page/my-groups")
+    @Operation(summary = "分页获取我管理的权限组")
+    public PagedList<GroupResponse> pageMyGroupsAsForManager(@RequestBody @Valid MyGroupsAsForManaberPageQuery query,
+                                                             @AuthenticationPrincipal UserContext userContext) {
+        return groupQueryService.pageMyGroupsAsForManager(query, userContext);
+    }
+
+    @PostMapping("/page/my-joined")
+    @Operation(summary = "分页获取我加入的权限组（包括管理员）")
+    public PagedList<GroupResponse> pageMyGroupsAsForMember(@RequestBody @Valid MyGroupsAsForMemberPageQuery query,
                                                             @AuthenticationPrincipal UserContext userContext) {
-        return groupQueryService.pageGroupFolders(groupId, query, userContext);
+        return groupQueryService.pageMyGroupsAsForMember(query, userContext);
     }
 
 }

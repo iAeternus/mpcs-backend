@@ -2,6 +2,7 @@ package com.ricky.user.domain;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public interface UserRepository {
 
@@ -21,4 +22,5 @@ public interface UserRepository {
 
     boolean allUserExists(List<String> userIds);
 
+    List<User> byIds(Set<String> userIds);
 }
