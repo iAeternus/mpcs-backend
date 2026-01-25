@@ -4,6 +4,7 @@ import com.ricky.comment.command.CreateCommentCommand;
 import com.ricky.comment.command.CreateCommentResponse;
 import com.ricky.comment.command.DeleteCommentCommand;
 import com.ricky.comment.domain.Comment;
+import com.ricky.comment.domain.CommentFactory;
 import com.ricky.comment.domain.CommentRepository;
 import com.ricky.comment.service.CommentService;
 import com.ricky.commenthierarchy.domain.CommentHierarchy;
@@ -27,9 +28,9 @@ public class CommentServiceImpl implements CommentService {
 
     private final RateLimiter rateLimiter;
     private final PublicFileDomainService publicFileDomainService;
+    private final CommentFactory commentFactory;
     private final CommentRepository commentRepository;
     private final CommentHierarchyRepository commentHierarchyRepository;
-    private final TransactionalLocalEventPublisher transactionalLocalEventPublisher;
 
     @Override
     @Transactional
@@ -40,7 +41,7 @@ public class CommentServiceImpl implements CommentService {
 
         // TODO 敏感词检测
 
-        Comment comment = new Comment(command.getPostId(), command.getContent(), userContext);
+        Comment comment = commentFactory.createFirstLevelComment(command.getPostId(), command.getContent(), userContext);
         CommentHierarchy commentHierarchy = new CommentHierarchy(comment.getPostId(), userContext);
         commentHierarchy.addComment(comment, "", userContext);
 

@@ -4,6 +4,10 @@ import com.ricky.apitest.BaseApiTest;
 import com.ricky.comment.command.CreateCommentCommand;
 import com.ricky.comment.command.CreateCommentResponse;
 import com.ricky.comment.command.DeleteCommentCommand;
+import com.ricky.comment.query.CommentPageQuery;
+import com.ricky.comment.query.CommentResponse;
+import com.ricky.common.domain.page.PagedList;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 
 import static com.ricky.apitest.RandomTestFixture.rCommentContent;
@@ -45,6 +49,28 @@ public class CommentApi {
         deleteCommentRaw(token, command)
                 .then()
                 .statusCode(200);
+    }
+
+    public static CommentResponse fetchDetail(String token, String commentId) {
+        return BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{commentId}", commentId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(CommentResponse.class);
+    }
+
+    public static PagedList<CommentResponse> page(String token, CommentPageQuery query) {
+        return BaseApiTest.given(token)
+                .body(query)
+                .when()
+                .post(ROOT_URL + "/page")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<>() {
+                });
     }
 
 }

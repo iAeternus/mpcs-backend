@@ -31,7 +31,7 @@ public class MongoCachedPublicFileRepository extends MongoBaseRepository<PublicF
 
     @Caching(evict = {@CacheEvict(value = PUBLIC_FILE_CACHE, allEntries = true)})
     public void evictAll() {
-        log.info("Evicted all caches for PublicFile");
+        log.info("Evicted all caches for " + PUBLIC_FILE_CACHE);
     }
 
 }

@@ -76,6 +76,7 @@ public interface ConfigConstants {
     String USER_GROUPS_CACHE = "USER_GROUPS";
     String PUBLIC_FILE_CACHE = "PUBLIC_FILES";
     String GROUPS_CACHE = "GROUPS";
+    String COMMENT_CACHE = "COMMENTS";
 
     String LIKE_KEY = "LIKES";
     String LIKED_COUNT_KEY = "LIKED_COUNTS";

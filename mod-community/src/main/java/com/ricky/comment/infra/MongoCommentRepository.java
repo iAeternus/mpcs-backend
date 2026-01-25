@@ -13,9 +13,12 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class MongoCommentRepository extends MongoBaseRepository<Comment> implements CommentRepository {
 
+    private final MongoCachedCommentRepository cachedCommentRepository;
+
     @Override
     public void save(Comment comment) {
         super.save(comment);
+        cachedCommentRepository.evictCommentCache(comment.getId());
     }
 
     @Override
@@ -26,11 +29,13 @@ public class MongoCommentRepository extends MongoBaseRepository<Comment> impleme
     @Override
     public void delete(Comment comment) {
         super.delete(comment);
+        cachedCommentRepository.evictCommentCache(comment.getId());
     }
 
     @Override
     public void delete(List<Comment> comments) {
         super.delete(comments);
+        cachedCommentRepository.evictAll();
     }
 
     @Override
@@ -41,5 +46,10 @@ public class MongoCommentRepository extends MongoBaseRepository<Comment> impleme
     @Override
     public boolean exists(String arId) {
         return super.exists(arId);
+    }
+
+    @Override
+    public Comment cachedById(String commentId) {
+        return cachedCommentRepository.cachedById(commentId);
     }
 }

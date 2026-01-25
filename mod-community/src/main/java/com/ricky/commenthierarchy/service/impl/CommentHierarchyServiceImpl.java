@@ -1,6 +1,7 @@
 package com.ricky.commenthierarchy.service.impl;
 
 import com.ricky.comment.domain.Comment;
+import com.ricky.comment.domain.CommentFactory;
 import com.ricky.comment.domain.CommentRepository;
 import com.ricky.commenthierarchy.command.ReplyCommand;
 import com.ricky.commenthierarchy.command.ReplyResponse;
@@ -21,6 +22,7 @@ public class CommentHierarchyServiceImpl implements CommentHierarchyService {
 
     private final RateLimiter rateLimiter;
     private final PublicFileDomainService publicFileDomainService;
+    private final CommentFactory commentFactory;
     private final CommentRepository commentRepository;
     private final CommentHierarchyRepository commentHierarchyRepository;
 
@@ -32,7 +34,7 @@ public class CommentHierarchyServiceImpl implements CommentHierarchyService {
 
         // TODO 敏感词检测
 
-        Comment comment = new Comment(command.getPostId(), command.getContent(), userContext);
+        Comment comment = commentFactory.createReplyComment(command.getPostId(), command.getContent(), userContext);
         CommentHierarchy hierarchy = commentHierarchyRepository.byPostId(command.getPostId());
         hierarchy.addComment(comment, command.getParentId(), userContext);
 

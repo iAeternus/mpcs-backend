@@ -16,4 +16,5 @@ public interface CommentRepository {
 
     boolean exists(String commentId);
 
+    Comment cachedById(String commentId);
 }

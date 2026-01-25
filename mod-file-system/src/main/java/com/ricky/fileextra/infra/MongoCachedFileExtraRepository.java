@@ -43,6 +43,6 @@ public class MongoCachedFileExtraRepository extends MongoBaseRepository<FileExtr
 
     @Caching(evict = {@CacheEvict(value = FILE_EXTRA_CACHE, allEntries = true)})
     public void evictAll() {
-        log.info("Evicted all caches for FileExtra");
+        log.info("Evicted all caches for " + FILE_EXTRA_CACHE);
     }
 }

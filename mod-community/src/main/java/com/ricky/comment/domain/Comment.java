@@ -22,15 +22,18 @@ public class Comment extends AggregateRoot {
 
     private String postId; // 发布物ID
     private String content;
+    private CommentType type; // 评论类型
+    // TODO 以后增加对评论的点赞，分页可以按照最热排序
 
-    public Comment(String postId, String content, UserContext userContext) {
+    public Comment(String postId, String content, CommentType type, UserContext userContext) {
         super(newCommentId(), userContext);
-        init(postId, content, userContext);
+        init(postId, content, type, userContext);
     }
 
-    private void init(String postId, String content, UserContext userContext) {
+    private void init(String postId, String content, CommentType type, UserContext userContext) {
         this.postId = postId;
         this.content = content;
+        this.type = type;
         raiseLocalEvent(new LocalCommentCreatedEvent(this, userContext));
         addOpsLog("新建", userContext);
     }
