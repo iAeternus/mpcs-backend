@@ -34,7 +34,7 @@ public interface ConfigConstants {
     String FILE_COLLECTION = "files";
     String FOLDER_COLLECTION = "folders";
     String FOLDER_HIERARCHY_COLLECTION = "folders_hierarchy";
-    String COMMUNITY_POST_COLLECTION = "community_posts";
+    String PUBLIC_FILE_COLLECTION = "public_files";
     String TEAM_COLLECTION = "teams";
     String SHEDLOCK_COLLECTION = "shedlock";
     String VERIFICATION_COLLECTION = "verifications";

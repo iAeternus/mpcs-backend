@@ -49,7 +49,7 @@ public class MpcsSystemInitializer implements ApplicationListener<ApplicationRea
         createCollection(USER_COLLECTION);
         createCollection(FILE_COLLECTION);
         createCollection(FOLDER_COLLECTION);
-        createCollection(COMMUNITY_POST_COLLECTION);
+        createCollection(PUBLIC_FILE_COLLECTION);
         createCollection(TEAM_COLLECTION);
         createCollection(SHEDLOCK_COLLECTION);
         createCollection(VERIFICATION_COLLECTION);

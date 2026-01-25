@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import static com.ricky.common.constants.ConfigConstants.COMMUNITY_POST_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.PUBLIC_FILE_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.POST_ID_PREFIX;
 import static com.ricky.common.exception.ErrorCodeEnum.PUBLIC_FILE_STATUS_ERROR;
 import static com.ricky.publicfile.domain.PublicFileStatus.*;
@@ -24,8 +24,8 @@ import static com.ricky.publicfile.domain.PublicFileStatus.*;
  * @note 文件本体仍然由File聚合管理，这里只是发布行为的`投影聚合`
  */
 @Getter
-@Document(COMMUNITY_POST_COLLECTION)
-@TypeAlias(COMMUNITY_POST_COLLECTION)
+@Document(PUBLIC_FILE_COLLECTION)
+@TypeAlias(PUBLIC_FILE_COLLECTION)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class PublicFile extends AggregateRoot {
 

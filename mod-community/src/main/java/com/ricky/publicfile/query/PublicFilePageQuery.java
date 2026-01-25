@@ -14,13 +14,13 @@ import lombok.experimental.SuperBuilder;
 public class PublicFilePageQuery extends PageQuery {
 
     /**
-     * 搜索字段，目前支持TODO
+     * 搜索字段，值，目前支持originalFileId/publisher/title
      */
     @Size(max = 50)
     String search;
 
     /**
-     * 排序字段，目前支持TODO
+     * 排序字段，字段名，目前支持 title/likeCount/commentCount/createdAt
      */
     @Size(max = 50)
     String sortedBy;

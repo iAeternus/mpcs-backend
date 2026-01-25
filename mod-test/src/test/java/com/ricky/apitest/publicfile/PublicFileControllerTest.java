@@ -2,7 +2,9 @@ package com.ricky.apitest.publicfile;
 
 import com.ricky.apitest.BaseApiTest;
 import com.ricky.apitest.TestFileContext;
+import com.ricky.apitest.comment.CommentApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
+import com.ricky.common.domain.page.PagedList;
 import com.ricky.file.domain.File;
 import com.ricky.publicfile.command.EditDescriptionCommand;
 import com.ricky.publicfile.command.ModifyTitleCommand;
@@ -10,6 +12,8 @@ import com.ricky.publicfile.command.PostCommand;
 import com.ricky.publicfile.domain.PublicFile;
 import com.ricky.publicfile.domain.event.FilePublishedEvent;
 import com.ricky.publicfile.domain.event.FileWithdrewEvent;
+import com.ricky.publicfile.query.PublicFilePageQuery;
+import com.ricky.publicfile.query.PublicFileResponse;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -113,6 +117,32 @@ public class PublicFileControllerTest extends BaseApiTest {
         // Then
         PublicFile dbPublicFile = publicFileRepository.byId(postId);
         assertEquals(newDescription, dbPublicFile.getDescription());
+    }
+
+    @Test
+    void should_page() throws IOException {
+        // Given
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse manager = ctx.getManager();
+        String fileId = ctx.getFileId();
+
+        String postId1 = PublicFileApi.post(manager.getJwt(), fileId).getPostId();
+        String postId2 = PublicFileApi.post(manager.getJwt(), fileId).getPostId();
+        String postId3 = PublicFileApi.post(manager.getJwt(), fileId).getPostId();
+
+        CommentApi.createComment(manager.getJwt(), postId3);
+
+        // When
+        PagedList<PublicFileResponse> pagedList = PublicFileApi.page(manager.getJwt(), PublicFilePageQuery.builder()
+                .search("plain")
+                .sortedBy("commentCount")
+                .ascSort(false)
+                .pageIndex(1)
+                .pageSize(10)
+                .build());
+
+        // Then
+        assertEquals(3, pagedList.size());
     }
 
 }

@@ -65,9 +65,8 @@ public class PublicFileController {
 
     @PostMapping("/page")
     @Operation(summary = "分页查询社区文件")
-    public PagedList<PublicFileResponse> page(@RequestBody @Valid PublicFilePageQuery query,
-                                              @AuthenticationPrincipal UserContext userContext) {
-        return publicFileQueryService.page(query, userContext);
+    public PagedList<PublicFileResponse> page(@RequestBody @Valid PublicFilePageQuery query) {
+        return publicFileQueryService.page(query);
     }
 
     @GetMapping("/{postId}/comment")

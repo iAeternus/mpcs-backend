@@ -1,11 +1,19 @@
 package com.ricky.apitest.publicfile;
 
 import com.ricky.apitest.BaseApiTest;
+import com.ricky.common.domain.page.PagedList;
 import com.ricky.publicfile.command.EditDescriptionCommand;
 import com.ricky.publicfile.command.ModifyTitleCommand;
 import com.ricky.publicfile.command.PostCommand;
 import com.ricky.publicfile.command.PostResponse;
+import com.ricky.publicfile.query.CommentCountResponse;
+import com.ricky.publicfile.query.LikeCountResponse;
+import com.ricky.publicfile.query.PublicFilePageQuery;
+import com.ricky.publicfile.query.PublicFileResponse;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
+
+import java.util.Map;
 
 public class PublicFileApi {
 
@@ -27,7 +35,7 @@ public class PublicFileApi {
     }
 
     public static PostResponse post(String token, String fileId) {
-        return PublicFileApi.post(token, PostCommand.builder()
+        return post(token, PostCommand.builder()
                 .fileId(fileId)
                 .build());
     }
@@ -60,6 +68,38 @@ public class PublicFileApi {
                 .put(ROOT_URL + "/description")
                 .then()
                 .statusCode(200);
+    }
+
+    public static PagedList<PublicFileResponse> page(String token, PublicFilePageQuery query) {
+        return BaseApiTest.given(token)
+                .body(query)
+                .when()
+                .post(ROOT_URL + "/page")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<>() {
+                });
+    }
+
+    public static CommentCountResponse fetchCommentCount(String token, String postId) {
+        return BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{postId}/comment", postId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(CommentCountResponse.class);
+    }
+
+    public static LikeCountResponse fetchLikeCount(String token, String postId) {
+        return BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{postId}/like", postId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(LikeCountResponse.class);
     }
 
 }
