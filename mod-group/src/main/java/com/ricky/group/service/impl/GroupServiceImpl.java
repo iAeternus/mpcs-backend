@@ -4,6 +4,9 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.folder.domain.FolderDomainService;
+import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folderhierarchy.domain.FolderHierarchyFactory;
+import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import com.ricky.group.command.*;
 import com.ricky.group.domain.*;
 import com.ricky.group.service.GroupService;
@@ -29,8 +32,10 @@ public class GroupServiceImpl implements GroupService {
     private final FolderDomainService folderDomainService;
     private final UserDomainService userDomainService;
     private final GroupFactory groupFactory;
+    private final FolderHierarchyFactory folderHierarchyFactory;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final FolderHierarchyRepository folderHierarchyRepository;
 
     // TODO 谁有权限创建组还没有实现
     @Override
@@ -38,7 +43,10 @@ public class GroupServiceImpl implements GroupService {
     public String createGroup(CreateGroupCommand command, UserContext userContext) {
         rateLimiter.applyFor("Group:CreateGroup", 10);
 
-        Group group = groupFactory.create(command.getName(), userContext);
+        FolderHierarchy teamSpace = folderHierarchyFactory.createTeamSpace(command.getCustomId(), userContext);
+        folderHierarchyRepository.save(teamSpace);
+
+        Group group = groupFactory.create(command.getName(), command.getCustomId(), userContext);
         group.addManager(userContext.getUid(), userContext); // 创建者自动设为管理员
         groupRepository.save(group);
 

@@ -13,9 +13,9 @@ public class GroupFactory {
 
     private final GroupRepository groupRepository;
 
-    public Group create(String name, UserContext userContext) {
+    public Group create(String name, String customId, UserContext userContext) {
         checkNameDuplication(name, userContext.getUid());
-        return new Group(name, userContext);
+        return new Group(name, customId, userContext);
     }
 
     private void checkNameDuplication(String name, String userId) {

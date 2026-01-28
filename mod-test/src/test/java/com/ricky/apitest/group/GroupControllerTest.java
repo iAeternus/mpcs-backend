@@ -8,6 +8,7 @@ import com.ricky.common.domain.page.PagedList;
 import com.ricky.folder.domain.Folder;
 import com.ricky.group.command.*;
 import com.ricky.group.domain.Group;
+import com.ricky.group.domain.event.GroupDeletedEvent;
 import com.ricky.group.domain.event.GroupMembersChangedEvent;
 import com.ricky.group.query.GroupFoldersResponse;
 import com.ricky.group.query.GroupResponse;
@@ -19,10 +20,10 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
-import static com.ricky.apitest.RandomTestFixture.rFolderName;
-import static com.ricky.apitest.RandomTestFixture.rGroupName;
+import static com.ricky.apitest.RandomTestFixture.*;
 import static com.ricky.common.auth.Permission.DOWNLOAD;
 import static com.ricky.common.auth.Permission.PREVIEW;
+import static com.ricky.common.event.DomainEventType.GROUP_DELETED;
 import static com.ricky.common.event.DomainEventType.GROUP_MEMBERS_CHANGED;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,6 +39,7 @@ public class GroupControllerTest extends BaseApiTest {
         // When
         String groupId = GroupApi.createGroup(loginResponse.getJwt(), CreateGroupCommand.builder()
                 .name(groupName)
+                .customId(rCustomId())
                 .build());
 
         // Then
@@ -47,6 +49,8 @@ public class GroupControllerTest extends BaseApiTest {
 
         User user = userRepository.byId(loginResponse.getUserId());
         assertTrue(user.containsGroup(groupId));
+
+        assertTrue(folderHierarchyRepository.existsByCustomId(group.getCustomId()));
     }
 
     @Test
@@ -63,14 +67,30 @@ public class GroupControllerTest extends BaseApiTest {
     }
 
     @Test
-    void should_fail_create_group_if_name_already_exits() {
+    void should_fail_to_create_group_if_name_already_exists() {
         // Given
         LoginResponse loginResponse = setupApi.registerWithLogin();
-        CreateGroupCommand command = CreateGroupCommand.builder().name(rGroupName()).build();
+
+        String groupName = rGroupName();
+        GroupApi.createGroup(loginResponse.getJwt(), groupName);
+
+        // When & Then
+        assertError(() -> GroupApi.createGroupRaw(loginResponse.getJwt(), CreateGroupCommand.builder()
+                .name(groupName)
+                .customId(rCustomId())
+                .build()), GROUP_WITH_NAME_ALREADY_EXISTS);
+    }
+
+    @Test
+    void should_fail_to_create_group_if_custom_id_already_exists() {
+        // Given
+        LoginResponse loginResponse = setupApi.registerWithLogin();
+
+        CreateGroupCommand command = CreateGroupCommand.builder().name(rGroupName()).customId(rCustomId()).build();
         GroupApi.createGroup(loginResponse.getJwt(), command);
 
         // When & Then
-        assertError(() -> GroupApi.createGroupRaw(loginResponse.getJwt(), command), GROUP_WITH_NAME_ALREADY_EXISTS);
+        assertError(() -> GroupApi.createGroupRaw(loginResponse.getJwt(), command), FOLDER_HIERARCHY_WITH_CUSTOM_ID_ALREADY_EXISTS);
     }
 
     @Test
@@ -293,22 +313,25 @@ public class GroupControllerTest extends BaseApiTest {
     }
 
     @Test
-    void should_delete_group() {
+    void should_delete_group() throws InterruptedException {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
         GroupApi.createGroup(manager.getJwt());
         String groupId = GroupApi.createGroup(manager.getJwt());
+        Group group = groupRepository.byId(groupId);
 
         // When
         GroupApi.deleteGroup(manager.getJwt(), groupId);
 
+        Thread.sleep(5 * 1000);
+
         // Then
         assertFalse(groupRepository.byIdOptional(groupId).isPresent());
-    }
 
-    @Test
-    public void should_raise_event_when_delete_group() {
-        // TODO
+        GroupDeletedEvent evt = latestEventFor(groupId, GROUP_DELETED, GroupDeletedEvent.class);
+        assertEquals(group.getCustomId(), evt.getCustomId());
+
+        assertFalse(folderHierarchyRepository.existsByCustomId(group.getCustomId()));
     }
 
     @Test

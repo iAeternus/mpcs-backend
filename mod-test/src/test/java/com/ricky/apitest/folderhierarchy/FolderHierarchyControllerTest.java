@@ -18,7 +18,7 @@ import java.util.stream.IntStream;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.apitest.RandomTestFixture.rFolderName;
 import static com.ricky.common.constants.ConfigConstants.MAX_FOLDER_HIERARCHY_LEVEL;
-import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
+import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.event.DomainEventType.FOLDER_HIERARCHY_CHANGED;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_HIERARCHY_TOO_DEEP;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NAME_DUPLICATES;

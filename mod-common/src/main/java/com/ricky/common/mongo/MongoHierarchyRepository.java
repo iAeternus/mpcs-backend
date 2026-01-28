@@ -17,7 +17,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Repository
 @SuppressWarnings({"unchecked"})
-public abstract class MongoHierarchyRepository<T extends HierarchyNode>
+public class MongoHierarchyRepository<T extends HierarchyNode>
         extends MongoBaseRepository<T> implements HierarchyRepository<T> {
 
     @Override

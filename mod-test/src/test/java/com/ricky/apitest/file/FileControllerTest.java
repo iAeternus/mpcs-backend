@@ -19,7 +19,7 @@ import java.io.IOException;
 
 import static com.ricky.apitest.RandomTestFixture.rFilename;
 import static com.ricky.apitest.RandomTestFixture.rFolderName;
-import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
+import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_NAME_DUPLICATES;
 import static com.ricky.common.utils.CommonUtils.instantToLocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;

@@ -15,11 +15,11 @@ import static com.ricky.common.event.DomainEventType.GROUP_DELETED;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class GroupDeletedEvent extends DomainEvent {
 
-    private String groupId;
+    private String customId;
 
-    public GroupDeletedEvent(String groupId, UserContext userContext) {
+    public GroupDeletedEvent(String customId, UserContext userContext) {
         super(GROUP_DELETED, userContext);
-        this.groupId = groupId;
+        this.customId = customId;
     }
 
 }

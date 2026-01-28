@@ -17,4 +17,6 @@ public interface FolderHierarchyRepository {
     boolean existsByCustomId(String customId);
 
     boolean cachedExistsByCustomId(String customId, String userId);
+
+    void delete(FolderHierarchy hierarchy);
 }

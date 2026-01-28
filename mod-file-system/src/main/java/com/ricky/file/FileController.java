@@ -55,6 +55,8 @@ public class FileController {
         fileService.moveFile(command, userContext);
     }
 
+    // TODO 下载文件
+
     @GetMapping("/{customId}/{fileId}/path")
     @Operation(summary = "获取文件路径")
     public FilePathResponse fetchFilePath(@PathVariable @NotBlank @CustomId String customId,

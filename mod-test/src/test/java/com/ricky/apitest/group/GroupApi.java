@@ -8,13 +8,11 @@ import com.ricky.group.command.*;
 import com.ricky.group.query.*;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
-import org.assertj.core.data.Percentage;
 
 import java.util.List;
 import java.util.Set;
 
-import static com.ricky.apitest.RandomTestFixture.rEnumOf;
-import static com.ricky.apitest.RandomTestFixture.rGroupName;
+import static com.ricky.apitest.RandomTestFixture.*;
 
 public class GroupApi {
 
@@ -36,11 +34,11 @@ public class GroupApi {
     }
 
     public static String createGroup(String jwt, String groupName) {
-        return createGroup(jwt, CreateGroupCommand.builder().name(groupName).build());
+        return createGroup(jwt, CreateGroupCommand.builder().name(groupName).customId(rCustomId()).build());
     }
 
     public static String createGroup(String jwt) {
-        return createGroup(jwt, CreateGroupCommand.builder().name(rGroupName()).build());
+        return createGroup(jwt, CreateGroupCommand.builder().name(rGroupName()).customId(rCustomId()).build());
     }
 
     public static Response renameGroupRaw(String jwt, String groupId, RenameGroupCommand command) {

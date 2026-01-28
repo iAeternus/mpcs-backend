@@ -36,19 +36,21 @@ public class Group extends AggregateRoot {
     private boolean active; // 是否启用
     private Set<String> managers; // 管理员，members子集
     private Set<String> members; // 所有成员
+    private String customId; // 文件夹层次结构自定义ID
     private Map<String, Set<Permission>> grants; // 资源ID -> 权限集合
     private InheritancePolicy inheritancePolicy; // 继承策略
 
-    public Group(String name, UserContext userContext) {
+    public Group(String name, String customId, UserContext userContext) {
         super(newGroupId(), userContext);
-        init(name, userContext);
+        init(name, customId, userContext);
     }
 
-    private void init(String name, UserContext userContext) {
+    private void init(String name, String customId, UserContext userContext) {
         this.name = name;
         this.active = true;
         this.members = new HashSet<>();
         this.managers = new HashSet<>();
+        this.customId = customId;
         this.grants = new HashMap<>();
         this.inheritancePolicy = InheritancePolicy.NONE;
         addOpsLog("新建", userContext);
@@ -226,7 +228,7 @@ public class Group extends AggregateRoot {
     }
 
     public void onDelete(UserContext userContext) {
-        raiseEvent(new GroupDeletedEvent(getId(), userContext));
+        raiseEvent(new GroupDeletedEvent(getCustomId(), userContext));
     }
 
 }

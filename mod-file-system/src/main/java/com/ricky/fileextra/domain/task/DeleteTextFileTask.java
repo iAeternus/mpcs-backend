@@ -1,4 +1,4 @@
-package com.ricky.fileextra.handler.tasks;
+package com.ricky.fileextra.domain.task;
 
 import com.ricky.common.domain.task.RetryableTask;
 import com.ricky.common.exception.MyException;

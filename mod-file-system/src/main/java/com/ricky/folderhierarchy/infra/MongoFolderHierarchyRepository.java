@@ -93,4 +93,9 @@ public class MongoFolderHierarchyRepository extends MongoBaseRepository<FolderHi
         return hierarchies.getHierarchies().stream()
                 .anyMatch(fh -> ValidationUtils.equals(fh.getCustomId(), customId));
     }
+
+    @Override
+    public void delete(FolderHierarchy folderHierarchy) {
+        super.delete(folderHierarchy);
+    }
 }

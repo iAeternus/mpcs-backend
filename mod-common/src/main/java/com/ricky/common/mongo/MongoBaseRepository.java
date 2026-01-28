@@ -147,7 +147,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
 
     /**
      * 删除聚合根<br>
-     * 删除前会持久化聚合根携带的所有领域事件<br>
+     * 删除后会持久化聚合根携带的所有领域事件<br>
      *
      * @param ar 聚合根
      */

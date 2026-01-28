@@ -3,6 +3,7 @@ package com.ricky.apitest;
 import com.apifan.common.random.source.AreaSource;
 import com.apifan.common.random.source.OtherSource;
 import com.apifan.common.random.source.PersonInfoSource;
+import com.ricky.common.utils.UuidGenerator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 
@@ -95,6 +96,10 @@ public class RandomTestFixture {
     public static <T extends Enum<?>> T rEnumOf(Class<T> clazz) {
         int x = RandomUtils.secure().randomInt(0, clazz.getEnumConstants().length);
         return clazz.getEnumConstants()[x];
+    }
+
+    public static String rCustomId() {
+        return rSentence(16) + UuidGenerator.newShortUuid();
     }
 
 }

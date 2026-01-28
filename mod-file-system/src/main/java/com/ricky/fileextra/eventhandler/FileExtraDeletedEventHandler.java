@@ -1,9 +1,9 @@
-package com.ricky.fileextra.handler;
+package com.ricky.fileextra.eventhandler;
 
 import com.ricky.common.event.consume.AbstractDomainEventHandler;
 import com.ricky.common.utils.TaskRunner;
 import com.ricky.fileextra.domain.event.FileExtraDeletedEvent;
-import com.ricky.fileextra.handler.tasks.DeleteTextFileTask;
+import com.ricky.fileextra.domain.task.DeleteTextFileTask;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

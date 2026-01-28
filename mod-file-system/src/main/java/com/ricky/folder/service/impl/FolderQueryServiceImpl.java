@@ -32,7 +32,7 @@ public class FolderQueryServiceImpl implements FolderQueryService {
     public FolderContentResponse fetchFolderContent(String customId, String folderId, UserContext userContext) {
         rateLimiter.applyFor("Folder:FetchFolderContent", 50);
 
-        FolderHierarchy hierarchy = folderHierarchyRepository.byCustomId(customId);
+        FolderHierarchy hierarchy = folderHierarchyRepository.cachedByCustomId(customId);
         Set<String> directChildFolderIds = hierarchy.directChildFolderIdsUnder(folderId);
         List<Folder> directChildFolders = folderRepository.byIds(directChildFolderIds);
 
