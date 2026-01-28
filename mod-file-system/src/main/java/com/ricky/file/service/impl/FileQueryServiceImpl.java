@@ -7,18 +7,11 @@ import com.ricky.file.domain.FileRepository;
 import com.ricky.file.query.FileInfoResponse;
 import com.ricky.file.query.FilePathResponse;
 import com.ricky.file.service.FileQueryService;
-import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderDomainService;
-import com.ricky.folder.domain.FolderRepository;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
-import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
+import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.utils.CommonUtils.instantToLocalDateTime;
 
 @Service

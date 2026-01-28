@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
-import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
+import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 
 @Service
@@ -107,7 +107,7 @@ public class FolderDomainService {
 
     public void checkFoldersAllExists(List<String> folderIds) {
         boolean allExists = folderRepository.allExists(folderIds);
-        if(!allExists) {
+        if (!allExists) {
             throw new MyException(NOT_ALL_FOLDERS_EXIST, "有文件夹不存在", "folderIds", folderIds);
         }
     }

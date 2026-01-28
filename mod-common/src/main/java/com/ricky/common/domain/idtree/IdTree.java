@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static java.util.Objects.requireNonNull;
@@ -35,11 +36,6 @@ import static java.util.Objects.requireNonNull;
 @Getter(value = AccessLevel.PACKAGE)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class IdTree implements ValueObject {
-
-    /**
-     * 节点ID分隔符
-     */
-    public static final String NODE_ID_SEPARATOR = "/";
 
     /**
      * 根节点的孩子

@@ -15,8 +15,8 @@ import java.util.stream.IntStream;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.domain.SpaceType.*;
-import static com.ricky.common.domain.idtree.IdTree.NODE_ID_SEPARATOR;
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NAME_DUPLICATES;
 import static com.ricky.management.MpcsManageUser.MPCS_MANAGE_USER_ID;
 
@@ -38,14 +38,6 @@ public class FolderHierarchyDomainService {
             throw new MyException(FOLDER_NAME_DUPLICATES, "更新失败，存在名称重复。", "userId", userContext.getUid());
         }
     }
-
-//    public List<FolderHierarchy> spaceOf(SpaceType spaceType, String userId) {
-//        return switch (spaceType) {
-//            case PERSONAL -> List.of(personalSpaceOf(userId));
-//            case TEAM -> teamSpaceOf(userId);
-//            case PUBLIC -> List.of(publicSpace());
-//        };
-//    }
 
     public FolderHierarchy publicSpace() {
         List<FolderHierarchy> folderHierarchies = folderHierarchyRepository.byUserIdAndSpaceType(MPCS_MANAGE_USER_ID, PUBLIC);

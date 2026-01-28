@@ -1,9 +1,10 @@
 package com.ricky.common.domain.idtree.validation;
 
-import com.ricky.common.domain.idtree.IdTree;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.apache.commons.lang3.StringUtils;
+
+import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 
 /**
  * @author Ricky
@@ -19,6 +20,6 @@ public class NodeIdValidator implements ConstraintValidator<NodeId, String> {
             return true;
         }
 
-        return !nodeId.contains(IdTree.NODE_ID_SEPARATOR);
+        return !nodeId.contains(NODE_ID_SEPARATOR);
     }
 }

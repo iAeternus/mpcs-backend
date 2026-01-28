@@ -29,6 +29,9 @@ public interface ConfigConstants {
     DateTimeFormatter DATE_FORMATTER = ofPattern("yyyy-MM-dd").withZone(systemDefault());
     Collator CHINESE_COLLATOR = Collator.getInstance(CHINA);
 
+    // 节点ID分隔符
+    String NODE_ID_SEPARATOR = "/";
+
     // MongoDB集合名
     String USER_COLLECTION = "users";
     String FILE_COLLECTION = "files";

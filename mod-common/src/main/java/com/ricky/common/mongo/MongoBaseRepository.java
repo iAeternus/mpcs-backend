@@ -353,7 +353,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      *
      * @param events 领域事件集合
      */
-    private void saveEvents(List<DomainEvent> events) {
+    protected void saveEvents(List<DomainEvent> events) {
         if (isNotEmpty(events)) {
             List<DomainEvent> orderedEvents = events.stream().sorted(comparing(DomainEvent::getRaisedAt)).toList();
             publishingDomainEventDao.stage(orderedEvents);
@@ -365,7 +365,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      *
      * @param ars 聚合根集合
      */
-    private void checkSameUser(Collection<AR> ars) {
+    protected void checkSameUser(Collection<AR> ars) {
         Set<String> uids = ars.stream().map(AR::getUserId).collect(toImmutableSet());
         if (uids.size() > 1) {
             Set<String> allArIds = ars.stream().map(AggregateRoot::getId).collect(toImmutableSet());
@@ -379,7 +379,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
      *
      * @return 当前数据仓库管理的聚合根的Class
      */
-    private Class arClass() {
+    protected Class arClass() {
         String className = getClass().getSimpleName();
 
         if (!arClassMapper.containsKey(className)) {
@@ -391,7 +391,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
         return arClassMapper.get(className);
     }
 
-    private String arTypeName() {
+    protected String arTypeName() {
         return arClass().getSimpleName();
     }
 
