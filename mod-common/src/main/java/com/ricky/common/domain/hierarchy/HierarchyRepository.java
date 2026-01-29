@@ -17,31 +17,31 @@ public interface HierarchyRepository<T extends HierarchyNode> {
     /**
      * 查询树下的节点
      */
-    T byId(String treeId, String id);
+    T byId(String customId, String nodeId);
 
     /**
-     * 查询某节点下所有子孙节点（不含自己）
+     * 删除节点
      */
-    List<T> findAllDescendants(String treeId, String path);
+    void delete(T node);
+
+    /**
+     * 批量删除
+     */
+    void delete(List<T> subtree);
+
+    /**
+     * 查询某节点下所有子孙节点（不含自身）
+     */
+    List<T> findAllDescendants(String customId, String path);
 
     /**
      * 查询某节点及其子树（含自身）
      */
-    List<T> findSubtree(String treeId, String path);
+    List<T> findSubtree(String customId, String path);
 
     /**
      * 查询直接子节点
      */
-    List<T> findDirectChildren(String treeId, String parentId);
-
-    /**
-     * 删除整棵子树
-     */
-    void deleteSubtree(String treeId, String path);
-
-    /**
-     * 移动节点以及整棵子树
-     */
-    void moveNode(String treeId, String nodeId, String newParentId);
+    List<T> findDirectChildren(String customId, String parentId);
 
 }

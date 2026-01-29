@@ -16,7 +16,7 @@ public abstract class HierarchyNode extends AggregateRoot {
     /**
      * 层次结构ID（同一棵树的节点一致）
      */
-    private String treeId;
+    private String customId;
 
     /**
      * 父节点ID（根节点为 null）
@@ -29,9 +29,9 @@ public abstract class HierarchyNode extends AggregateRoot {
      */
     private String path;
 
-    protected HierarchyNode(String id, String treeId, String parentId, String parentPath, UserContext uc) {
+    protected HierarchyNode(String id, String customId, String parentId, String parentPath, UserContext uc) {
         super(id, uc);
-        this.treeId = treeId;
+        this.customId = customId;
         this.parentId = parentId;
 
         if (parentId == null) {
@@ -77,6 +77,6 @@ public abstract class HierarchyNode extends AggregateRoot {
 
 
     public boolean isInSameTree(HierarchyNode other) {
-        return this.treeId.equals(other.treeId);
+        return this.customId.equals(other.customId);
     }
 }

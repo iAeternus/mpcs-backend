@@ -8,6 +8,6 @@ import org.springframework.stereotype.Component;
 public class FolderHierarchyChangedEventHandler extends AbstractDomainEventHandler<FolderHierarchyChangedEvent> {
     @Override
     protected void doHandle(FolderHierarchyChangedEvent event) {
-        // TODO 同步权限组
+        // TODO 同步权限组（梳理权限继承逻辑）
     }
 }
