@@ -1,4 +1,4 @@
-package com.ricky.common.json;
+package com.ricky.common.event;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.NamedType;

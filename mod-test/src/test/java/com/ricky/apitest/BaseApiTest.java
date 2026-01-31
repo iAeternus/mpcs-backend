@@ -6,8 +6,9 @@ import com.ricky.comment.domain.CommentRepository;
 import com.ricky.commenthierarchy.domain.CommentHierarchyRepository;
 import com.ricky.common.event.DomainEvent;
 import com.ricky.common.event.DomainEventType;
+import com.ricky.common.event.LocalDomainEvent;
 import com.ricky.common.event.consume.ConsumingDomainEventDao;
-import com.ricky.common.event.publish.PublishingDomainEvent;
+import com.ricky.common.event.consume.DomainEventConsumer;
 import com.ricky.common.event.publish.PublishingDomainEventDao;
 import com.ricky.common.exception.ErrorCodeEnum;
 import com.ricky.common.exception.ErrorResponse;
@@ -35,6 +36,7 @@ import io.restassured.config.LogConfig;
 import io.restassured.config.ObjectMapperConfig;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Execution;
@@ -42,10 +44,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static com.fasterxml.jackson.databind.SerializationFeature.INDENT_OUTPUT;
@@ -57,12 +59,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
-import static org.springframework.data.domain.Sort.Direction.DESC;
-import static org.springframework.data.domain.Sort.by;
-import static org.springframework.data.mongodb.core.query.Criteria.where;
-import static org.springframework.data.mongodb.core.query.Query.query;
 
-@SuppressWarnings({"unchecked"})
+@Slf4j
 @ActiveProfiles("ci")
 @Execution(CONCURRENT)
 @SpringBootTest(classes = MpcsBackendApplication.class, webEnvironment = RANDOM_PORT)
@@ -90,10 +88,16 @@ public abstract class BaseApiTest {
     protected SetupApi setupApi;
 
     @Autowired
+    protected EventUtils eventUtils;
+
+    @Autowired
     protected PublishingDomainEventDao publishingDomainEventDao;
 
     @Autowired
     protected ConsumingDomainEventDao<DomainEvent> consumingDomainEventDao;
+
+    @Autowired
+    protected DomainEventConsumer<DomainEvent> domainEventConsumer;
 
     @Autowired
     protected FileHasherFactory fileHasherFactory;
@@ -143,7 +147,7 @@ public abstract class BaseApiTest {
     @LocalServerPort
     protected int port;
 
-    // 手动注入，应为given应该保持静态
+    // 手动注入，因为given应该保持静态
     private static ObjectMapper STATIC_OBJECT_MAPPER;
 
     @Autowired
@@ -202,13 +206,35 @@ public abstract class BaseApiTest {
     }
 
     protected <T extends DomainEvent> T latestEventFor(String arId, DomainEventType type, Class<T> eventClass) {
-        Query query = query(where(PublishingDomainEvent.Fields.event + "." + DomainEvent.Fields.arId).is(arId)
-                .and(PublishingDomainEvent.Fields.event + "." + DomainEvent.Fields.type).is(type))
-                .with(by(DESC, PublishingDomainEvent.Fields.raisedAt));
-        PublishingDomainEvent publishingDomainEvent = mongoTemplate.findOne(query, PublishingDomainEvent.class);
-        if (publishingDomainEvent == null) {
-            return null;
-        }
-        return (T) publishingDomainEvent.getEvent();
+        return eventUtils.latestEventFor(arId, type, eventClass);
     }
+
+    // 领域事件
+
+    protected <T extends DomainEvent> void awaitEventConsumed(T event) {
+        eventUtils.awaitEventConsumed(event);
+    }
+
+    public <T extends DomainEvent> void awaitEventConsumed(T event, long timeout, TimeUnit unit) {
+        eventUtils.awaitEventConsumed(event, timeout, unit);
+    }
+
+    protected <T extends DomainEvent> void awaitLatestEventConsumed(String arId, DomainEventType type, Class<T> eventClass) {
+        eventUtils.awaitLatestEventConsumed(arId, type, eventClass);
+    }
+
+    // 本地领域事件
+
+    protected <T extends LocalDomainEvent> void awaitLatestLocalEventConsumed(String arId, Class<T> eventClass) {
+        eventUtils.awaitLatestLocalEventConsumed(arId, eventClass);
+    }
+
+    protected <T extends LocalDomainEvent> void awaitLatestLocalEventConsumed(
+            String arId,
+            Class<T> eventClass,
+            long timeout,
+            TimeUnit unit) {
+        eventUtils.awaitLatestLocalEventConsumed(arId, eventClass, timeout, unit);
+    }
+
 }

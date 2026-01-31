@@ -113,6 +113,7 @@
         <mockito.version>5.14.1</mockito.version>
         <rest-assured.version>5.3.0</rest-assured.version>
         <common-random.version>1.0.18</common-random.version>
+        <awaitility.version>4.2.0</awaitility.version>
 
         <!-- 插件 -->
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
@@ -364,6 +365,12 @@
                 <groupId>com.apifan.common</groupId>
                 <artifactId>common-random</artifactId>
                 <version>${common-random.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>${awaitility.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

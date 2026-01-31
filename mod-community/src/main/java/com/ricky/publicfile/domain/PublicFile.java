@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import static com.ricky.common.constants.ConfigConstants.PUBLIC_FILE_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.POST_ID_PREFIX;
+import static com.ricky.common.constants.ConfigConstants.PUBLIC_FILE_COLLECTION;
 import static com.ricky.common.exception.ErrorCodeEnum.PUBLIC_FILE_STATUS_ERROR;
 import static com.ricky.publicfile.domain.PublicFileStatus.*;
 
@@ -50,7 +50,7 @@ public class PublicFile extends AggregateRoot {
         this.status = UNDER_REVIEW;
         this.likeCount = 0;
         this.commentCount = 0;
-        raiseEvent(new FilePublishedEvent(getId(), userContext));
+        raiseEvent(new FilePublishedEvent(getOriginalFileId(), getId(), userContext));
         addOpsLog("新建", userContext);
     }
 
@@ -80,14 +80,12 @@ public class PublicFile extends AggregateRoot {
         raiseEvent(new FileWithdrewEvent(getId(), userContext));
     }
 
-    // TODO 领域事件中调用
     public void approve(UserContext userContext) {
         ensureStatus(UNDER_REVIEW);
         this.status = PUBLISHED;
         addOpsLog("审查通过，发布成功", userContext);
     }
 
-    // TODO 领域事件中调用
     public void reject(UserContext userContext) {
         ensureStatus(UNDER_REVIEW);
         this.status = REJECTED;

@@ -46,16 +46,12 @@ public class FileControllerTest extends BaseApiTest {
     }
 
     @Test
-    void should_delete_file_force() throws IOException, InterruptedException {
+    void should_delete_file_force() throws IOException {
         // Given
         TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
-
         File dbFile = fileRepository.byId(fileId);
-
-        // 这里必须sleep，直接删除会导致文件上传事件还未处理完，导致mongodb写冲突
-        Thread.sleep(5 * 1000);
 
         // When
         FileApi.deleteFileForce(manager.getJwt(), fileId);

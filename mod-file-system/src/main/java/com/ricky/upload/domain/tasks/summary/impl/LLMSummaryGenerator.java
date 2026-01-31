@@ -49,22 +49,24 @@ public class LLMSummaryGenerator implements SummaryGenerator {
         String processedText = preprocessText(rawText);
 
         // 调用 AI（仅 AI 失败才允许降级）
-        try {
-            String summary = generateSummaryWithAI(processedText);
-            stopWatch.stop();
-
-            log.info(
-                    "摘要生成成功，path={}, 原文长度={}，摘要长度={}，耗时={}ms",
-                    textFilePath,
-                    rawText.length(),
-                    summary.length(),
-                    stopWatch.getTotalTimeMillis()
-            );
-            return summary;
-        } catch (Exception ex) {
-            log.error("AI 摘要生成失败，启用降级方案，path={}", textFilePath, ex);
-            return createFallbackSummary(rawText);
-        }
+        log.error("AI 摘要生成失败，启用降级方案，path={}", textFilePath); // TODO 由于AI模块的不可靠，这里暂时不使用AI，仅供测试
+        return createFallbackSummary(rawText);
+//        try {
+//            String summary = generateSummaryWithAI(processedText);
+//            stopWatch.stop();
+//
+//            log.info(
+//                    "摘要生成成功，path={}, 原文长度={}，摘要长度={}，耗时={}ms",
+//                    textFilePath,
+//                    rawText.length(),
+//                    summary.length(),
+//                    stopWatch.getTotalTimeMillis()
+//            );
+//            return summary;
+//        } catch (Exception ex) {
+//            log.error("AI 摘要生成失败，启用降级方案，path={}", textFilePath, ex);
+//            return createFallbackSummary(rawText);
+//        }
     }
 
     private String readTextFile(String path) {

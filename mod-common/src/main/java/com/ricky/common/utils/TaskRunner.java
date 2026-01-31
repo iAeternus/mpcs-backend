@@ -20,4 +20,15 @@ public class TaskRunner {
         }
     }
 
+    public static void run(String taskId, Runnable runnable) {
+        try {
+            long start = System.currentTimeMillis();
+            runnable.run();
+            long cost = System.currentTimeMillis() - start;
+            log.info("Task[{}] fully consumed after {} ms", taskId, cost);
+        } catch (Throwable t) {
+            log.error("Failed to run task: ", t);
+        }
+    }
+
 }

@@ -6,7 +6,8 @@ import com.ricky.publicfile.domain.event.FilePublishedEvent;
 import com.ricky.publicfile.domain.event.FileWithdrewEvent;
 import org.springframework.context.annotation.Configuration;
 
-import static com.ricky.common.constants.ConfigConstants.*;
+import static com.ricky.common.constants.ConfigConstants.FILE_PUBLISHED_EVENT_NAME;
+import static com.ricky.common.constants.ConfigConstants.FILE_WITHDREW_EVENT_NAME;
 
 @Configuration
 public class CommunityDomainEventJsonConfiguration implements DomainEventSubtypeRegistrar {
@@ -15,9 +16,7 @@ public class CommunityDomainEventJsonConfiguration implements DomainEventSubtype
     public void register(ObjectMapper mapper) {
         mapper.registerSubtypes(
                 new NamedType(FilePublishedEvent.class, FILE_PUBLISHED_EVENT_NAME),
-                new NamedType(FileWithdrewEvent.class, FILE_WITHDREW_EVENT_NAME),
-                new NamedType(FileWithdrewEvent.class, COMMENT_CREATED_EVENT_NAME),
-                new NamedType(FileWithdrewEvent.class, COMMENT_DELETED_EVENT_NAME)
+                new NamedType(FileWithdrewEvent.class, FILE_WITHDREW_EVENT_NAME)
         );
     }
 }

@@ -13,11 +13,11 @@ import lombok.NoArgsConstructor;
  */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class LocalCommentDeletedEvent extends LocalDomainEvent {
+public class CommentDeletedLocalEvent extends LocalDomainEvent {
 
     private String postId;
 
-    public LocalCommentDeletedEvent(Comment comment, UserContext userContext) {
+    public CommentDeletedLocalEvent(Comment comment, UserContext userContext) {
         super(comment, userContext);
         this.postId = comment.getPostId();
     }

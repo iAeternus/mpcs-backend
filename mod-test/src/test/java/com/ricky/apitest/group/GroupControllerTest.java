@@ -313,7 +313,7 @@ public class GroupControllerTest extends BaseApiTest {
     }
 
     @Test
-    void should_delete_group() throws InterruptedException {
+    void should_delete_group() {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
         GroupApi.createGroup(manager.getJwt());
@@ -323,14 +323,13 @@ public class GroupControllerTest extends BaseApiTest {
         // When
         GroupApi.deleteGroup(manager.getJwt(), groupId);
 
-        Thread.sleep(5 * 1000);
-
         // Then
         assertFalse(groupRepository.byIdOptional(groupId).isPresent());
 
         GroupDeletedEvent evt = latestEventFor(groupId, GROUP_DELETED, GroupDeletedEvent.class);
         assertEquals(group.getCustomId(), evt.getCustomId());
 
+        awaitEventConsumed(evt); // TODO 这个事件为什么执行得这么慢
         assertFalse(folderHierarchyRepository.existsByCustomId(group.getCustomId()));
     }
 

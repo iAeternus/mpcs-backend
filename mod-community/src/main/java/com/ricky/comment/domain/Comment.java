@@ -1,7 +1,7 @@
 package com.ricky.comment.domain;
 
-import com.ricky.comment.domain.event.LocalCommentCreatedEvent;
-import com.ricky.comment.domain.event.LocalCommentDeletedEvent;
+import com.ricky.comment.domain.event.CommentCreatedLocalEvent;
+import com.ricky.comment.domain.event.CommentDeletedLocalEvent;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
@@ -34,7 +34,7 @@ public class Comment extends AggregateRoot {
         this.postId = postId;
         this.content = content;
         this.type = type;
-        raiseLocalEvent(new LocalCommentCreatedEvent(this, userContext));
+        raiseLocalEvent(new CommentCreatedLocalEvent(this, userContext));
         addOpsLog("新建", userContext);
     }
 
@@ -43,7 +43,7 @@ public class Comment extends AggregateRoot {
     }
 
     public void onDelete(UserContext userContext) {
-        raiseLocalEvent(new LocalCommentDeletedEvent(this, userContext));
+        raiseLocalEvent(new CommentDeletedLocalEvent(this, userContext));
     }
 
 }

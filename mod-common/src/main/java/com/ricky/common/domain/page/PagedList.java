@@ -52,4 +52,8 @@ public class PagedList<T> implements Response {
     public int size() {
         return data.size();
     }
+
+    public boolean isEmpty() {
+        return data.isEmpty();
+    }
 }

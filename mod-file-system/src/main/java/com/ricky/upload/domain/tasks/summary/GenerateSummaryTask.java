@@ -23,7 +23,6 @@ public class GenerateSummaryTask implements RetryableTask {
     private final SummaryGenerator summaryGenerator;
     private final FileExtraRepository fileExtraRepository;
 
-    @Transactional
     public void run(String fileId) {
         FileExtra fileExtra = fileExtraRepository.byFileId(fileId);
 

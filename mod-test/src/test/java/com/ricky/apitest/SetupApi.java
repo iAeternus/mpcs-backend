@@ -9,10 +9,13 @@ import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
+import com.ricky.folder.domain.event.FolderCreatedEvent;
 import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.upload.domain.StorageService;
+import com.ricky.upload.domain.event.FileUploadedLocalEvent;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
+import com.ricky.user.domain.event.UserCreatedEvent;
 import com.ricky.verification.domain.VerificationCodeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
@@ -25,16 +28,19 @@ import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.apitest.RandomTestFixture.*;
+import static com.ricky.common.event.DomainEventType.FOLDER_CREATED;
+import static com.ricky.common.event.DomainEventType.USER_CREATED;
 
 @Component
 @RequiredArgsConstructor
 public class SetupApi {
 
-    private final FolderHierarchyDomainService folderHierarchyDomainService;
     private final VerificationCodeRepository verificationCodeRepository;
+    private final FolderHierarchyDomainService folderHierarchyDomainService;
     private final FileHasherFactory fileHasherFactory;
     private final FileRepository fileRepository;
     private final StorageService storageService;
+    private final EventUtils eventUtils;
 
     public RegisterResponse register(String mobileOrEmail, String password) {
         return register(rUsername(), mobileOrEmail, password);
@@ -52,7 +58,9 @@ public class SetupApi {
                 .agreement(true)
                 .build();
 
-        return UserApi.register(command);
+        RegisterResponse resp = UserApi.register(command);
+        eventUtils.awaitLatestEventConsumed(resp.getUserId(), USER_CREATED, UserCreatedEvent.class);
+        return resp;
     }
 
     public LoginResponse registerWithLogin(String mobileOrEmail, String password) {
@@ -76,9 +84,13 @@ public class SetupApi {
         java.io.File file = resource.getFile();
 
         String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        eventUtils.awaitLatestEventConsumed(parentId, FOLDER_CREATED, FolderCreatedEvent.class);
 
         String fileHash = deleteFileWithSameHash(file);
         String fileId = FileUploadApi.upload(manager.getJwt(), file, parentId).getFileId();
+
+        // 文件上传，长等待
+        eventUtils.awaitLatestLocalEventConsumed(fileId, FileUploadedLocalEvent.class);
 
         return TestFileContext.builder()
                 .manager(manager)

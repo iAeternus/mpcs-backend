@@ -10,6 +10,7 @@ import com.ricky.commenthierarchy.domain.CommentHierarchyRepository;
 import com.ricky.commenthierarchy.service.CommentHierarchyService;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
+import com.ricky.common.sensitive.service.SensitiveWordService;
 import com.ricky.publicfile.domain.PublicFileDomainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,8 +32,6 @@ public class CommentHierarchyServiceImpl implements CommentHierarchyService {
         rateLimiter.applyFor("CommentHierarchy:Reply", 10);
 
         publicFileDomainService.checkExists(command.getPostId(), userContext);
-
-        // TODO 敏感词检测
 
         Comment comment = commentFactory.createReplyComment(command.getPostId(), command.getContent(), userContext);
         CommentHierarchy hierarchy = commentHierarchyRepository.byPostId(command.getPostId());

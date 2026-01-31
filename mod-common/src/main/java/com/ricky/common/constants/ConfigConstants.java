@@ -80,6 +80,7 @@ public interface ConfigConstants {
     String PUBLIC_FILE_CACHE = "PUBLIC_FILES";
     String GROUPS_CACHE = "GROUPS";
     String COMMENT_CACHE = "COMMENTS";
+    String SENSITIVE_WORD_CACHE = "SENSITIVE_WORDS";
 
     String LIKE_KEY = "LIKES";
     String LIKED_COUNT_KEY = "LIKED_COUNTS";

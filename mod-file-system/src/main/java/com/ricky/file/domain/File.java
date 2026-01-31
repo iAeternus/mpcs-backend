@@ -5,7 +5,7 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.file.domain.event.FileDeletedEvent;
-import com.ricky.upload.domain.event.FileUploadedEvent;
+import com.ricky.upload.domain.event.FileUploadedLocalEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,7 +36,7 @@ public class File extends AggregateRoot {
     private FileStatus status;
     private FileCategory category; // 文件类型
 
-    private File(
+    public File(
             String parentId,
             StorageId storageId,
             String filename,
@@ -46,6 +46,16 @@ public class File extends AggregateRoot {
             UserContext userContext
     ) {
         super(newFileId(), userContext);
+        init(parentId, storageId, filename, size, hash, category, userContext);
+    }
+
+    private void init(String parentId,
+                      StorageId storageId,
+                      String filename,
+                      long size,
+                      String hash,
+                      FileCategory category,
+                      UserContext userContext) {
         this.parentId = parentId;
         this.storageId = storageId;
         this.filename = filename;
@@ -54,25 +64,13 @@ public class File extends AggregateRoot {
         this.status = FileStatus.NORMAL;
         this.category = category;
         addOpsLog("新建", userContext);
-    }
-
-    public static File create(
-            String parentId,
-            StorageId storageId,
-            String filename,
-            long size,
-            String hash,
-            FileCategory category,
-            UserContext userContext
-    ) {
-        File file = new File(parentId, storageId, filename, size, hash, category, userContext);
-        file.raiseEvent(new FileUploadedEvent(
-                file.getId(),
-                file.getStorageId(),
-                file.getCategory(),
+        raiseLocalEvent(new FileUploadedLocalEvent(
+                this,
+                this.getId(),
+                this.getStorageId(),
+                this.getCategory(),
                 userContext
         ));
-        return file;
     }
 
     public static String newFileId() {

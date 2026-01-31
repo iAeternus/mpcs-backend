@@ -15,10 +15,12 @@ import static com.ricky.common.event.DomainEventType.FILE_PUBLISHED;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FilePublishedEvent extends DomainEvent {
 
+    private String originalFileId;
     private String postId;
 
-    public FilePublishedEvent(String postId, UserContext userContext) {
+    public FilePublishedEvent(String originalFileId, String postId, UserContext userContext) {
         super(FILE_PUBLISHED, userContext);
+        this.originalFileId = originalFileId;
         this.postId = postId;
     }
 

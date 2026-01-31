@@ -22,8 +22,10 @@ import static java.util.Comparator.comparingInt;
 @RequiredArgsConstructor
 public class DomainEventConsumer<T extends DomainEvent> {
 
+
     private final Map<String, Class<?>> handlerEventClassMap = new ConcurrentHashMap<>();
     private final List<DomainEventHandler<T>> handlers;
+    private final ConsumingDomainEventDao<T> consumingDomainEventDao;
 
     public void consume(ConsumingDomainEvent<T> consumingDomainEvent) {
         log.debug("Start consume domain event[{}:{}].", consumingDomainEvent.getType(), consumingDomainEvent.getEventId());
@@ -32,7 +34,13 @@ public class DomainEventConsumer<T extends DomainEvent> {
                 .sorted(comparingInt(DomainEventHandler::priority))
                 .forEach(handler -> {
                     try {
+                        long start = System.currentTimeMillis();
                         handler.handle(consumingDomainEvent);
+                        long cost = System.currentTimeMillis() - start;
+                        log.info("Handler [{}] consumed event [{}] in {} ms",
+                                handler.getClass().getSimpleName(),
+                                consumingDomainEvent.getEventId(),
+                                cost);
                     } catch (Throwable t) {
                         log.error("Error occurred while handling domain event[{}:{}] by {}.",
                                 consumingDomainEvent.getType(), consumingDomainEvent.getEventId(), handler.getClass().getName(), t);
@@ -50,6 +58,20 @@ public class DomainEventConsumer<T extends DomainEvent> {
 
         Class<?> finalHandlerEventClass = handlerEventClassMap.get(handlerClassName);
         return finalHandlerEventClass != null && finalHandlerEventClass.isAssignableFrom(event.getClass());
+    }
+
+    public boolean isEventFullyConsumed(T event) {
+        long totalHandlers = handlers.stream()
+                .filter(handler -> canHandle(handler, event))
+                .count();
+
+        if (totalHandlers == 0) {
+            return true;
+        }
+
+        long consumedCount = consumingDomainEventDao.countByEventId(event.getId());
+
+        return consumedCount >= totalHandlers;
     }
 
 }

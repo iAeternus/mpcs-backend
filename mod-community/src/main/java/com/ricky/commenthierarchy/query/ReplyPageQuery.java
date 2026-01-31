@@ -9,12 +9,13 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
+import lombok.experimental.SuperBuilder;
 
 import static com.ricky.common.constants.ConfigConstants.COMMENT_ID_PREFIX;
 import static com.ricky.common.constants.ConfigConstants.POST_ID_PREFIX;
 
 @Value
-@Builder
+@SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class ReplyPageQuery extends PageQuery {
 

@@ -13,4 +13,9 @@ public interface ConsumingDomainEventDao<T extends DomainEvent> {
      */
     boolean recordAsConsumed(ConsumingDomainEvent<T> consumingDomainEvent, String handlerName);
 
+    /**
+     * 查询可以处理该事件的事件处理器数量
+     */
+    long countByEventId(String eventId);
+
 }

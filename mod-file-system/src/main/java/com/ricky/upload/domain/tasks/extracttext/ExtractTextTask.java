@@ -29,7 +29,6 @@ public class ExtractTextTask implements RetryableTask {
     private final FileProperties fileProperties;
     private final FileExtraRepository fileExtraRepository;
 
-    @Transactional
     public void run(String fileId, StorageId storageId, FileCategory category) {
         if (!extractorFactory.supports(category)) {
             log.warn("No extractor supports category: {}, skipping", category);

@@ -10,5 +10,6 @@ com.ricky.common.properties.PropertiesAutoConfiguration
 com.ricky.common.redis.RedisAutoConfiguration
 com.ricky.common.restclient.RestTemplateAutoConfiguration
 com.ricky.common.retry.RetryAutoConfiguration
+com.ricky.common.sensitive.SensitiveWordAutoConfiguration
 com.ricky.common.startup.StartupAutoConfiguration
 com.ricky.common.taskexecutor.TaskExecutorAutoConfiguration

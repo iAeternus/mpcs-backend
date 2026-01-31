@@ -13,7 +13,7 @@ public class FileFactory {
                        String hash,
                        UserContext userContext) {
         FileCategory category = FileCategory.fromFilename(file.getOriginalFilename());
-        return File.create(
+        return new File(
                 parentId,
                 storageId,
                 file.getOriginalFilename(),
@@ -29,7 +29,7 @@ public class FileFactory {
                        StoredFile storedFile,
                        UserContext userContext) {
         FileCategory category = FileCategory.fromFilename(filename);
-        return File.create(
+        return new File(
                 parentId,
                 storedFile.getStorageId(),
                 filename,
@@ -47,7 +47,7 @@ public class FileFactory {
                        long totalSize,
                        UserContext userContext) {
         FileCategory category = FileCategory.fromFilename(filename);
-        return File.create(
+        return new File(
                 parentId,
                 storageId,
                 filename,

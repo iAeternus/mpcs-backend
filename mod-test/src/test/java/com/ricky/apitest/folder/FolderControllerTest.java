@@ -12,6 +12,7 @@ import com.ricky.folder.domain.event.FolderDeletedEvent;
 import com.ricky.folder.query.FolderContentResponse;
 import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
+import com.ricky.upload.domain.event.FileUploadedLocalEvent;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
@@ -272,9 +273,8 @@ public class FolderControllerTest extends BaseApiTest {
         String fileId = FileUploadApi.upload(loginResponse.getJwt(), file, folderId).getFileId();
         File dbFile = fileRepository.byId(fileId);
 
-
-        // 这里必须sleep，直接删除会导致文件上传事件还未处理完，导致mongodb写冲突
-        Thread.sleep(5 * 1000);
+        // 这里必须等待，直接删除会导致文件上传事件还未处理完，导致mongodb写冲突
+        awaitLatestLocalEventConsumed(fileId, FileUploadedLocalEvent.class);
 
         // When
         FolderApi.deleteFolderForce(loginResponse.getJwt(), folderId, DeleteFolderForceCommand.builder()

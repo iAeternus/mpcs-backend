@@ -61,9 +61,6 @@ public class FileUploadServiceImpl implements FileUploadService {
         String hash = fileHasherFactory.getFileHasher().hash(multipartFile);
         StorageId storageId = fileRepository.byFileHashOptional(hash)
                 .orElseGet(() -> storageService.store(multipartFile));
-//        StorageId storageId = fileRepository.cachedByFileHash(hash).getStorageIds().stream()
-//                .findFirst()
-//                .orElseGet(() -> storageService.store(multipartFile));
 
         // 落库聚合根
         File file = fileFactory.create(parentId, storageId, multipartFile, hash, userContext);

@@ -10,8 +10,8 @@ import com.ricky.comment.service.CommentService;
 import com.ricky.commenthierarchy.domain.CommentHierarchy;
 import com.ricky.commenthierarchy.domain.CommentHierarchyRepository;
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.common.event.local.TransactionalLocalEventPublisher;
 import com.ricky.common.ratelimit.RateLimiter;
+import com.ricky.common.sensitive.service.SensitiveWordService;
 import com.ricky.publicfile.domain.PublicFileDomainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,8 +38,6 @@ public class CommentServiceImpl implements CommentService {
         rateLimiter.applyFor("Comment:CreateComment", 50);
 
         publicFileDomainService.checkExists(command.getPostId(), userContext);
-
-        // TODO 敏感词检测
 
         Comment comment = commentFactory.createFirstLevelComment(command.getPostId(), command.getContent(), userContext);
         CommentHierarchy commentHierarchy = new CommentHierarchy(comment.getPostId(), userContext);

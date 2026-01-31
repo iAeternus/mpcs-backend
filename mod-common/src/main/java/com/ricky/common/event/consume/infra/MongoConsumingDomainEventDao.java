@@ -39,4 +39,10 @@ public class MongoConsumingDomainEventDao<T extends DomainEvent> implements Cons
 
         return result.getMatchedCount() == 0;
     }
+
+    @Override
+    public long countByEventId(String eventId) {
+        Query query = query(where(ConsumingDomainEvent.Fields.eventId).is(eventId));
+        return mongoTemplate.count(query, ConsumingDomainEvent.class);
+    }
 }
