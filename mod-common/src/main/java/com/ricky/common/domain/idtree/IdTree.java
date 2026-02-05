@@ -6,6 +6,7 @@ import com.ricky.common.domain.idtree.exception.IdNodeNotFoundException;
 import com.ricky.common.domain.idtree.exception.NodeIdFormatException;
 import com.ricky.common.domain.idtree.validation.NodeId;
 import com.ricky.common.domain.marker.ValueObject;
+import com.ricky.common.utils.ValidationUtils;
 import com.ricky.common.validation.collection.NoNullElement;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -21,8 +22,7 @@ import java.util.*;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
-import static com.ricky.common.utils.ValidationUtils.isEmpty;
-import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.*;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -94,7 +94,7 @@ public class IdTree implements ValueObject {
     public void addNode(String parentNodeId, String nodeId) {
         requireNotBlank(nodeId, "Node ID must not be blank.");
 
-        if (StringUtils.isBlank(parentNodeId)) {
+        if (isBlank(parentNodeId)) {
             nodes.add(0, new IdNode(nodeId));
             return;
         }
@@ -170,7 +170,7 @@ public class IdTree implements ValueObject {
      * @return 索引树
      */
     public IdTree map(Map<String, String> idMap) {
-        if (!Objects.equals(this.buildHierarchy(10).allIds(), idMap.keySet())) {
+        if (!ValidationUtils.equals(this.buildHierarchy(10).allIds(), idMap.keySet())) {
             throw new RuntimeException("Mapped ID must contain all existing tree ids.");
         }
 
@@ -299,9 +299,9 @@ public class IdTree implements ValueObject {
         }
 
         /**
-         * 将Map转换为层级结构
+         * 映射节点ID为新ID，不改变树形结构
          *
-         * @param idMap 节点本身的ID-该节点子节点的ID
+         * @param idMap 节点原ID -> 节点新ID
          * @return 树的根节点
          */
         private IdNode map(Map<String, String> idMap) {

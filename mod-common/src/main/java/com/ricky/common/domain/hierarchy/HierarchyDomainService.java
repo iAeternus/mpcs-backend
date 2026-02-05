@@ -1,6 +1,5 @@
 package com.ricky.common.domain.hierarchy;
 
-import com.google.common.collect.ImmutableSet;
 import com.ricky.common.exception.MyException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -223,7 +222,7 @@ public class HierarchyDomainService<T extends HierarchyNode> {
 
         return Arrays.stream(schemaOf(customId, nodeId).split(NODE_ID_SEPARATOR))
                 .filter(aId -> !Objects.equals(aId, nodeId))
-                .collect(ImmutableSet.toImmutableSet());
+                .collect(toImmutableSet());
     }
 
     /**
