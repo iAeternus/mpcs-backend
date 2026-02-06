@@ -2,6 +2,7 @@ package com.ricky.comment.command;
 
 import com.ricky.common.domain.marker.Command;
 import com.ricky.common.validation.id.Id;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
@@ -9,8 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
-import static com.ricky.common.constants.ConfigConstants.MAX_GENERIC_TEXT_LENGTH;
-import static com.ricky.common.constants.ConfigConstants.POST_ID_PREFIX;
+import static com.ricky.common.constants.ConfigConstants.*;
 
 @Value
 @Builder
@@ -20,6 +20,13 @@ public class CreateCommentCommand implements Command {
     @NotBlank
     @Id(POST_ID_PREFIX)
     String postId;
+
+    /**
+     * 父评论ID，根节点为null
+     */
+    @Nullable
+    @Id(COMMENT_ID_PREFIX)
+    String parentId;
 
     @NotBlank
     @Size(max = MAX_GENERIC_TEXT_LENGTH)

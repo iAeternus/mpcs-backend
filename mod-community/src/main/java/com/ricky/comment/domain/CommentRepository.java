@@ -1,9 +1,11 @@
 package com.ricky.comment.domain;
 
+import com.ricky.common.domain.hierarchy.HierarchyRepository;
+
 import java.util.List;
 import java.util.Set;
 
-public interface CommentRepository {
+public interface CommentRepository extends HierarchyRepository<Comment> {
     void save(Comment comment);
 
     Comment byId(String commentId);

@@ -3,8 +3,7 @@ package com.ricky.comment;
 import com.ricky.comment.command.CreateCommentCommand;
 import com.ricky.comment.command.CreateCommentResponse;
 import com.ricky.comment.command.DeleteCommentCommand;
-import com.ricky.comment.query.CommentPageQuery;
-import com.ricky.comment.query.CommentResponse;
+import com.ricky.comment.query.*;
 import com.ricky.comment.service.CommentQueryService;
 import com.ricky.comment.service.CommentService;
 import com.ricky.common.domain.page.PagedList;
@@ -33,7 +32,7 @@ public class CommentController {
     private final CommentQueryService commentQueryService;
 
     @PostMapping
-    @Operation(summary = "创建一级评论")
+    @Operation(summary = "创建评论")
     public CreateCommentResponse createComment(@RequestBody @Valid CreateCommentCommand command,
                                                @AuthenticationPrincipal UserContext userContext) {
         return commentService.createComment(command, userContext);
@@ -56,6 +55,19 @@ public class CommentController {
     @Operation(summary = "分页获取一级评论")
     public PagedList<CommentResponse> page(@RequestBody @Valid CommentPageQuery query) {
         return commentQueryService.page(query);
+    }
+
+    @PostMapping("/page/direct")
+    @Operation(summary = "分页获取某条评论的直接回复，包括自身")
+    public PagedList<CommentResponse> pageDirect(@RequestBody @Valid DirectReplyPageQuery query) {
+        return commentQueryService.pageDirect(query);
+    }
+
+    @PostMapping("/page/my")
+    @Operation(summary = "分页获取我的评论列表")
+    public PagedList<MyCommentResponse> pageMyComment(@RequestBody @Valid MyCommentPageQuery query,
+                                                      @AuthenticationPrincipal UserContext userContext) {
+        return commentQueryService.pageMyComment(query, userContext);
     }
 
 }

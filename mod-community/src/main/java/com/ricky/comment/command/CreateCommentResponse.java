@@ -12,6 +12,5 @@ import lombok.Value;
 public class CreateCommentResponse implements Response {
 
     String commentId;
-    String commentHierarchyId;
 
 }

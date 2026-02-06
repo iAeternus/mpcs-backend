@@ -106,36 +106,6 @@ public class FolderDomainService extends HierarchyDomainService<Folder, FolderRe
         }
     }
 
-//    // TODO 这个move的流程需重构，似乎只剩下这个问题了
-//    public MoveResult moveFolder(String customId, String folderId, String newParentId, UserContext userContext) {
-//        Folder dbFolder = repository.byId(folderId);
-//        Set<String> directChildFolderIds = directChildIdsUnder(customId, newParentId);
-//        boolean duplication = repository.byIds(customId, directChildFolderIds).stream()
-//                .map(Folder::getFolderName)
-//                .anyMatch(folderName -> folderName.equals(dbFolder.getFolderName()));
-//        if (duplication) {
-//            throw new MyException(FOLDER_NAME_DUPLICATES, "移动失败，存在名称重复。", "newParentId", newParentId);
-//        }
-//
-//        List<Folder> movedSubFolders = moveNode(customId, folderId, newParentId, userContext); // TODO 只有subtree
-//
-//        Set<String> movedFolderIds = movedSubFolders.stream()
-//                .map(Folder::getId)
-//                .collect(toImmutableSet());
-//
-//        Set<String> movedFileIds = movedSubFolders.stream()
-//                .flatMap(folder -> folder.getFileIds().stream())
-//                .collect(toImmutableSet());
-//
-//        dbFolder.onMove(movedFolderIds, movedFileIds, userContext); // TODO 更新了dbFile
-//        repository.save(movedSubFolders); // TODO 并未save dbFile
-//
-//        return MoveResult.builder()
-//                .movedFolderIds(movedFolderIds)
-//                .movedFileIds(movedFileIds)
-//                .build();
-//    }
-
     public String folderPath(String customId, String folderId) {
         return Arrays.stream(schemaOf(customId, folderId).split(NODE_ID_SEPARATOR))
                 .map(repository::cachedById)

@@ -26,12 +26,6 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
 
     private final MongoCachedFolderRepository cachedFolderRepository;
 
-//    @Override
-//    public List<UserCachedFolder> cachedUserAllFolders(String userId) {
-//        requireNotBlank(userId, "User ID must not be blank.");
-//        return cachedFolderRepository.cachedUserAllFolders(userId).getFolders();
-//    }
-
     @Override
     public void save(Folder folder) {
         super.save(folder);

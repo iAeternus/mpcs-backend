@@ -227,7 +227,7 @@ public class GroupApi {
                 .as(GroupManagersResponse.class);
     }
 
-    public static PagedList<GroupResponse> pageMyGroupsAsForManager(String token, MyGroupsAsForManaberPageQuery query) {
+    public static PagedList<GroupResponse> pageMyGroupsAsForManager(String token, MyGroupsAsForManagerPageQuery query) {
         return BaseApiTest.given(token)
                 .body(query)
                 .when()

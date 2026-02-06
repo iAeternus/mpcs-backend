@@ -19,6 +19,6 @@ public class CommentDeletedLocalEvent extends LocalDomainEvent {
 
     public CommentDeletedLocalEvent(Comment comment, UserContext userContext) {
         super(comment, userContext);
-        this.postId = comment.getPostId();
+        this.postId = comment.getCustomId();
     }
 }

@@ -3,6 +3,7 @@ package com.ricky.comment.infra;
 import com.ricky.comment.domain.Comment;
 import com.ricky.comment.domain.CommentRepository;
 import com.ricky.common.mongo.MongoBaseRepository;
+import com.ricky.common.mongo.MongoHierarchyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -11,7 +12,7 @@ import java.util.Set;
 
 @Repository
 @RequiredArgsConstructor
-public class MongoCommentRepository extends MongoBaseRepository<Comment> implements CommentRepository {
+public class MongoCommentRepository extends MongoHierarchyRepository<Comment> implements CommentRepository {
 
     private final MongoCachedCommentRepository cachedCommentRepository;
 

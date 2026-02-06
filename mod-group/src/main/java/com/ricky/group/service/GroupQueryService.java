@@ -11,7 +11,7 @@ public interface GroupQueryService {
 
     GroupManagersResponse fetchGroupManagers(String groupId, UserContext userContext);
 
-    PagedList<GroupResponse> pageMyGroupsAsForManager(MyGroupsAsForManaberPageQuery pageQuery, UserContext userContext);
+    PagedList<GroupResponse> pageMyGroupsAsForManager(MyGroupsAsForManagerPageQuery pageQuery, UserContext userContext);
 
     PagedList<GroupResponse> pageMyGroupsAsForMember(MyGroupsAsForMemberPageQuery query, UserContext userContext);
 }

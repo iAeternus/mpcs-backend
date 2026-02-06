@@ -45,7 +45,6 @@ public interface ConfigConstants {
     String GROUP_COLLECTION = "groups";
     String LIKE_COLLECTION = "likes";
     String COMMENT_COLLECTION = "comments";
-    String COMMENT_HIERARCHY_COLLECTION = "comments_hierarchies";
     String SENSITIVE_WORD_COLLECTION = "sensitive_words";
 
     String PUBLISHING_DOMAIN_EVENT_COLLECTION = "publishing_domain_event";
@@ -55,7 +54,6 @@ public interface ConfigConstants {
     String USER_ID_PREFIX = "USR";
     String FILE_ID_PREFIX = "FIL";
     String FOLDER_ID_PREFIX = "FLD";
-    String FOLDER_HIERARCHY_ID_PREFIX = "FDH";
     String VERIFICATION_ID_PREFIX = "VRC";
     String UPLOAD_SESSION_ID_PREFIX = "UPL";
     String FILE_EXTRA_ID_PREFIX = "EXT";
@@ -63,7 +61,6 @@ public interface ConfigConstants {
     String POST_ID_PREFIX = "PUB";
     String LIKE_ID_PREFIX = "LIK";
     String COMMENT_ID_PREFIX = "CMT";
-    String COMMENT_HIERARCHY_ID_PREFIX = "CMH";
     String SENSITIVE_WORD_ID_PREFIX = "SST";
 
     // Redis
@@ -102,10 +99,6 @@ public interface ConfigConstants {
     String GROUP_MEMBERS_CHANGED_EVENT_NAME = "GROUP_MEMBERS_CHANGED";
     String FILE_PUBLISHED_EVENT_NAME = "FILE_PUBLISHED";
     String FILE_WITHDREW_EVENT_NAME = "FILE_WITHDREW";
-    String COMMENT_CREATED_EVENT_NAME = "COMMENT_CREATED";
-    String COMMENT_DELETED_EVENT_NAME = "COMMENT_DELETED";
-    String LIKED_EVENT_NAME = "LIKED";
-    String UNLIKED_EVENT_NAME = "UNLIKED";
 
     String[] AVATAR_TYPES = {"image/png", "image/jpeg", "image/gif"};
 

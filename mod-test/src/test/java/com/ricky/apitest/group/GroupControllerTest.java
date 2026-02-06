@@ -12,7 +12,7 @@ import com.ricky.group.domain.event.GroupDeletedEvent;
 import com.ricky.group.domain.event.GroupMembersChangedEvent;
 import com.ricky.group.query.GroupFoldersResponse;
 import com.ricky.group.query.GroupResponse;
-import com.ricky.group.query.MyGroupsAsForManaberPageQuery;
+import com.ricky.group.query.MyGroupsAsForManagerPageQuery;
 import com.ricky.group.query.MyGroupsAsForMemberPageQuery;
 import com.ricky.user.domain.User;
 import org.junit.jupiter.api.Test;
@@ -537,7 +537,7 @@ public class GroupControllerTest extends BaseApiTest {
         GroupApi.addGroupManager(manager2.getJwt(), groupId2, manager1.getUserId());
 
         // When
-        PagedList<GroupResponse> pagedList = GroupApi.pageMyGroupsAsForManager(manager1.getJwt(), MyGroupsAsForManaberPageQuery.builder()
+        PagedList<GroupResponse> pagedList = GroupApi.pageMyGroupsAsForManager(manager1.getJwt(), MyGroupsAsForManagerPageQuery.builder()
                 .search(groupNamePrefix)
                 .ascSort(false)
                 .pageIndex(1)

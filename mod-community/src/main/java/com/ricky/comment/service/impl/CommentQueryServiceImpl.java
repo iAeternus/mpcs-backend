@@ -2,19 +2,17 @@ package com.ricky.comment.service.impl;
 
 import com.ricky.comment.domain.Comment;
 import com.ricky.comment.domain.CommentRepository;
-import com.ricky.comment.query.CommentPageQuery;
-import com.ricky.comment.query.CommentResponse;
+import com.ricky.comment.query.*;
 import com.ricky.comment.service.CommentQueryService;
+import com.ricky.common.domain.page.MongoPage;
 import com.ricky.common.domain.page.PagedList;
-import com.ricky.common.domain.page.Pagination;
+import com.ricky.common.domain.page.SortRegistry;
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
-import com.ricky.common.utils.ValidationUtils;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,13 +22,7 @@ import java.util.Set;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
-import static com.ricky.comment.domain.CommentType.FIRST_LEVEL_COMMENT;
-import static com.ricky.common.utils.ValidationUtils.isBlank;
-import static org.springframework.data.domain.Sort.Direction.ASC;
-import static org.springframework.data.domain.Sort.Direction.DESC;
-import static org.springframework.data.domain.Sort.by;
-import static org.springframework.data.mongodb.core.query.Criteria.where;
-import static org.springframework.data.mongodb.core.query.Query.query;
+import static com.ricky.common.constants.ConfigConstants.COMMENT_COLLECTION;
 
 @Service
 @RequiredArgsConstructor
@@ -49,7 +41,7 @@ public class CommentQueryServiceImpl implements CommentQueryService {
         User user = userRepository.cachedById(comment.getUserId());
         return CommentResponse.builder()
                 .username(user.getUsername())
-                .postId(comment.getPostId())
+                .postId(comment.getCustomId())
                 .content(comment.getContent())
                 .createdAt(comment.getCreatedAt())
                 .build();
@@ -59,37 +51,28 @@ public class CommentQueryServiceImpl implements CommentQueryService {
     public PagedList<CommentResponse> page(CommentPageQuery pageQuery) {
         rateLimiter.applyFor("Comment:Page", 5);
 
-        Pagination pagination = Pagination.pagination(pageQuery.getPageIndex(), pageQuery.getPageSize());
-        Query query = query(where("type").is(FIRST_LEVEL_COMMENT));
-
-        long count = mongoTemplate.count(query, Comment.class);
-        if (count == 0) {
-            return PagedList.pagedList(pagination, (int) count, List.of());
-        }
-
-        query.skip(pagination.skip()).limit(pagination.limit()).with(sort(pageQuery));
-        query.fields().include("userId", "postId", "content", "createdAt");
-
-        List<Comment> comments = mongoTemplate.find(query, Comment.class);
-        return PagedList.pagedList(pagination, (int) count, convert(comments));
+        return MongoPage.of(Comment.class, COMMENT_COLLECTION)
+                .pageQuery(pageQuery)
+                .where(c -> c.and("customId").is(pageQuery.getPostId())
+                        .and("parentId").isNull())
+                .sort(SortRegistry.newInstance().resolve(pageQuery.getSortedBy(), pageQuery.getAscSort()))
+                .project("userId", "customId", "content", "createdAt")
+                .map(this::toCommentResponse, mongoTemplate);
     }
 
-    private Sort sort(CommentPageQuery pageQuery) {
-        String sortedBy = pageQuery.getSortedBy();
-        Sort.Direction direction = pageQuery.getAscSort() ? ASC : DESC;
+    @Override
+    public PagedList<CommentResponse> pageDirect(DirectReplyPageQuery pageQuery) {
+        rateLimiter.applyFor("Comment:PageDirect", 5);
 
-        if (isBlank(sortedBy)) {
-            return by(DESC, "createdAt");
-        }
-
-        if (ValidationUtils.equals(sortedBy, "createdAt")) {
-            return by(direction, "createdAt");
-        }
-
-        return by(DESC, "createdAt"); // 暂时不会执行到这里
+        return MongoPage.of(Comment.class, COMMENT_COLLECTION)
+                .pageQuery(pageQuery)
+                .where(c -> c.and("parentId").is(pageQuery.getParentId()))
+                .sort(SortRegistry.newInstance().resolve(pageQuery.getSortedBy(), pageQuery.getAscSort()))
+                .project("userId", "customId", "content", "createdAt")
+                .map(this::toCommentResponse, mongoTemplate);
     }
 
-    private List<CommentResponse> convert(List<Comment> comments) {
+    private List<CommentResponse> toCommentResponse(List<Comment> comments) {
         Set<String> userIds = comments.stream()
                 .map(Comment::getUserId)
                 .collect(toImmutableSet());
@@ -100,7 +83,29 @@ public class CommentQueryServiceImpl implements CommentQueryService {
         return comments.stream()
                 .map(comment -> CommentResponse.builder()
                         .username(userIdToUsernameMap.getOrDefault(comment.getUserId(), "未知用户"))
-                        .postId(comment.getPostId())
+                        .postId(comment.getCustomId())
+                        .content(comment.getContent())
+                        .createdAt(comment.getCreatedAt())
+                        .build())
+                .collect(toImmutableList());
+    }
+
+    @Override
+    public PagedList<MyCommentResponse> pageMyComment(MyCommentPageQuery pageQuery, UserContext userContext) {
+        rateLimiter.applyFor("Comment:PageMyComment", 5);
+
+        return MongoPage.of(Comment.class, COMMENT_COLLECTION)
+                .pageQuery(pageQuery)
+                .where(c -> c.and("userId").is(userContext.getUid()))
+                .sort(SortRegistry.newInstance().resolve(pageQuery.getSortedBy(), pageQuery.getAscSort()))
+                .project("customId", "content", "createdAt")
+                .map(this::toMyCommentResponse, mongoTemplate);
+    }
+
+    private List<MyCommentResponse> toMyCommentResponse(List<Comment> comments) {
+        return comments.stream()
+                .map(comment -> MyCommentResponse.builder()
+                        .postId(comment.getCustomId())
                         .content(comment.getContent())
                         .createdAt(comment.getCreatedAt())
                         .build())

@@ -19,6 +19,6 @@ public class CommentCreatedLocalEvent extends LocalDomainEvent {
 
     public CommentCreatedLocalEvent(Comment comment, UserContext userContext) {
         super(comment, userContext);
-        this.postId = comment.getPostId();
+        this.postId = comment.getCustomId();
     }
 }

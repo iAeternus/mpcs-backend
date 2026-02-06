@@ -5,23 +5,16 @@ import com.ricky.common.sensitive.service.SensitiveWordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import static com.ricky.comment.domain.CommentType.FIRST_LEVEL_COMMENT;
-import static com.ricky.comment.domain.CommentType.REPLY_COMMENT;
-
 @Component
 @RequiredArgsConstructor
 public class CommentFactory {
 
+    private final CommentDomainService commentDomainService;
     private final SensitiveWordService sensitiveWordService;
 
-    public Comment createFirstLevelComment(String postId, String content, UserContext userContext) {
+    public Comment createComment(String postId, String parentId, String content, UserContext userContext) {
         String filteredContent = sensitiveWordService.filter(content);
-        return new Comment(postId, filteredContent, FIRST_LEVEL_COMMENT, userContext);
-    }
-
-    public Comment createReplyComment(String postId, String content, UserContext userContext) {
-        String filteredContent = sensitiveWordService.filter(content);
-        return new Comment(postId, filteredContent, REPLY_COMMENT, userContext);
+        return new Comment(postId, parentId, commentDomainService.schemaOf(postId, parentId), filteredContent, userContext);
     }
 
 }

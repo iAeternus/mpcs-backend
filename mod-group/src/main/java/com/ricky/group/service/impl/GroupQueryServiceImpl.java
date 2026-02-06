@@ -1,7 +1,7 @@
 package com.ricky.group.service.impl;
 
+import com.ricky.common.domain.page.MongoPage;
 import com.ricky.common.domain.page.PagedList;
-import com.ricky.common.domain.page.Pagination;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.common.utils.ValidationUtils;
@@ -17,7 +17,6 @@ import com.ricky.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,13 +28,10 @@ import static com.ricky.common.constants.ConfigConstants.GROUP_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.GROUP_ID_PREFIX;
 import static com.ricky.common.utils.MongoCriteriaUtils.regexSearch;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
-import static com.ricky.common.utils.ValidationUtils.isNotBlank;
 import static com.ricky.common.validation.id.IdValidator.isId;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.data.domain.Sort.by;
-import static org.springframework.data.mongodb.core.query.Criteria.where;
-import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Service
 @RequiredArgsConstructor
@@ -114,86 +110,64 @@ public class GroupQueryServiceImpl implements GroupQueryService {
     }
 
     @Override
-    public PagedList<GroupResponse> pageMyGroupsAsForManager(MyGroupsAsForManaberPageQuery pageQuery, UserContext userContext) {
+    public PagedList<GroupResponse> pageMyGroupsAsForManager(MyGroupsAsForManagerPageQuery pageQuery, UserContext userContext) {
         rateLimiter.applyFor("Group:PageMyGroupFolders", 5);
 
-        String search = pageQuery.getSearch();
-        Pagination pagination = Pagination.pagination(pageQuery.getPageIndex(), pageQuery.getPageSize());
+        return MongoPage.of(Group.class, GROUP_COLLECTION)
+                .pageQuery(pageQuery)
+                .where(c -> c.and("managers").is(userContext.getUid())) // my managed
+                .search((search, c, q) -> {
+                    if (isId(search, GROUP_ID_PREFIX)) {
+                        return c.and("_id").is(search);
+                    } else {
+                        return c.andOperator(regexSearch("name", search));
+                    }
+                })
+                .sort(q -> {
+                    String sortedBy = pageQuery.getSortedBy();
+                    if (isBlank(sortedBy) || !ALLOWED_SORT_FIELDS.contains(sortedBy)) {
+                        return by(DESC, "createdAt");
+                    }
 
-        Query query = query(where("managers").is(userContext.getUid())); // my managed
+                    var direction = pageQuery.getAscSort() ? ASC : DESC;
+                    if (ValidationUtils.equals(sortedBy, "createdAt")) {
+                        return by(direction, "createdAt");
+                    }
 
-        if (isNotBlank(search)) {
-            if (isId(search, GROUP_ID_PREFIX)) {
-                query.addCriteria(where("_id").is(search));
-            } else {
-                query.addCriteria(regexSearch("name", search));
-            }
-        }
-
-        long count = mongoTemplate.count(query, Group.class);
-        if (count == 0) {
-            return PagedList.pagedList(pagination, (int) count, List.of());
-        }
-
-        query.skip(pagination.skip()).limit(pagination.limit()).with(sort(pageQuery));
-        query.fields().include("_id", "name", "active", "inheritancePolicy", "createdAt", "updatedAt");
-        List<GroupResponse> myGroups = mongoTemplate.find(query, GroupResponse.class, GROUP_COLLECTION);
-        return PagedList.pagedList(pagination, (int) count, myGroups);
-    }
-
-    private Sort sort(MyGroupsAsForManaberPageQuery pageQuery) {
-        String sortedBy = pageQuery.getSortedBy();
-        if (isBlank(sortedBy) || !ALLOWED_SORT_FIELDS.contains(sortedBy)) {
-            return by(DESC, "createdAt");
-        }
-
-        Sort.Direction direction = pageQuery.getAscSort() ? ASC : DESC;
-        if (ValidationUtils.equals(sortedBy, "createdAt")) {
-            return by(direction, "createdAt");
-        }
-
-        return by(direction, sortedBy).and(by(DESC, "createdAt"));
+                    return by(direction, sortedBy).and(by(DESC, "createdAt"));
+                })
+                .project("_id", "name", "active", "inheritancePolicy", "createdAt", "updatedAt")
+                .fetchAs(GroupResponse.class, mongoTemplate);
     }
 
     @Override
     public PagedList<GroupResponse> pageMyGroupsAsForMember(MyGroupsAsForMemberPageQuery pageQuery, UserContext userContext) {
         rateLimiter.applyFor("Group:PageMyGroupFolders", 5);
 
-        String search = pageQuery.getSearch();
-        Pagination pagination = Pagination.pagination(pageQuery.getPageIndex(), pageQuery.getPageSize());
+        return MongoPage.of(Group.class, GROUP_COLLECTION)
+                .pageQuery(pageQuery)
+                .where(c -> c.and("members").is(userContext.getUid())) // my joined
+                .search((search, c, q) -> {
+                    if (isId(search, GROUP_ID_PREFIX)) {
+                        return c.and("_id").is(search);
+                    } else {
+                        return c.andOperator(regexSearch("name", search));
+                    }
+                })
+                .sort(q -> {
+                    String sortedBy = pageQuery.getSortedBy();
+                    if (isBlank(sortedBy) || !ALLOWED_SORT_FIELDS.contains(sortedBy)) {
+                        return by(DESC, "createdAt");
+                    }
 
-        Query query = query(where("members").is(userContext.getUid())); // my joined
+                    Sort.Direction direction = pageQuery.getAscSort() ? ASC : DESC;
+                    if (ValidationUtils.equals(sortedBy, "createdAt")) {
+                        return by(direction, "createdAt");
+                    }
 
-        if (isNotBlank(search)) {
-            if (isId(search, GROUP_ID_PREFIX)) {
-                query.addCriteria(where("_id").is(search));
-            } else {
-                query.addCriteria(regexSearch("name", search));
-            }
-        }
-
-        long count = mongoTemplate.count(query, Group.class);
-        if (count == 0) {
-            return PagedList.pagedList(pagination, (int) count, List.of());
-        }
-
-        query.skip(pagination.skip()).limit(pagination.limit()).with(sort(pageQuery));
-        query.fields().include("_id", "name", "active", "inheritancePolicy", "createdAt", "updatedAt");
-        List<GroupResponse> myGroups = mongoTemplate.find(query, GroupResponse.class, GROUP_COLLECTION);
-        return PagedList.pagedList(pagination, (int) count, myGroups);
-    }
-
-    private Sort sort(MyGroupsAsForMemberPageQuery pageQuery) {
-        String sortedBy = pageQuery.getSortedBy();
-        if (isBlank(sortedBy) || !ALLOWED_SORT_FIELDS.contains(sortedBy)) {
-            return by(DESC, "createdAt");
-        }
-
-        Sort.Direction direction = pageQuery.getAscSort() ? ASC : DESC;
-        if (ValidationUtils.equals(sortedBy, "createdAt")) {
-            return by(direction, "createdAt");
-        }
-
-        return by(direction, sortedBy).and(by(DESC, "createdAt"));
+                    return by(direction, sortedBy).and(by(DESC, "createdAt"));
+                })
+                .project("_id", "name", "active", "inheritancePolicy", "createdAt", "updatedAt")
+                .fetchAs(GroupResponse.class, mongoTemplate);
     }
 }

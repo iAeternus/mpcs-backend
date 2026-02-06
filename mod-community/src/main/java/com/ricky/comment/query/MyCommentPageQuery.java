@@ -1,4 +1,4 @@
-package com.ricky.group.query;
+package com.ricky.comment.query;
 
 import com.ricky.common.domain.page.PageQuery;
 import jakarta.validation.constraints.NotNull;
@@ -11,16 +11,10 @@ import lombok.experimental.SuperBuilder;
 @Value
 @SuperBuilder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class MyGroupsAsForManaberPageQuery extends PageQuery {
+public class MyCommentPageQuery extends PageQuery {
 
     /**
-     * 搜索字段，值，目前支持groupId/name
-     */
-    @Size(max = 50)
-    String search;
-
-    /**
-     * 排序字段，字段名，目前支持name/createdAt/active
+     * 排序字段，目前支持 postId/createdAt
      */
     @Size(max = 50)
     String sortedBy;

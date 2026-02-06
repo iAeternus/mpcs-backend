@@ -49,6 +49,10 @@ public class PagedList<T> implements Response {
                 .build();
     }
 
+    public static <E> PagedList<E> emptyList(Pagination pagination) {
+        return pagedList(pagination, 0, List.of());
+    }
+
     public int size() {
         return data.size();
     }

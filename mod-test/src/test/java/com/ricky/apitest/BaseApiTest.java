@@ -2,8 +2,8 @@ package com.ricky.apitest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ricky.MpcsBackendApplication;
+import com.ricky.comment.domain.CommentDomainService;
 import com.ricky.comment.domain.CommentRepository;
-import com.ricky.commenthierarchy.domain.CommentHierarchyRepository;
 import com.ricky.common.event.DomainEvent;
 import com.ricky.common.event.DomainEventType;
 import com.ricky.common.event.LocalDomainEvent;
@@ -114,6 +114,9 @@ public abstract class BaseApiTest {
     protected FolderDomainService folderDomainService;
 
     @Autowired
+    protected CommentDomainService commentDomainService;
+
+    @Autowired
     protected FileRepository fileRepository;
 
     @Autowired
@@ -136,9 +139,6 @@ public abstract class BaseApiTest {
 
     @Autowired
     protected CommentRepository commentRepository;
-
-    @Autowired
-    protected CommentHierarchyRepository commentHierarchyRepository;
 
     @LocalServerPort
     protected int port;

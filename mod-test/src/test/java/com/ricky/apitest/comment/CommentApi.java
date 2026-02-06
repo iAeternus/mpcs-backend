@@ -38,6 +38,14 @@ public class CommentApi {
                 .build());
     }
 
+    public static CreateCommentResponse createReply(String token, String postId, String parentId) {
+        return createComment(token, CreateCommentCommand.builder()
+                .postId(postId)
+                .parentId(parentId)
+                .content(rCommentContent())
+                .build());
+    }
+
     public static Response deleteCommentRaw(String token, DeleteCommentCommand command) {
         return BaseApiTest.given(token)
                 .body(command)

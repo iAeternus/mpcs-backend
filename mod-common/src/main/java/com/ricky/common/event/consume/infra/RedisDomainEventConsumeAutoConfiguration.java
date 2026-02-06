@@ -37,7 +37,7 @@ public class RedisDomainEventConsumeAutoConfiguration {
     private final DomainEventConsumer<DomainEvent> domainEventConsumer;
     private final TracingService tracingService;
 
-    @Bean
+    @Bean(destroyMethod = "stop")
     public StreamMessageListenerContainer<String, ObjectRecord<String, String>> domainEventContainer(RedisConnectionFactory factory) {
         var options = StreamMessageListenerContainerOptions
                 .builder()

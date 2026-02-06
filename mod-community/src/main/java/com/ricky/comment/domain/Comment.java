@@ -2,7 +2,7 @@ package com.ricky.comment.domain;
 
 import com.ricky.comment.domain.event.CommentCreatedLocalEvent;
 import com.ricky.comment.domain.event.CommentDeletedLocalEvent;
-import com.ricky.common.domain.AggregateRoot;
+import com.ricky.common.domain.hierarchy.HierarchyNode;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import lombok.AccessLevel;
@@ -18,22 +18,18 @@ import static com.ricky.common.constants.ConfigConstants.COMMENT_ID_PREFIX;
 @Document(COMMENT_COLLECTION)
 @TypeAlias(COMMENT_COLLECTION)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class Comment extends AggregateRoot {
+public class Comment extends HierarchyNode {
 
-    private String postId; // 发布物ID
     private String content;
-    private CommentType type; // 评论类型
     // TODO 以后增加对评论的点赞，分页可以按照最热排序
 
-    public Comment(String postId, String content, CommentType type, UserContext userContext) {
-        super(newCommentId(), userContext);
-        init(postId, content, type, userContext);
+    public Comment(String postId, String parentId, String parentPath, String content, UserContext userContext) {
+        super(newCommentId(), postId, parentId, parentPath, userContext);
+        init(content, userContext);
     }
 
-    private void init(String postId, String content, CommentType type, UserContext userContext) {
-        this.postId = postId;
+    private void init(String content, UserContext userContext) {
         this.content = content;
-        this.type = type;
         raiseLocalEvent(new CommentCreatedLocalEvent(this, userContext));
         addOpsLog("新建", userContext);
     }

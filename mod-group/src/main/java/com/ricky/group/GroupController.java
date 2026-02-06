@@ -147,7 +147,7 @@ public class GroupController {
 
     @PostMapping("/page/my-groups")
     @Operation(summary = "分页获取我管理的权限组")
-    public PagedList<GroupResponse> pageMyGroupsAsForManager(@RequestBody @Valid MyGroupsAsForManaberPageQuery query,
+    public PagedList<GroupResponse> pageMyGroupsAsForManager(@RequestBody @Valid MyGroupsAsForManagerPageQuery query,
                                                              @AuthenticationPrincipal UserContext userContext) {
         return groupQueryService.pageMyGroupsAsForManager(query, userContext);
     }
