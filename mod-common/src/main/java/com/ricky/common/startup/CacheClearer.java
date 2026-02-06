@@ -31,7 +31,6 @@ public class CacheClearer {
             @CacheEvict(value = UPLOAD_SESSION_CACHE, allEntries = true),
             @CacheEvict(value = USER_FOLDERS_CACHE, allEntries = true),
             @CacheEvict(value = FOLDER_CACHE, allEntries = true),
-            @CacheEvict(value = USER_FOLDER_HIERARCHIES_CACHE, allEntries = true),
             @CacheEvict(value = FOLDER_HIERARCHY_CACHE, allEntries = true),
             @CacheEvict(value = FILE_EXTRA_CACHE, allEntries = true),
             @CacheEvict(value = USER_GROUPS_CACHE, allEntries = true),

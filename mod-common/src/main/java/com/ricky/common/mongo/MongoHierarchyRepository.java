@@ -4,9 +4,10 @@ import com.ricky.common.domain.hierarchy.HierarchyNode;
 import com.ricky.common.domain.hierarchy.HierarchyRepository;
 import com.ricky.common.exception.MyException;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.exception.ErrorCodeEnum.AR_NOT_FOUND;
@@ -14,20 +15,9 @@ import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
-@Repository
 @SuppressWarnings({"unchecked"})
-public class MongoHierarchyRepository<T extends HierarchyNode>
+public abstract class MongoHierarchyRepository<T extends HierarchyNode>
         extends MongoBaseRepository<T> implements HierarchyRepository<T> {
-
-    @Override
-    public void save(T node) {
-        super.save(node);
-    }
-
-    @Override
-    public void save(List<T> nodes) {
-        super.save(nodes);
-    }
 
     @Override
     public T byId(String customId, String nodeId) {
@@ -46,13 +36,22 @@ public class MongoHierarchyRepository<T extends HierarchyNode>
     }
 
     @Override
-    public void delete(T t) {
-        super.delete(t);
+    public Optional<T> byIdOptional(String customId, String nodeId) {
+        requireNotBlank(customId, "Custom Id cannot be blank");
+        requireNotBlank(nodeId, "Node ID must not be blank");
+
+        Query query = query(where("customId").is(customId).and("_id").is(nodeId));
+        T node = (T) mongoTemplate.findOne(query, arClass());
+        return Optional.ofNullable(node);
     }
 
     @Override
-    public void delete(List<T> ts) {
-        super.delete(ts);
+    public List<T> byIds(String customId, Set<String> ids) {
+        requireNotBlank(customId, "Custom Id cannot be blank");
+
+        Query query = query(where("customId").is(customId).and("_id").in(ids));
+        List<T> nodes = mongoTemplate.find(query, arClass());
+        return List.copyOf(nodes);
     }
 
     @Override

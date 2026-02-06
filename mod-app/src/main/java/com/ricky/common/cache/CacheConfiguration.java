@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ricky.file.domain.File;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.folder.domain.Folder;
-import com.ricky.folder.domain.UserCachedFolders;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.UserCachedFolderHierarchies;
+import com.ricky.folder.domain.FolderHierarchy;
 import com.ricky.group.domain.UserCachedGroups;
 import com.ricky.publicfile.domain.PublicFile;
 import com.ricky.upload.domain.UploadSession;
@@ -49,9 +47,7 @@ public class CacheConfiguration {
         var userCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, User.class);
         var fileCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, File.class);
         var uploadSessionCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UploadSession.class);
-        var userCachedFoldersSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserCachedFolders.class);
         var folderCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Folder.class);
-        var userCachedFolderHierarchiesSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserCachedFolderHierarchies.class);
         var folderHierarchyCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, FolderHierarchy.class);
         var fileExtraCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, FileExtra.class);
         var userCachedGroupSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserCachedGroups.class);
@@ -73,17 +69,9 @@ public class CacheConfiguration {
                         .prefixCacheNameWith(CACHE_PREFIX)
                         .serializeValuesWith(fromSerializer(uploadSessionCacheSerializer))
                         .entryTtl(ofDays(7)))
-                .withCacheConfiguration(USER_FOLDERS_CACHE, defaultCacheConfig()
-                        .prefixCacheNameWith(CACHE_PREFIX)
-                        .serializeValuesWith(fromSerializer(userCachedFoldersSerializer))
-                        .entryTtl(ofDays(7)))
                 .withCacheConfiguration(FOLDER_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
                         .serializeValuesWith(fromSerializer(folderCacheSerializer))
-                        .entryTtl(ofDays(7)))
-                .withCacheConfiguration(USER_FOLDER_HIERARCHIES_CACHE, defaultCacheConfig()
-                        .prefixCacheNameWith(CACHE_PREFIX)
-                        .serializeValuesWith(fromSerializer(userCachedFolderHierarchiesSerializer))
                         .entryTtl(ofDays(7)))
                 .withCacheConfiguration(FOLDER_HIERARCHY_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)

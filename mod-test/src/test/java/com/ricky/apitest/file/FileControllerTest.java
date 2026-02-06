@@ -11,7 +11,6 @@ import com.ricky.file.domain.File;
 import com.ricky.file.query.FileInfoResponse;
 import com.ricky.file.query.FilePathResponse;
 import com.ricky.folder.domain.Folder;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
@@ -20,6 +19,7 @@ import java.io.IOException;
 import static com.ricky.apitest.RandomTestFixture.rFilename;
 import static com.ricky.apitest.RandomTestFixture.rFolderName;
 import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
+import static com.ricky.common.domain.SpaceType.personalCustomId;
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_NAME_DUPLICATES;
 import static com.ricky.common.utils.CommonUtils.instantToLocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +69,7 @@ public class FileControllerTest extends BaseApiTest {
     void should_move_file() throws IOException {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String customId = personalCustomId(manager.getUserId());
 
         String parentId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
         String parentId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
@@ -100,7 +100,7 @@ public class FileControllerTest extends BaseApiTest {
     void should_fail_to_move_file_if_filename_duplicated() throws IOException {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String customId = personalCustomId(manager.getUserId());
 
         String parentId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
         String parentId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
@@ -122,7 +122,7 @@ public class FileControllerTest extends BaseApiTest {
     void should_fetch_file_path() throws IOException {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String customId = personalCustomId(manager.getUserId());
 
         String parentFolderName = rFolderName();
         String childFolderName = rFolderName();
@@ -133,16 +133,13 @@ public class FileControllerTest extends BaseApiTest {
         java.io.File file = resource.getFile();
         String fileId = FileUploadApi.upload(manager.getJwt(), file, childFolderId).getFileId();
 
-        FolderHierarchy personalSpace = folderHierarchyDomainService.personalSpaceOf(manager.getUserId());
-
         // When
-        FilePathResponse response = FileApi.fetchFilePath(manager.getJwt(), personalSpace.getCustomId(), fileId);
+        FilePathResponse response = FileApi.fetchFilePath(manager.getJwt(), customId, fileId);
 
         // Then
-        assertEquals(
-                parentFolderName + NODE_ID_SEPARATOR + childFolderName + NODE_ID_SEPARATOR + file.getName(),
-                response.getPath()
-        );
+        Folder root = folderRepository.getRoot(customId);
+        String path = String.join(NODE_ID_SEPARATOR, root.getFolderName(), parentFolderName, childFolderName, file.getName());
+        assertEquals(path, response.getPath());
     }
 
     @Test

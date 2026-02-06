@@ -3,6 +3,7 @@ package com.ricky.folder.command;
 import com.ricky.common.domain.marker.Command;
 import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.id.custom.CustomId;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,6 +28,7 @@ public class MoveFolderCommand implements Command {
     /**
      * 新父文件夹ID，若空则为根目录
      */
+    @Nullable
     @Id(FOLDER_ID_PREFIX)
     String newParentId;
 

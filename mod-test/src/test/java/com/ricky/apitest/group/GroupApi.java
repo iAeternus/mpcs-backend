@@ -34,11 +34,11 @@ public class GroupApi {
     }
 
     public static String createGroup(String jwt, String groupName) {
-        return createGroup(jwt, CreateGroupCommand.builder().name(groupName).customId(rCustomId()).build());
+        return createGroup(jwt, CreateGroupCommand.builder().name(groupName).build());
     }
 
     public static String createGroup(String jwt) {
-        return createGroup(jwt, CreateGroupCommand.builder().name(rGroupName()).customId(rCustomId()).build());
+        return createGroup(jwt, CreateGroupCommand.builder().name(rGroupName()).build());
     }
 
     public static Response renameGroupRaw(String jwt, String groupId, RenameGroupCommand command) {

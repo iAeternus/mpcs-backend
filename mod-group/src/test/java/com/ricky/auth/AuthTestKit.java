@@ -1,6 +1,6 @@
 package com.ricky.auth;
 
-import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
+import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.group.domain.GroupRepository;
 import com.ricky.user.domain.UserRepository;
 
@@ -15,7 +15,7 @@ public final class AuthTestKit {
         return new AuthScenario(
                 mock(GroupRepository.class),
                 mock(UserRepository.class),
-                mock(FolderHierarchyDomainService.class)
+                mock(FolderDomainService.class)
         );
     }
 

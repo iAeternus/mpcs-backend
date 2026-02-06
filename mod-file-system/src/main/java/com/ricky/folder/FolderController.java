@@ -7,6 +7,7 @@ import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.id.custom.CustomId;
 import com.ricky.folder.command.*;
 import com.ricky.folder.query.FolderContentResponse;
+import com.ricky.folder.query.FolderHierarchyResponse;
 import com.ricky.folder.service.FolderQueryService;
 import com.ricky.folder.service.FolderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -75,6 +76,13 @@ public class FolderController {
                                                     @PathVariable @NotBlank @Id(FOLDER_ID_PREFIX) String folderId,
                                                     @AuthenticationPrincipal UserContext userContext) {
         return folderQueryService.fetchFolderContent(customId, folderId, userContext);
+    }
+
+    @GetMapping("/{customId}")
+    @Operation(summary = "获取文件层级结构")
+    public FolderHierarchyResponse fetchFolderHierarchy(@PathVariable @NotBlank @CustomId String customId,
+                                                        @AuthenticationPrincipal UserContext userContext) {
+        return folderQueryService.fetchFolderHierarchy(customId, userContext);
     }
 
 }

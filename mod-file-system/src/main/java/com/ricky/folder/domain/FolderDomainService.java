@@ -1,13 +1,16 @@
 package com.ricky.folder.domain;
 
+import com.ricky.common.domain.hierarchy.HierarchyDomainService;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -19,50 +22,44 @@ import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
+import static com.ricky.common.utils.ValidationUtils.nonNull;
 
 @Service
-@RequiredArgsConstructor
-public class FolderDomainService {
+public class FolderDomainService extends HierarchyDomainService<Folder, FolderRepository> {
 
-    private final FolderRepository folderRepository;
-    private final FolderHierarchyRepository folderHierarchyRepository;
     private final FileRepository fileRepository;
 
-    public void renameFolder(String customId, Folder folder, String newName, UserContext userContext) {
-        FolderHierarchy hierarchy = folderHierarchyRepository.cachedByCustomId(customId);
-        checkSiblingNameDuplication(folder, hierarchy, newName, userContext.getUid());
+    @Autowired
+    public FolderDomainService(FolderRepository repository, FileRepository fileRepository) {
+        super(repository);
+        this.fileRepository = fileRepository;
+    }
+
+    public void renameFolder(Folder folder, String newName, UserContext userContext) {
+        checkSiblingNameDuplication(folder, newName, userContext);
         folder.rename(newName, userContext);
     }
 
-    private void checkSiblingNameDuplication(Folder folder, FolderHierarchy folderHierarchy, String newName, String userId) {
-        Set<String> siblingFolderIds = folderHierarchy.siblingFolderIdsOf(folder.getId()); // 找兄弟
-        if (ValidationUtils.isEmpty(siblingFolderIds)) {
+    private void checkSiblingNameDuplication(Folder folder, String newName, UserContext userContext) {
+        Set<String> siblingFolderIds = siblingIdsOf(folder.getCustomId(), folder.getId()); // 找兄弟
+        if (isEmpty(siblingFolderIds)) {
             return;
         }
 
-        List<String> siblingFolderNames = folderRepository.cachedUserAllFolders(userId).stream()
-                .filter(cachedFolder -> siblingFolderIds.contains(cachedFolder.getId()))
-                .map(UserCachedFolder::getFolderName)
+        List<String> siblingFolderNames = repository.byIds(siblingFolderIds).stream()
+                .map(Folder::getFolderName)
                 .collect(toImmutableList());
 
         if (siblingFolderNames.contains(newName)) {
             throw new MyException(FOLDER_WITH_NAME_ALREADY_EXISTS, "重命名失败，名称已被占用。",
-                    "folderId", folder.getId(), "userId", userId);
+                    "folderId", folder.getId(), "userId", userContext.getUid());
         }
     }
 
-    public Set<String> collectAllFileIds(String rootFolderId, FolderHierarchy hierarchy) {
-        Set<String> folderIds = hierarchy.withAllSubFolderIdsOf(rootFolderId);
-        List<Folder> folders = folderRepository.byIds(folderIds);
-
-        return folders.stream()
-                .flatMap(f -> f.getFileIds().stream())
-                .collect(toImmutableSet());
-    }
-
-    public DeleteFolderContext collectDeleteFolderContext(String rootFolderId, FolderHierarchy hierarchy) {
-        Set<String> folderIds = hierarchy.withAllSubFolderIdsOf(rootFolderId);
-        List<Folder> folders = folderRepository.byIds(folderIds);
+    public DeleteFolderContext collectDeleteFolderContext(String customId, String rootFolderId) {
+        Set<String> folderIds = withAllChildIdsOf(customId, rootFolderId);
+        List<Folder> folders = repository.byIds(folderIds);
 
         Set<String> fileIds = folders.stream()
                 .flatMap(f -> f.getFileIds().stream())
@@ -74,42 +71,90 @@ public class FolderDomainService {
                 .build();
     }
 
-    public FolderFileCount moveFolder(String customId, String folderId, String newParentId) {
-        FolderHierarchy hierarchy = folderHierarchyRepository.byCustomId(customId);
-        Folder dbFolder = folderRepository.byId(folderId);
+    public MoveResult moveFolder(String customId,
+                                 String folderId,
+                                 String newParentId,
+                                 UserContext userContext) {
+        Folder folder = repository.byId(customId, folderId);
+        Folder newParent = repository.byId(customId, newParentId);
 
-        Set<String> directChildFolderIds = hierarchy.directChildFolderIdsUnder(newParentId);
-        boolean duplication = folderRepository.byIds(directChildFolderIds).stream()
-                .map(Folder::getFolderName)
-                .anyMatch(folderName -> folderName.equals(dbFolder.getFolderName()));
-        if (duplication) {
-            throw new MyException(FOLDER_NAME_DUPLICATES, "移动失败，存在名称重复。", "newParentId", newParentId);
-        }
+        checkNoSameNameChild(newParentId, folder.getFolderName());
 
-        Set<String> subFolderIds = hierarchy.withAllSubFolderIdsOf(folderId);
-        long fileCount = folderRepository.byIds(subFolderIds).stream()
-                .mapToLong(folder -> folder.getFileIds().size())
-                .sum();
+        List<Folder> subtree = super.moveNode(customId, folder, newParent, userContext);
 
-        return FolderFileCount.builder()
-                .folderCount(subFolderIds.size())
-                .fileCount(fileCount)
-                .build();
+        Set<String> movedFolderIds = subtree.stream()
+                .map(Folder::getId)
+                .collect(toImmutableSet());
+        Set<String> movedFileIds = subtree.stream()
+                .flatMap(f -> f.getFileIds().stream())
+                .collect(toImmutableSet());
+
+        Folder root = subtree.stream()
+                .filter(f -> ValidationUtils.equals(f.getId(), folderId))
+                .findFirst()
+                .orElseThrow();
+        root.onMove(movedFolderIds, movedFileIds, userContext);
+
+        repository.save(subtree);
+
+        return new MoveResult(movedFolderIds, movedFileIds);
     }
 
+    private void checkNoSameNameChild(String newParentId, String folderName) {
+        if (repository.existsByParentIdAndName(newParentId, folderName)) {
+            throw new MyException(FOLDER_NAME_DUPLICATES, "目标目录下存在同名文件夹", "parentId", newParentId, "folderName", folderName);
+        }
+    }
+
+//    // TODO 这个move的流程需重构，似乎只剩下这个问题了
+//    public MoveResult moveFolder(String customId, String folderId, String newParentId, UserContext userContext) {
+//        Folder dbFolder = repository.byId(folderId);
+//        Set<String> directChildFolderIds = directChildIdsUnder(customId, newParentId);
+//        boolean duplication = repository.byIds(customId, directChildFolderIds).stream()
+//                .map(Folder::getFolderName)
+//                .anyMatch(folderName -> folderName.equals(dbFolder.getFolderName()));
+//        if (duplication) {
+//            throw new MyException(FOLDER_NAME_DUPLICATES, "移动失败，存在名称重复。", "newParentId", newParentId);
+//        }
+//
+//        List<Folder> movedSubFolders = moveNode(customId, folderId, newParentId, userContext); // TODO 只有subtree
+//
+//        Set<String> movedFolderIds = movedSubFolders.stream()
+//                .map(Folder::getId)
+//                .collect(toImmutableSet());
+//
+//        Set<String> movedFileIds = movedSubFolders.stream()
+//                .flatMap(folder -> folder.getFileIds().stream())
+//                .collect(toImmutableSet());
+//
+//        dbFolder.onMove(movedFolderIds, movedFileIds, userContext); // TODO 更新了dbFile
+//        repository.save(movedSubFolders); // TODO 并未save dbFile
+//
+//        return MoveResult.builder()
+//                .movedFolderIds(movedFolderIds)
+//                .movedFileIds(movedFileIds)
+//                .build();
+//    }
+
     public String folderPath(String customId, String folderId) {
-        FolderHierarchy hierarchy = folderHierarchyRepository.cachedByCustomId(customId);
-        return Arrays.stream(hierarchy.schemaOf(folderId).split(NODE_ID_SEPARATOR))
-                .map(folderRepository::cachedById)
+        return Arrays.stream(schemaOf(customId, folderId).split(NODE_ID_SEPARATOR))
+                .map(repository::cachedById)
                 .map(Folder::getFolderName)
                 .collect(Collectors.joining(NODE_ID_SEPARATOR));
     }
 
     public void checkFoldersAllExists(List<String> folderIds) {
-        boolean allExists = folderRepository.allExists(folderIds);
+        boolean allExists = repository.allExists(folderIds);
         if (!allExists) {
             throw new MyException(NOT_ALL_FOLDERS_EXIST, "有文件夹不存在", "folderIds", folderIds);
         }
+    }
+
+    public String resolveParentId(String customId, String parentId) {
+        if (nonNull(parentId)) {
+            return parentId;
+        }
+        return repository.getRoot(customId).getId();
     }
 
     @Value
@@ -123,9 +168,9 @@ public class FolderDomainService {
     @Value
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    public static class FolderFileCount {
-        int folderCount;
-        long fileCount;
+    public static class MoveResult {
+        Set<String> movedFolderIds;
+        Set<String> movedFileIds;
     }
 
 }

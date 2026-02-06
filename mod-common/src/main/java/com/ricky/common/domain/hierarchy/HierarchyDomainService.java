@@ -1,25 +1,26 @@
 package com.ricky.common.domain.hierarchy;
 
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
+import com.ricky.common.utils.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.IntStream;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.exception.ErrorCodeEnum.HIERARCHY_ERROR;
-import static com.ricky.common.utils.ValidationUtils.isEmpty;
-import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.*;
 import static java.util.stream.Collectors.joining;
 
-@Service
 @RequiredArgsConstructor
-public class HierarchyDomainService<T extends HierarchyNode> {
+public abstract class HierarchyDomainService<T extends HierarchyNode, R extends HierarchyRepository<T>> {
 
-    private final HierarchyRepository<T> repository;
+    protected final R repository;
 
     /**
      * 根据ID获取从根节点到该节点的完整路径
@@ -30,7 +31,11 @@ public class HierarchyDomainService<T extends HierarchyNode> {
      */
     public String schemaOf(String customId, String nodeId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
-        requireNotBlank(nodeId, "Node ID must not be blank");
+
+        if (isNull(nodeId)) {
+            return "";
+        }
+
         return repository.byId(customId, nodeId).getPath();
     }
 
@@ -43,7 +48,10 @@ public class HierarchyDomainService<T extends HierarchyNode> {
      */
     public int levelOf(String customId, String nodeId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
-        requireNotBlank(nodeId, "Node ID must not be blank");
+
+        if (isNull(nodeId)) {
+            return 0;
+        }
 
         return StringUtils.countMatches(schemaOf(customId, nodeId), NODE_ID_SEPARATOR) + 1;
     }
@@ -72,7 +80,10 @@ public class HierarchyDomainService<T extends HierarchyNode> {
      */
     public boolean containsId(String customId, String nodeId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
-        requireNotBlank(nodeId, "Node ID must not be blank");
+
+        if (isNull(nodeId)) {
+            return false;
+        }
 
         return allIds(customId).contains(nodeId);
     }
@@ -136,9 +147,7 @@ public class HierarchyDomainService<T extends HierarchyNode> {
      */
     public boolean isRoot(String customId, String nodeId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
-        requireNotBlank(nodeId, "Node ID must not be blank");
-
-        return !schemaOf(customId, nodeId).contains(NODE_ID_SEPARATOR);
+        return isBlank(schemaOf(customId, nodeId));
     }
 
     /**
@@ -150,7 +159,6 @@ public class HierarchyDomainService<T extends HierarchyNode> {
      */
     private String parentIdOf(String customId, String nodeId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
-        requireNotBlank(nodeId, "Node ID must not be blank");
 
         String[] ids = schemaOf(customId, nodeId).split(NODE_ID_SEPARATOR);
         if (ids.length <= 1) {
@@ -170,8 +178,11 @@ public class HierarchyDomainService<T extends HierarchyNode> {
         requireNotBlank(customId, "Custom Id cannot be blank");
         requireNotBlank(nodeId, "Node ID must not be blank");
 
-        T node = repository.byId(customId, nodeId);
-        return repository.findSubtree(customId, node.getPath())
+        String path = repository.byIdOptional(customId, nodeId)
+                .map(HierarchyNode::getPath)
+                .orElse("");
+
+        return repository.findSubtree(customId, path)
                 .stream()
                 .map(HierarchyNode::getId)
                 .collect(toImmutableSet());
@@ -188,8 +199,11 @@ public class HierarchyDomainService<T extends HierarchyNode> {
         requireNotBlank(customId, "Custom Id cannot be blank");
         requireNotBlank(nodeId, "Node ID must not be blank");
 
-        T node = repository.byId(customId, nodeId);
-        return repository.findAllDescendants(customId, node.getPath())
+        String path = repository.byIdOptional(customId, nodeId)
+                .map(HierarchyNode::getPath)
+                .orElse("");
+
+        return repository.findAllDescendants(customId, path)
                 .stream()
                 .map(HierarchyNode::getId)
                 .collect(toImmutableSet());
@@ -202,11 +216,33 @@ public class HierarchyDomainService<T extends HierarchyNode> {
      * @param nodeId   节点ID
      * @return 父节点ID集合
      */
-    public Set<String> withAllParentIdsOf(String customId, String nodeId) {
+    public List<String> withAllParentIdsOf(String customId, String nodeId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
-        requireNotBlank(nodeId, "Node ID must not be blank");
 
-        return Set.of(schemaOf(customId, nodeId).split(NODE_ID_SEPARATOR));
+        if (isNull(nodeId)) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(schemaOf(customId, nodeId).split(NODE_ID_SEPARATOR))
+                .collect(toImmutableList());
+    }
+
+    /**
+     * 获取给定节点ID对应节点的所有父节点ID，包括该节点，逆序排列<br>
+     * 顺序：[self, parent, parent.parent, ..., root]
+     */
+    public List<String> withAllParentIdsRev(String customId, String nodeId) {
+        requireNotBlank(customId, "Custom Id cannot be blank");
+
+        if (isNull(nodeId)) {
+            return Collections.emptyList();
+        }
+
+        String[] nodeIds = schemaOf(customId, nodeId).split(NODE_ID_SEPARATOR);
+        return IntStream.range(0, nodeIds.length)
+                .map(i -> nodeIds.length - 1 - i)  // 逆序索引
+                .mapToObj(i -> nodeIds[i])
+                .collect(toImmutableList());
     }
 
     /**
@@ -218,7 +254,10 @@ public class HierarchyDomainService<T extends HierarchyNode> {
      */
     public Set<String> allParentIdsOf(String customId, String nodeId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
-        requireNotBlank(nodeId, "Node ID must not be blank");
+
+        if (isNull(nodeId)) {
+            return Collections.emptySet();
+        }
 
         return Arrays.stream(schemaOf(customId, nodeId).split(NODE_ID_SEPARATOR))
                 .filter(aId -> !Objects.equals(aId, nodeId))
@@ -261,8 +300,11 @@ public class HierarchyDomainService<T extends HierarchyNode> {
         requireNotBlank(customId, "Custom Id cannot be blank");
         requireNotBlank(nodeId, "Node ID must not be blank");
 
-        T node = repository.byId(customId, nodeId);
-        List<T> subtree = repository.findSubtree(customId, node.getPath());
+        String path = repository.byIdOptional(customId, nodeId)
+                .map(HierarchyNode::getPath)
+                .orElse("");
+
+        List<T> subtree = repository.findSubtree(customId, path);
         if (isEmpty(subtree)) {
             return;
         }
@@ -270,59 +312,65 @@ public class HierarchyDomainService<T extends HierarchyNode> {
     }
 
     /**
-     * 移动节点以及整棵子树
+     * 移动节点以及整棵子树到目标节点下，不会落库
      *
-     * @param customId    树ID
-     * @param nodeId      节点ID
-     * @param newParentId 新父节点ID
+     * @param customId 树ID
+     * @param src      源节点
+     * @param dst      目标节点
+     * @return 整个子树，包括源节点
      */
-    public void moveNode(String customId, String nodeId, String newParentId) {
-        requireNotBlank(customId, "Custom Id cannot be blank");
-        requireNotBlank(nodeId, "Node ID must not be blank");
-        requireNotBlank(newParentId, "Parent ID must not be blank");
+    public List<T> moveNode(String customId, T src, T dst, UserContext userContext) {
+        checkSameTree(src, dst);
+        checkNotMoveIntoDescendant(src, dst);
 
-        T node = repository.byId(customId, nodeId);
-        T newParent = repository.byId(customId, newParentId);
-
-        if (!node.isInSameTree(newParent)) {
-            throw new MyException(HIERARCHY_ERROR, "Cannot merge nodes from different trees",
-                    "nodeId", nodeId, "newParentId", newParentId);
-        }
-
-        String oldPath = node.getPath();
-        String newParentPath = newParent.getPath();
-
-        if (newParentPath.startsWith(oldPath)) {
-            throw new MyException(HIERARCHY_ERROR, "Cannot move node under its own subtree",
-                    "nodeId", nodeId, "newParentId", newParentId);
-        }
-
-        String newPath = newParentPath + NODE_ID_SEPARATOR + node.getId();
+        String oldPath = src.getPath();
+        String newPath = dst.getPath() + NODE_ID_SEPARATOR + src.getId();
 
         List<T> subtree = repository.findSubtree(customId, oldPath);
 
-        // 根节点换父
-        node.changeParent(newParentId, newParentPath);
+        // 处理根节点
+        T root = subtree.stream()
+                .filter(node -> ValidationUtils.equals(node.getId(), src.getId()))
+                .findFirst()
+                .orElseThrow();
+        root.moveTo(dst.getId(), dst.getPath(), userContext);
 
-        // 子节点级联更新 path
-        for (T child : subtree) {
-            if (child.getId().equals(nodeId)) continue;
-            child.resetPath(child.getPath().replaceFirst(oldPath, newPath));
+        // 处理后代节点
+        subtree.stream()
+                .filter(node -> notEquals(node.getId(), src.getId()))
+                .forEach(child -> child.updatePath(oldPath, newPath, userContext));
+
+        return subtree;
+    }
+
+    private void checkSameTree(T src, T dst) {
+        if (notEquals(src.getCustomId(), dst.getCustomId())) {
+            throw new MyException(HIERARCHY_ERROR, "不能移动到其他空间",
+                    "srcCustomId", src.getCustomId(), "dstCustomId", dst.getCustomId());
         }
+    }
 
-        repository.save(subtree);
+    private void checkNotMoveIntoDescendant(T src, T dst) {
+        if (dst.getPath().startsWith(src.getPath())) {
+            throw new MyException(HIERARCHY_ERROR, "不能移动到子目录",
+                    "srcPath", src.getPath(), "dstPath", dst.getPath());
+        }
     }
 
     /**
      * 合并两棵树
      *
-     * @param customId     树ID
-     * @param targetNodeId 目标子树的根节点ID
-     * @param sourceNodeId 源子树的根节点ID
+     * @param customId 树ID
+     * @param src      源节点
+     * @param dst      目标节点
      * @note 源子树作为一棵子树整体，移动到目标子树下
      */
-    public void merge(String customId, String targetNodeId, String sourceNodeId) {
-        moveNode(customId, sourceNodeId, targetNodeId);
+    public void merge(String customId, T src, T dst, UserContext userContext) {
+        requireNotBlank(customId, "Custom Id cannot be blank");
+        requireNonNull(src, "Src Node must not be null");
+        requireNonNull(dst, "Dst Node must not be null");
+
+        moveNode(customId, src, dst, userContext);
     }
 
 }

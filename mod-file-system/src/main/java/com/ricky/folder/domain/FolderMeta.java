@@ -1,17 +1,18 @@
-package com.ricky.folderhierarchy.domain;
+package com.ricky.folder.domain;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.List;
-
 @Value
 @Builder
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class UserCachedFolderHierarchies {
+public class FolderMeta {
 
-    List<UserCachedFolderHierarchy> hierarchies;
+    String id;
+    String folderName;
+    String parentId;
+    String path;
 
 }

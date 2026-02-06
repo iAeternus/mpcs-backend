@@ -1,6 +1,9 @@
 package com.ricky.common.domain.hierarchy;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public interface HierarchyRepository<T extends HierarchyNode> {
 
@@ -20,6 +23,16 @@ public interface HierarchyRepository<T extends HierarchyNode> {
     T byId(String customId, String nodeId);
 
     /**
+     * 查询树下的节点，返回Optional
+     */
+    Optional<T> byIdOptional(String customId, String nodeId);
+
+    /**
+     * 批量查询节点
+     */
+    List<T> byIds(String customId, Set<String> ids);
+
+    /**
      * 删除节点
      */
     void delete(T node);
@@ -35,7 +48,7 @@ public interface HierarchyRepository<T extends HierarchyNode> {
     List<T> findAllDescendants(String customId, String path);
 
     /**
-     * 查询某节点及其子树（含自身）
+     * 查询某节点及其所有子孙节点（含自身）
      */
     List<T> findSubtree(String customId, String path);
 
@@ -43,5 +56,4 @@ public interface HierarchyRepository<T extends HierarchyNode> {
      * 查询直接子节点
      */
     List<T> findDirectChildren(String customId, String parentId);
-
 }

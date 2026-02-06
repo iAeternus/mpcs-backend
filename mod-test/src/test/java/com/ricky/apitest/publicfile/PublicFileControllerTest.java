@@ -65,6 +65,7 @@ public class PublicFileControllerTest extends BaseApiTest {
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
         String postId = PublicFileApi.post(manager.getJwt(), fileId).getPostId();
+        awaitLatestEventConsumed(postId, FILE_PUBLISHED, FilePublishedEvent.class);
 
         // When
         PublicFileApi.withdraw(manager.getJwt(), postId);
@@ -84,6 +85,7 @@ public class PublicFileControllerTest extends BaseApiTest {
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
         String postId = PublicFileApi.post(manager.getJwt(), fileId).getPostId();
+        awaitLatestEventConsumed(postId, FILE_PUBLISHED, FilePublishedEvent.class);
 
         String newTitle = rFilename();
 
@@ -105,6 +107,7 @@ public class PublicFileControllerTest extends BaseApiTest {
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
         String postId = PublicFileApi.post(manager.getJwt(), fileId).getPostId();
+        awaitLatestEventConsumed(postId, FILE_PUBLISHED, FilePublishedEvent.class);
 
         String newDescription = rDescription();
 

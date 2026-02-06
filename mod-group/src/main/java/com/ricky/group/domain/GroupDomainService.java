@@ -3,7 +3,7 @@ package com.ricky.group.domain;
 import com.ricky.common.auth.Permission;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
-import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
+import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class GroupDomainService {
 
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
-    private final FolderHierarchyDomainService folderHierarchyDomainService;
+    private final FolderDomainService folderDomainService;
 
     /**
      * 是否具备 required 中的所有权限（单资源）
@@ -53,7 +53,7 @@ public class GroupDomainService {
      */
     public Set<Permission> resolvePermissions(String userId, String customId, String folderId) {
         User user = userRepository.cachedById(userId);
-        List<String> ancestors = folderHierarchyDomainService.withAllParentIdsOf(customId, folderId);
+        List<String> ancestors = folderDomainService.withAllParentIdsRev(customId, folderId);
 
         return groupRepository.byIds(user.getGroupIds()).stream()
                 .filter(Group::isActive)

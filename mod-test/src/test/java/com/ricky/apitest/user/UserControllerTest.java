@@ -2,7 +2,6 @@ package com.ricky.apitest.user;
 
 import com.ricky.apitest.BaseApiTest;
 import com.ricky.apitest.verification.VerificationCodeApi;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
 import com.ricky.user.domain.User;
@@ -10,10 +9,10 @@ import com.ricky.user.domain.event.UserCreatedEvent;
 import org.junit.jupiter.api.Test;
 
 import static com.ricky.apitest.RandomTestFixture.*;
+import static com.ricky.common.domain.SpaceType.personalCustomId;
 import static com.ricky.common.event.DomainEventType.USER_CREATED;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class UserControllerTest extends BaseApiTest {
 
@@ -40,8 +39,8 @@ public class UserControllerTest extends BaseApiTest {
         assertNotNull(user);
         assertEquals(username, user.getUsername());
 
-        FolderHierarchy hierarchy = folderHierarchyDomainService.personalSpaceOf(user.getId());
-        assertEquals(user.getId(), hierarchy.getUserId());
+        String customId = personalCustomId(user.getId());
+        assertTrue(folderRepository.existsRoot(customId));
     }
 
     @Test

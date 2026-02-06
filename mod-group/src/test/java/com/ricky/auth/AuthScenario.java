@@ -1,7 +1,7 @@
 package com.ricky.auth;
 
 import com.ricky.common.auth.Permission;
-import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
+import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.group.domain.Group;
 import com.ricky.group.domain.GroupDomainService;
 import com.ricky.group.domain.GroupRepository;
@@ -22,7 +22,7 @@ public class AuthScenario {
 
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
-    private final FolderHierarchyDomainService hierarchyService;
+    private final FolderDomainService folderDomainService;
 
     private final List<Group> groups = new ArrayList<>();
     private User user;
@@ -30,12 +30,12 @@ public class AuthScenario {
     private final GroupDomainService service;
     private Set<Permission> resolved;
 
-    AuthScenario(GroupRepository gr, UserRepository ur, FolderHierarchyDomainService hs) {
+    AuthScenario(GroupRepository gr, UserRepository ur, FolderDomainService ds) {
         this.groupRepository = gr;
         this.userRepository = ur;
-        this.hierarchyService = hs;
+        this.folderDomainService = ds;
 
-        this.service = new GroupDomainService(gr, ur, hs);
+        this.service = new GroupDomainService(gr, ur, ds);
     }
 
     public AuthScenario givenUser(String userId, String... groupIds) {
@@ -53,7 +53,7 @@ public class AuthScenario {
     }
 
     public AuthScenario givenHierarchy(String customId, FolderPath path) {
-        when(hierarchyService.withAllParentIdsOf(customId, path.currFolderId()))
+        when(folderDomainService.withAllParentIdsRev(customId, path.currFolderId()))
                 .thenReturn(path.ancestors());
         return this;
     }

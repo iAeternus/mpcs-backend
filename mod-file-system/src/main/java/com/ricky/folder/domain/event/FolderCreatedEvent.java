@@ -10,6 +10,7 @@ import org.springframework.data.annotation.TypeAlias;
 import static com.ricky.common.constants.ConfigConstants.FOLDER_CREATED_EVENT_NAME;
 import static com.ricky.common.event.DomainEventType.FOLDER_CREATED;
 
+// TODO 还没想好怎么处理
 @Getter
 @TypeAlias(FOLDER_CREATED_EVENT_NAME)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,6 +22,5 @@ public class FolderCreatedEvent extends DomainEvent {
         super(FOLDER_CREATED, userContext);
         this.folderId = folderId;
     }
-
 
 }

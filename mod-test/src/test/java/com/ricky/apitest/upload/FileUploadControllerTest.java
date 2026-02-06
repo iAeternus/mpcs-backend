@@ -8,7 +8,6 @@ import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileStatus;
 import com.ricky.upload.command.*;
-import com.ricky.upload.domain.event.FileUploadedLocalEvent;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
@@ -20,7 +19,7 @@ import java.util.Arrays;
 
 import static com.mongodb.assertions.Assertions.assertFalse;
 import static com.ricky.apitest.RandomTestFixture.rFolderName;
-import static com.ricky.common.event.DomainEventType.FILE_UPLOADED;
+import static com.ricky.common.domain.SpaceType.personalCustomId;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,17 +28,17 @@ class FileUploadControllerTest extends BaseApiTest {
     @Test
     void should_upload_file() throws IOException {
         // Given
-        LoginResponse loginResponse = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = personalCustomId(manager.getUserId());
 
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
 
         // When
-        FileUploadResponse resp = FileUploadApi.upload(loginResponse.getJwt(), file, parentId);
+        FileUploadResponse resp = FileUploadApi.upload(manager.getJwt(), file, parentId);
 
         // Then
         File dbFile = fileRepository.byId(resp.getFileId());
@@ -58,19 +57,19 @@ class FileUploadControllerTest extends BaseApiTest {
     @Test
     void should_upload_file_if_hash_already_exist() throws IOException {
         // Given
-        LoginResponse loginResponse = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = personalCustomId(manager.getUserId());
 
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
 
-        String parentId1 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
-        String parentId2 = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String parentId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String parentId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
 
         // When
         // 先上传文件，抢占 storageId
-        FileUploadResponse resp = FileUploadApi.upload(loginResponse.getJwt(), file, parentId1);
-        FileUploadResponse resp2 = FileUploadApi.upload(loginResponse.getJwt(), file, parentId2);
+        FileUploadResponse resp = FileUploadApi.upload(manager.getJwt(), file, parentId1);
+        FileUploadResponse resp2 = FileUploadApi.upload(manager.getJwt(), file, parentId2);
 
         // Then
         File dbFile = fileRepository.byId(resp.getFileId());
@@ -93,12 +92,12 @@ class FileUploadControllerTest extends BaseApiTest {
     @Test
     void should_upload_large_file_by_chunks() throws IOException {
         // Given
-        LoginResponse loginResponse = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = personalCustomId(manager.getUserId());
 
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
 
         int chunkSize = fileProperties.getUpload().getChunkSize();
         long totalSize = file.length();
@@ -108,7 +107,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
         // When init upload
         InitUploadResponse initResp = FileUploadApi.initUpload(
-                loginResponse.getJwt(),
+                manager.getJwt(),
                 InitUploadCommand.builder()
                         .fileName(file.getName())
                         .fileHash(fileHash)
@@ -135,7 +134,7 @@ class FileUploadControllerTest extends BaseApiTest {
                 byte[] chunkBytes = (read == chunkSize) ? buffer : Arrays.copyOf(buffer, read);
 
                 UploadChunkResponse chunkResp = FileUploadApi.uploadChunk(
-                        loginResponse.getJwt(),
+                        manager.getJwt(),
                         uploadId,
                         chunkIndex,
                         chunkBytes
@@ -147,7 +146,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
         // When complete upload
         FileUploadResponse completeResp = FileUploadApi.completeUpload(
-                loginResponse.getJwt(),
+                manager.getJwt(),
                 CompleteUploadCommand.builder()
                         .uploadId(uploadId) // 分片路径
                         .parentId(parentId)
@@ -205,16 +204,16 @@ class FileUploadControllerTest extends BaseApiTest {
     @Test
     void should_fail_when_complete_upload_twice() throws IOException {
         // Given
-        LoginResponse loginResponse = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = personalCustomId(manager.getUserId());
 
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
         InitUploadResponse initResp = FileUploadApi.initUpload(
-                loginResponse.getJwt(),
+                manager.getJwt(),
                 InitUploadCommand.builder()
                         .fileName(file.getName())
                         .fileHash(fileHash)
@@ -226,10 +225,10 @@ class FileUploadControllerTest extends BaseApiTest {
 
         String uploadId = initResp.getUploadId();
 
-        FileUploadApi.uploadChunk(loginResponse.getJwt(), uploadId, 0, Files.readAllBytes(file.toPath()));
+        FileUploadApi.uploadChunk(manager.getJwt(), uploadId, 0, Files.readAllBytes(file.toPath()));
 
         FileUploadApi.completeUpload(
-                loginResponse.getJwt(),
+                manager.getJwt(),
                 CompleteUploadCommand.builder()
                         .uploadId(uploadId)
                         .parentId(parentId)
@@ -239,7 +238,7 @@ class FileUploadControllerTest extends BaseApiTest {
         );
 
         // When & Then
-        assertError(() -> FileUploadApi.completeUploadRaw(loginResponse.getJwt(), CompleteUploadCommand.builder()
+        assertError(() -> FileUploadApi.completeUploadRaw(manager.getJwt(), CompleteUploadCommand.builder()
                 .uploadId(uploadId)
                 .parentId(parentId)
                 .fileHash(fileHash)
@@ -251,17 +250,17 @@ class FileUploadControllerTest extends BaseApiTest {
     @Test
     void should_fail_complete_when_chunks_missing() throws IOException {
         // Given
-        LoginResponse loginResponse = setupApi.registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(loginResponse.getUserId()).getCustomId();
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = personalCustomId(manager.getUserId());
 
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(loginResponse.getJwt(), customId, rFolderName());
+        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
 
         InitUploadResponse initResp = FileUploadApi.initUpload(
-                loginResponse.getJwt(),
+                manager.getJwt(),
                 InitUploadCommand.builder()
                         .fileName(file.getName())
                         .fileHash(fileHash)
@@ -273,14 +272,14 @@ class FileUploadControllerTest extends BaseApiTest {
 
         // 只上传一个 chunk
         FileUploadApi.uploadChunk(
-                loginResponse.getJwt(),
+                manager.getJwt(),
                 initResp.getUploadId(),
                 0,
                 Files.readAllBytes(file.toPath())
         );
 
         // When & Then
-        assertError(() -> FileUploadApi.completeUploadRaw(loginResponse.getJwt(), CompleteUploadCommand.builder()
+        assertError(() -> FileUploadApi.completeUploadRaw(manager.getJwt(), CompleteUploadCommand.builder()
                 .uploadId(initResp.getUploadId())
                 .parentId(parentId)
                 .fileHash(fileHash)
@@ -292,7 +291,7 @@ class FileUploadControllerTest extends BaseApiTest {
     @Test
     void should_fail_to_init_upload_if_filename_invalid() throws IOException {
         // Given
-        LoginResponse loginResponse = setupApi.registerWithLogin();
+        LoginResponse manager = setupApi.registerWithLogin();
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
 
@@ -307,7 +306,7 @@ class FileUploadControllerTest extends BaseApiTest {
                 .build();
 
         // When & Then
-        assertError(() -> FileUploadApi.initUploadRaw(loginResponse.getJwt(), command), REQUEST_VALIDATION_FAILED);
+        assertError(() -> FileUploadApi.initUploadRaw(manager.getJwt(), command), REQUEST_VALIDATION_FAILED);
     }
 
 }

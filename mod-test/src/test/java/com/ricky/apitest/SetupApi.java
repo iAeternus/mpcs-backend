@@ -9,8 +9,8 @@ import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
+import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folder.domain.event.FolderCreatedEvent;
-import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
 import com.ricky.upload.domain.StorageService;
 import com.ricky.upload.domain.event.FileUploadedLocalEvent;
 import com.ricky.user.command.RegisterCommand;
@@ -28,6 +28,7 @@ import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.apitest.RandomTestFixture.*;
+import static com.ricky.common.domain.SpaceType.personalCustomId;
 import static com.ricky.common.event.DomainEventType.FOLDER_CREATED;
 import static com.ricky.common.event.DomainEventType.USER_CREATED;
 
@@ -36,7 +37,6 @@ import static com.ricky.common.event.DomainEventType.USER_CREATED;
 public class SetupApi {
 
     private final VerificationCodeRepository verificationCodeRepository;
-    private final FolderHierarchyDomainService folderHierarchyDomainService;
     private final FileHasherFactory fileHasherFactory;
     private final FileRepository fileRepository;
     private final StorageService storageService;
@@ -78,7 +78,7 @@ public class SetupApi {
 
     public TestFileContext registerWithFile(String path) throws IOException {
         LoginResponse manager = registerWithLogin();
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String customId = personalCustomId(manager.getUserId());
 
         ClassPathResource resource = new ClassPathResource(path);
         java.io.File file = resource.getFile();
@@ -89,7 +89,6 @@ public class SetupApi {
         String fileHash = deleteFileWithSameHash(file);
         String fileId = FileUploadApi.upload(manager.getJwt(), file, parentId).getFileId();
 
-        // 文件上传，长等待
         eventUtils.awaitLatestLocalEventConsumed(fileId, FileUploadedLocalEvent.class);
 
         return TestFileContext.builder()

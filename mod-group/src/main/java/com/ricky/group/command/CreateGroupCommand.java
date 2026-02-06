@@ -20,8 +20,4 @@ public class CreateGroupCommand implements Command {
     @Size(max = MAX_GENERIC_NAME_LENGTH)
     String name;
 
-    @NotBlank
-    @CustomId
-    String customId;
-
 }

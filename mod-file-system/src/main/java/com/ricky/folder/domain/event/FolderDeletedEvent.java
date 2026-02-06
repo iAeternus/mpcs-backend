@@ -10,6 +10,7 @@ import org.springframework.data.annotation.TypeAlias;
 import static com.ricky.common.constants.ConfigConstants.FOLDER_DELETED_EVENT_NAME;
 import static com.ricky.common.event.DomainEventType.FOLDER_DELETED;
 
+// TODO 还没想好怎么处理
 @Getter
 @TypeAlias(FOLDER_DELETED_EVENT_NAME)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

@@ -2,6 +2,7 @@ package com.ricky.user.domain;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
+import com.ricky.folder.domain.FolderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +19,8 @@ import static org.springframework.transaction.annotation.Propagation.REQUIRES_NE
 @RequiredArgsConstructor
 public class UserDomainService {
 
-    private final UserRepository userRepository;
     private final UserFactory userFactory;
+    private final UserRepository userRepository;
 
     public CreateUserResult register(String mobileOrEmail, String password, UserContext userContext) {
         if (userRepository.existsByMobileOrEmail(mobileOrEmail)) {

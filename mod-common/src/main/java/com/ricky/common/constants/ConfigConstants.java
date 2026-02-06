@@ -36,7 +36,6 @@ public interface ConfigConstants {
     String USER_COLLECTION = "users";
     String FILE_COLLECTION = "files";
     String FOLDER_COLLECTION = "folders";
-    String FOLDER_HIERARCHY_COLLECTION = "folders_hierarchy";
     String PUBLIC_FILE_COLLECTION = "public_files";
     String TEAM_COLLECTION = "teams";
     String SHEDLOCK_COLLECTION = "shedlock";
@@ -73,7 +72,6 @@ public interface ConfigConstants {
     String UPLOAD_SESSION_CACHE = "UPLOAD_SESSIONS";
     String USER_FOLDERS_CACHE = "USER_FOLDERS";
     String FOLDER_CACHE = "FOLDERS";
-    String USER_FOLDER_HIERARCHIES_CACHE = "USER_FOLDER_HIERARCHIES";
     String FOLDER_HIERARCHY_CACHE = "FOLDER_HIERARCHIES";
     String FILE_EXTRA_CACHE = "FILE_EXTRAS";
     String USER_GROUPS_CACHE = "USER_GROUPS";
@@ -95,7 +93,6 @@ public interface ConfigConstants {
 
     // 领域事件别名
     String USER_CREATED_EVENT_NAME = "USER_CREATED";
-    String FILE_UPLOADED_EVENT_NAME = "FILE_UPLOADED";
     String FILE_DELETED_EVENT_NAME = "FILE_DELETED";
     String FOLDER_HIERARCHY_CHANGED_EVENT_NAME = "FOLDER_HIERARCHY_CHANGED";
     String FOLDER_CREATED_EVENT_NAME = "FOLDER_CREATED";

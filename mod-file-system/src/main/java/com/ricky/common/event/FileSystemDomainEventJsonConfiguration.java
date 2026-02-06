@@ -6,8 +6,7 @@ import com.ricky.file.domain.event.FileDeletedEvent;
 import com.ricky.fileextra.domain.event.FileExtraDeletedEvent;
 import com.ricky.folder.domain.event.FolderCreatedEvent;
 import com.ricky.folder.domain.event.FolderDeletedEvent;
-import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
-import com.ricky.upload.domain.event.FileUploadedLocalEvent;
+import com.ricky.folder.domain.event.FolderHierarchyChangedEvent;
 import org.springframework.context.annotation.Configuration;
 
 import static com.ricky.common.constants.ConfigConstants.*;

@@ -1,6 +1,6 @@
 package com.ricky.user.domain;
 
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
+import com.ricky.folder.domain.Folder;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
@@ -13,6 +13,6 @@ import static lombok.AccessLevel.PRIVATE;
 public class CreateUserResult {
 
     User user;
-    FolderHierarchy folderHierarchy;
+    Folder root;
 
 }

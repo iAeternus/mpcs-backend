@@ -1,7 +1,7 @@
-package com.ricky.folderhierarchy.eventhandler;
+package com.ricky.folder.eventhandler;
 
 import com.ricky.common.event.consume.AbstractDomainEventHandler;
-import com.ricky.folderhierarchy.domain.event.FolderHierarchyChangedEvent;
+import com.ricky.folder.domain.event.FolderHierarchyChangedEvent;
 import org.springframework.stereotype.Component;
 
 @Component

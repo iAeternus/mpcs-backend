@@ -12,6 +12,6 @@ import lombok.Value;
 public class MoveFolderResponse implements Response {
 
     Integer movedFolderCount;
-    Long movedFileCount;
+    Integer movedFileCount;
 
 }

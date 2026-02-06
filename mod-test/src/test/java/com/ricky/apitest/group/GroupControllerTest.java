@@ -23,6 +23,7 @@ import java.util.Set;
 import static com.ricky.apitest.RandomTestFixture.*;
 import static com.ricky.common.auth.Permission.DOWNLOAD;
 import static com.ricky.common.auth.Permission.PREVIEW;
+import static com.ricky.common.domain.SpaceType.personalCustomId;
 import static com.ricky.common.event.DomainEventType.GROUP_DELETED;
 import static com.ricky.common.event.DomainEventType.GROUP_MEMBERS_CHANGED;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
@@ -39,7 +40,6 @@ public class GroupControllerTest extends BaseApiTest {
         // When
         String groupId = GroupApi.createGroup(loginResponse.getJwt(), CreateGroupCommand.builder()
                 .name(groupName)
-                .customId(rCustomId())
                 .build());
 
         // Then
@@ -50,7 +50,7 @@ public class GroupControllerTest extends BaseApiTest {
         User user = userRepository.byId(loginResponse.getUserId());
         assertTrue(user.containsGroup(groupId));
 
-        assertTrue(folderHierarchyRepository.existsByCustomId(group.getCustomId()));
+        assertTrue(folderRepository.existsRoot(group.getCustomId()));
     }
 
     @Test
@@ -77,21 +77,20 @@ public class GroupControllerTest extends BaseApiTest {
         // When & Then
         assertError(() -> GroupApi.createGroupRaw(loginResponse.getJwt(), CreateGroupCommand.builder()
                 .name(groupName)
-                .customId(rCustomId())
                 .build()), GROUP_WITH_NAME_ALREADY_EXISTS);
     }
 
-    @Test
-    void should_fail_to_create_group_if_custom_id_already_exists() {
-        // Given
-        LoginResponse loginResponse = setupApi.registerWithLogin();
-
-        CreateGroupCommand command = CreateGroupCommand.builder().name(rGroupName()).customId(rCustomId()).build();
-        GroupApi.createGroup(loginResponse.getJwt(), command);
-
-        // When & Then
-        assertError(() -> GroupApi.createGroupRaw(loginResponse.getJwt(), command), FOLDER_HIERARCHY_WITH_CUSTOM_ID_ALREADY_EXISTS);
-    }
+//    @Test
+//    void should_fail_to_create_group_if_custom_id_already_exists() {
+//        // Given
+//        LoginResponse loginResponse = setupApi.registerWithLogin();
+//
+//        CreateGroupCommand command = CreateGroupCommand.builder().name(rGroupName()).customId(rCustomId()).build();
+//        GroupApi.createGroup(loginResponse.getJwt(), command);
+//
+//        // When & Then
+//        assertError(() -> GroupApi.createGroupRaw(loginResponse.getJwt(), command), FOLDER_HIERARCHY_WITH_CUSTOM_ID_ALREADY_EXISTS);
+//    }
 
     @Test
     void should_rename_group() {
@@ -330,7 +329,7 @@ public class GroupControllerTest extends BaseApiTest {
         assertEquals(group.getCustomId(), evt.getCustomId());
 
         awaitEventConsumed(evt); // TODO 这个事件为什么执行得这么慢
-        assertFalse(folderHierarchyRepository.existsByCustomId(group.getCustomId()));
+        assertFalse(folderRepository.existsRoot(group.getCustomId()));
     }
 
     @Test
@@ -385,7 +384,7 @@ public class GroupControllerTest extends BaseApiTest {
 
         String groupId = GroupApi.createGroup(manager.getJwt());
 
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String customId = personalCustomId(manager.getUserId());
         String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
         Set<Permission> permissions = Set.of(PREVIEW, DOWNLOAD);
 
@@ -425,7 +424,7 @@ public class GroupControllerTest extends BaseApiTest {
 
         String groupId = GroupApi.createGroup(manager.getJwt());
 
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String customId = personalCustomId(manager.getUserId());
         String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
         String folderId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
         Set<Permission> permissions = Set.of(PREVIEW, DOWNLOAD);
@@ -455,7 +454,7 @@ public class GroupControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String groupId = GroupApi.createGroup(manager.getJwt());
 
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String customId = personalCustomId(manager.getUserId());
         String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
 
         // When & Then
@@ -472,7 +471,7 @@ public class GroupControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
 
         String groupId = GroupApi.createGroup(manager.getJwt());
-        String customId = folderHierarchyDomainService.personalSpaceOf(manager.getUserId()).getCustomId();
+        String customId = personalCustomId(manager.getUserId());
         String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
 
         GroupApi.addGrant(manager.getJwt(), groupId, folderId);

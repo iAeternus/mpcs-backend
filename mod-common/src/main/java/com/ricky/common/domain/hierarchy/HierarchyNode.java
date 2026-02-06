@@ -2,10 +2,15 @@ package com.ricky.common.domain.hierarchy;
 
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.exception.MyException;
+import com.ricky.common.mongo.test.Folder;
+import com.ricky.common.utils.ValidationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
+import static com.ricky.common.exception.ErrorCodeEnum.HIERARCHY_ERROR;
+import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -34,7 +39,7 @@ public abstract class HierarchyNode extends AggregateRoot {
         this.customId = customId;
         this.parentId = parentId;
 
-        if (parentId == null) {
+        if (isNull(parentId)) {
             this.path = id;
         } else {
             requireNotBlank(parentPath, "parentPath must not be blank.");
@@ -43,7 +48,7 @@ public abstract class HierarchyNode extends AggregateRoot {
     }
 
     public boolean isRoot() {
-        return parentId == null;
+        return isNull(parentId);
     }
 
     public int level() {
@@ -58,25 +63,25 @@ public abstract class HierarchyNode extends AggregateRoot {
         return other.path.startsWith(this.path + NODE_ID_SEPARATOR);
     }
 
-    /**
-     * 移动节点（改变父节点）
-     */
-    public void changeParent(String newParentId, String newParentPath) {
+    public void moveTo(String newParentId, String newParentPath, UserContext userContext) {
         requireNotBlank(newParentPath, "newParentPath must not be blank.");
         this.parentId = newParentId;
         this.path = newParentPath + NODE_ID_SEPARATOR + getId();
+        addOpsLog("移动至：" + newParentPath, userContext);
     }
 
-    /**
-     * 子节点在级联更新路径时调用（受控修改）
-     */
+    public void updatePath(String oldPath, String newPath, UserContext userContext) {
+        this.path = this.path.replaceFirst(oldPath, newPath);
+        addOpsLog("变更path：" + this.path, userContext);
+    }
+
     public void resetPath(String newPath) {
         requireNotBlank(newPath, "newPath must not be blank.");
         this.path = newPath;
     }
 
-
     public boolean isInSameTree(HierarchyNode other) {
         return this.customId.equals(other.customId);
     }
+
 }

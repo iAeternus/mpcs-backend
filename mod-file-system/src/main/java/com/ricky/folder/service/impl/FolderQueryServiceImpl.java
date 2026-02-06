@@ -1,15 +1,17 @@
 package com.ricky.folder.service.impl;
 
+import com.ricky.common.domain.idtree.IdTree;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.folder.domain.Folder;
+import com.ricky.folder.domain.FolderDomainService;
+import com.ricky.folder.domain.FolderHierarchy;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folder.query.FolderContentResponse;
+import com.ricky.folder.query.FolderHierarchyResponse;
 import com.ricky.folder.service.FolderQueryService;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +26,15 @@ import static com.ricky.common.utils.CommonUtils.instantToLocalDateTime;
 public class FolderQueryServiceImpl implements FolderQueryService {
 
     private final RateLimiter rateLimiter;
+    private final FolderDomainService folderDomainService;
     private final FolderRepository folderRepository;
-    private final FolderHierarchyRepository folderHierarchyRepository;
     private final FileRepository fileRepository;
 
     @Override
     public FolderContentResponse fetchFolderContent(String customId, String folderId, UserContext userContext) {
         rateLimiter.applyFor("Folder:FetchFolderContent", 50);
 
-        FolderHierarchy hierarchy = folderHierarchyRepository.cachedByCustomId(customId);
-        Set<String> directChildFolderIds = hierarchy.directChildFolderIdsUnder(folderId);
+        Set<String> directChildFolderIds = folderDomainService.directChildIdsUnder(customId, folderId);
         List<Folder> directChildFolders = folderRepository.byIds(directChildFolderIds);
 
         List<FolderContentResponse.Folder> folders = directChildFolders.stream()
@@ -59,6 +60,28 @@ public class FolderQueryServiceImpl implements FolderQueryService {
         return FolderContentResponse.builder()
                 .folders(folders)
                 .files(files)
+                .build();
+    }
+
+    @Override
+    public FolderHierarchyResponse fetchFolderHierarchy(String customId, UserContext userContext) {
+        rateLimiter.applyFor("Folder:FetchFolderHierarchy", 50);
+
+        FolderHierarchy folderHierarchy = folderRepository.cachedByCustomId(customId);
+
+        IdTree idTree = folderHierarchy.buildIdTree();
+        var allFolders = folderHierarchy.getFolders().stream()
+                .map(cachedFolder -> FolderHierarchyResponse.HierarchyFolder.builder()
+                        .id(cachedFolder.getId())
+                        .folderName(cachedFolder.getFolderName())
+                        .parentId(cachedFolder.getParentId())
+                        .path(cachedFolder.getPath())
+                        .build())
+                .collect(toImmutableList());
+
+        return FolderHierarchyResponse.builder()
+                .idTree(idTree)
+                .allFolders(allFolders)
                 .build();
     }
 }

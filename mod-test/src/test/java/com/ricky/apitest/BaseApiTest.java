@@ -21,9 +21,8 @@ import com.ricky.common.properties.SystemProperties;
 import com.ricky.common.security.jwt.JwtService;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.fileextra.domain.FileExtraRepository;
+import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.folder.domain.FolderRepository;
-import com.ricky.folderhierarchy.domain.FolderHierarchyDomainService;
-import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import com.ricky.group.domain.GroupRepository;
 import com.ricky.publicfile.domain.PublicFileRepository;
 import com.ricky.upload.domain.StorageService;
@@ -112,7 +111,7 @@ public abstract class BaseApiTest {
     protected IPasswordEncoder passwordEncoder;
 
     @Autowired
-    protected FolderHierarchyDomainService folderHierarchyDomainService;
+    protected FolderDomainService folderDomainService;
 
     @Autowired
     protected FileRepository fileRepository;
@@ -125,9 +124,6 @@ public abstract class BaseApiTest {
 
     @Autowired
     protected FolderRepository folderRepository;
-
-    @Autowired
-    protected FolderHierarchyRepository folderHierarchyRepository;
 
     @Autowired
     protected FileExtraRepository fileExtraRepository;

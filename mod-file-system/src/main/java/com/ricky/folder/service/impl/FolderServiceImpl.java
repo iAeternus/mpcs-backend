@@ -10,14 +10,13 @@ import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.folder.domain.FolderFactory;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folder.service.FolderService;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -29,25 +28,15 @@ public class FolderServiceImpl implements FolderService {
     private final FolderDomainService folderDomainService;
     private final FileDomainService fileDomainService;
     private final FolderRepository folderRepository;
-    private final FolderHierarchyRepository folderHierarchyRepository;
 
     @Override
     @Transactional
     public String createFolder(CreateFolderCommand command, UserContext userContext) {
         rateLimiter.applyFor("Folder:CreateFolder", 10);
 
-        FolderHierarchy folderHierarchy = folderHierarchyRepository.byCustomId(command.getCustomId());
-        Folder folder = folderFactory.create(
-                command.getFolderName(),
-                userContext.getUid(),
-                command.getParentId(),
-                folderHierarchy,
-                userContext
-        );
-        folderHierarchy.addFolder(folder, userContext);
-
+        String parentId = folderDomainService.resolveParentId(command.getCustomId(), command.getParentId());
+        Folder folder = folderFactory.create(command.getCustomId(), parentId, command.getFolderName(), userContext);
         folderRepository.save(folder);
-        folderHierarchyRepository.save(folderHierarchy);
 
         log.info("Created folder[{}]", folder.getId());
         return folder.getId();
@@ -59,7 +48,7 @@ public class FolderServiceImpl implements FolderService {
         rateLimiter.applyFor("Folder:RenameFolder", 10);
 
         Folder folder = folderRepository.byIdAndCheckUserShip(folderId, userContext);
-        folderDomainService.renameFolder(command.getCustomId(), folder, command.getNewName(), userContext);
+        folderDomainService.renameFolder(folder, command.getNewName(), userContext);
         folderRepository.save(folder);
         log.info("Renamed folder[{}]", folderId);
     }
@@ -69,8 +58,7 @@ public class FolderServiceImpl implements FolderService {
     public void deleteFolderForce(String folderId, DeleteFolderForceCommand command, UserContext userContext) {
         rateLimiter.applyFor("Folder:DeleteFolder", 10);
 
-        FolderHierarchy hierarchy = folderHierarchyRepository.byCustomId(command.getCustomId());
-        FolderDomainService.DeleteFolderContext ctx = folderDomainService.collectDeleteFolderContext(folderId, hierarchy);
+        FolderDomainService.DeleteFolderContext ctx = folderDomainService.collectDeleteFolderContext(command.getCustomId(), folderId);
 
         List<Folder> folders = ctx.getFolders();
         List<File> files = ctx.getFiles();
@@ -81,8 +69,6 @@ public class FolderServiceImpl implements FolderService {
         files.forEach(file -> file.onDelete(userContext));
         fileDomainService.deleteFilesForce(files, userContext);
 
-        hierarchy.removeFolder(folderId, userContext);
-        folderHierarchyRepository.save(hierarchy);
         log.info("Deleted folder[{}]", folderId);
     }
 
@@ -91,20 +77,15 @@ public class FolderServiceImpl implements FolderService {
     public MoveFolderResponse moveFolder(MoveFolderCommand command, UserContext userContext) {
         rateLimiter.applyFor("Folder:MoveFolder", 10);
 
-        FolderDomainService.FolderFileCount count = folderDomainService.moveFolder(
-                command.getCustomId(),
-                command.getFolderId(),
-                command.getNewParentId()
-        );
+        String newParentId = folderDomainService.resolveParentId(command.getCustomId(), command.getNewParentId());
+        var moveResult = folderDomainService.moveFolder(command.getCustomId(), command.getFolderId(), newParentId, userContext);
+        Set<String> movedFolderIds = moveResult.getMovedFolderIds();
+        Set<String> movedFileIds = moveResult.getMovedFileIds();
 
-        Folder folder = folderRepository.byId(command.getFolderId());
-        folder.updateParentId(command.getNewParentId(), userContext);
-        folderRepository.save(folder);
-
-        log.info("Moved folder[{}]", command.getFolderId());
+        log.info("Moved folder [{}] under [{}]", command.getFolderId(), command.getNewParentId());
         return MoveFolderResponse.builder()
-                .movedFolderCount(count.getFolderCount())
-                .movedFileCount(count.getFileCount())
+                .movedFolderCount(movedFolderIds.size())
+                .movedFileCount(movedFileIds.size())
                 .build();
     }
 }

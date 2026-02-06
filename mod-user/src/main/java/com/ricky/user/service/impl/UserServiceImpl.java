@@ -4,8 +4,8 @@ import com.ricky.common.domain.user.Role;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.password.IPasswordEncoder;
 import com.ricky.common.ratelimit.RateLimiter;
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
+import com.ricky.folder.domain.Folder;
+import com.ricky.folder.domain.FolderRepository;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
 import com.ricky.user.domain.CreateUserResult;
@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
     private final IPasswordEncoder passwordEncoder;
     private final UserDomainService userDomainService;
     private final UserRepository userRepository;
-    private final FolderHierarchyRepository folderHierarchyRepository;
+    private final FolderRepository folderRepository;
 
     @Override
     @Transactional
@@ -49,10 +49,10 @@ public class UserServiceImpl implements UserService {
                 userContext);
 
         User user = result.getUser();
-        FolderHierarchy hierarchy = result.getFolderHierarchy();
+        Folder root = result.getRoot();
 
         userRepository.save(user);
-        folderHierarchyRepository.save(hierarchy);
+        folderRepository.save(root);
         log.info("Registered user[{}]", user.getId());
 
         return RegisterResponse.builder().userId(user.getId()).build();

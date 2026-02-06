@@ -1,19 +1,21 @@
 package com.ricky.group.domain.task;
 
-import com.ricky.folderhierarchy.domain.FolderHierarchy;
-import com.ricky.folderhierarchy.domain.FolderHierarchyRepository;
+import com.ricky.folder.domain.Folder;
+import com.ricky.folder.domain.FolderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class DeleteTeamSpaceTask {
 
-    private final FolderHierarchyRepository folderHierarchyRepository;
+    private final FolderRepository folderRepository;
 
     public void run(String customId) {
-        FolderHierarchy hierarchy = folderHierarchyRepository.byCustomId(customId);
-        folderHierarchyRepository.delete(hierarchy);
+        List<Folder> folders = folderRepository.getAllByCustomId(customId);
+        folderRepository.delete(folders);
     }
 
 }

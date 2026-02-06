@@ -1,4 +1,4 @@
-package com.ricky.folderhierarchy.query;
+package com.ricky.folder.query;
 
 import com.ricky.common.domain.idtree.IdTree;
 import com.ricky.common.domain.marker.Response;
@@ -23,6 +23,8 @@ public class FolderHierarchyResponse implements Response {
     public static class HierarchyFolder {
         String id;
         String folderName;
+        String parentId;
+        String path;
     }
 
 }

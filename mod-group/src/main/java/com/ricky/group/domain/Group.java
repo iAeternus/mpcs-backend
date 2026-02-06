@@ -11,6 +11,7 @@ import com.ricky.group.domain.event.GroupMembersChangedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -19,6 +20,7 @@ import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.constants.ConfigConstants.*;
+import static com.ricky.common.domain.SpaceType.teamCustomId;
 import static com.ricky.common.exception.ErrorCodeEnum.MAX_GROUP_MANAGER_REACHED;
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static com.ricky.common.utils.ValidationUtils.notEquals;
@@ -40,17 +42,18 @@ public class Group extends AggregateRoot {
     private Map<String, Set<Permission>> grants; // 资源ID -> 权限集合
     private InheritancePolicy inheritancePolicy; // 继承策略
 
-    public Group(String name, String customId, UserContext userContext) {
+
+    public Group(String name, UserContext userContext) {
         super(newGroupId(), userContext);
-        init(name, customId, userContext);
+        init(name, userContext);
     }
 
-    private void init(String name, String customId, UserContext userContext) {
+    private void init(String name, UserContext userContext) {
         this.name = name;
         this.active = true;
         this.members = new HashSet<>();
         this.managers = new HashSet<>();
-        this.customId = customId;
+        this.customId = teamCustomId(getId());
         this.grants = new HashMap<>();
         this.inheritancePolicy = InheritancePolicy.NONE;
         addOpsLog("新建", userContext);

@@ -1,4 +1,4 @@
-package com.ricky.folderhierarchy.domain.event;
+package com.ricky.folder.domain.event;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.event.DomainEvent;
@@ -6,6 +6,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
+
+import java.util.Set;
 
 import static com.ricky.common.constants.ConfigConstants.FOLDER_HIERARCHY_CHANGED_EVENT_NAME;
 import static com.ricky.common.event.DomainEventType.FOLDER_HIERARCHY_CHANGED;
@@ -15,11 +17,17 @@ import static com.ricky.common.event.DomainEventType.FOLDER_HIERARCHY_CHANGED;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FolderHierarchyChangedEvent extends DomainEvent {
 
-    // TODO 谁 change 了什么
-    private String userId;
+    private String customId;
+    private Set<String> changedFolderIds;
+    private Set<String> changedFileIds;
 
-    public FolderHierarchyChangedEvent(String userId, UserContext userContext) {
+    public FolderHierarchyChangedEvent(String customId,
+                                       Set<String> changedFolderIds,
+                                       Set<String> changedFileIds,
+                                       UserContext userContext) {
         super(FOLDER_HIERARCHY_CHANGED, userContext);
-        this.userId = userId;
+        this.customId = customId;
+        this.changedFolderIds = changedFolderIds;
+        this.changedFileIds = changedFileIds;
     }
 }
