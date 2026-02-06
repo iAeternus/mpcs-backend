@@ -8,7 +8,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Repository;
 
-import static com.ricky.common.constants.ConfigConstants.COMMENT_CACHE;
 import static com.ricky.common.constants.ConfigConstants.FILE_CACHE;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 

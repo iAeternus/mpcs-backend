@@ -1,7 +1,6 @@
 package com.ricky.group.command;
 
 import com.ricky.common.domain.marker.Command;
-import com.ricky.common.validation.id.custom.CustomId;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;

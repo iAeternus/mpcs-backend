@@ -11,7 +11,6 @@ import com.ricky.group.domain.event.GroupMembersChangedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -199,6 +198,7 @@ public class Group extends AggregateRoot {
 
     /**
      * 获取当前文件夹的权限集合
+     *
      * @param ancestors 当前文件夹的祖先集合，包括自身
      * @return 权限集合
      */
@@ -212,7 +212,7 @@ public class Group extends AggregateRoot {
     }
 
     public void addGrants(List<String> folderIds, Set<Permission> permissions, UserContext userContext) {
-        if(isEmpty(folderIds)) {
+        if (isEmpty(folderIds)) {
             return;
         }
         for (String folderId : folderIds) {

@@ -50,9 +50,9 @@ public class MongoCachedGroupRepository extends MongoBaseRepository<Group> {
         requireNotBlank(groupId, "Group ID must not be blank.");
 
         Query query = query(where("_id").is(groupId));
-        query.fields().include("name", "active", "managers",  "members", "grants", "inheritancePolicy");
+        query.fields().include("name", "active", "managers", "members", "grants", "inheritancePolicy");
         CachedGroup cachedGroup = mongoTemplate.findOne(query, CachedGroup.class, GROUP_COLLECTION);
-        if(isNull(cachedGroup)) {
+        if (isNull(cachedGroup)) {
             throw new MyException(GROUP_NOT_FOUND, "权限组不存在", "groupId", groupId);
         }
 

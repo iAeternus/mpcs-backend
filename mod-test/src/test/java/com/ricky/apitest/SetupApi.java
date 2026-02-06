@@ -9,7 +9,6 @@ import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.folder.domain.FolderRepository;
 import com.ricky.folder.domain.event.FolderCreatedEvent;
 import com.ricky.upload.domain.StorageService;
 import com.ricky.upload.domain.event.FileUploadedLocalEvent;

@@ -12,7 +12,8 @@ import io.restassured.response.Response;
 import java.util.List;
 import java.util.Set;
 
-import static com.ricky.apitest.RandomTestFixture.*;
+import static com.ricky.apitest.RandomTestFixture.rEnumOf;
+import static com.ricky.apitest.RandomTestFixture.rGroupName;
 
 public class GroupApi {
 

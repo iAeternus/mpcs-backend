@@ -1,9 +1,7 @@
 package com.ricky.publicfile.service.impl;
 
-import com.ricky.common.constants.ConfigConstants;
 import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.page.Pagination;
-import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.publicfile.domain.PublicFile;
@@ -81,23 +79,23 @@ public class PublicFileQueryServiceImpl implements PublicFileQueryService {
         String sortedBy = pageQuery.getSortedBy();
         Sort.Direction direction = pageQuery.getAscSort() ? ASC : DESC;
 
-        if(isBlank(sortedBy)) {
+        if (isBlank(sortedBy)) {
             return by(DESC, "createdAt");
         }
 
-        if(ValidationUtils.equals(sortedBy, "createdAt")) {
+        if (ValidationUtils.equals(sortedBy, "createdAt")) {
             return by(direction, "createdAt");
         }
 
-        if(ValidationUtils.equals(sortedBy, "title")) {
+        if (ValidationUtils.equals(sortedBy, "title")) {
             return by(direction, "title");
         }
 
-        if(ValidationUtils.equals(sortedBy, "likeCount")) {
+        if (ValidationUtils.equals(sortedBy, "likeCount")) {
             return by(direction, "likeCount");
         }
 
-        if(ValidationUtils.equals(sortedBy, "commentCount")) {
+        if (ValidationUtils.equals(sortedBy, "commentCount")) {
             return by(direction, "commentCount");
         }
 

@@ -1,13 +1,11 @@
 package com.ricky.folder.domain;
 
-import com.google.common.collect.ImmutableList;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;

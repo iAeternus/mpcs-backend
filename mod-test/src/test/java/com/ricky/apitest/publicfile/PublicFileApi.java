@@ -13,8 +13,6 @@ import com.ricky.publicfile.query.PublicFileResponse;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 
-import java.util.Map;
-
 public class PublicFileApi {
 
     private static final String ROOT_URL = "/public-files";

@@ -2,11 +2,8 @@ package com.ricky.commenthierarchy;
 
 import com.ricky.commenthierarchy.command.ReplyCommand;
 import com.ricky.commenthierarchy.command.ReplyResponse;
-import com.ricky.commenthierarchy.query.ReplyPageQuery;
-import com.ricky.commenthierarchy.query.ReplyPageResponse;
 import com.ricky.commenthierarchy.service.CommentHierarchyQueryService;
 import com.ricky.commenthierarchy.service.CommentHierarchyService;
-import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.user.UserContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

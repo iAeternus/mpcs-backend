@@ -11,7 +11,6 @@ import com.ricky.commenthierarchy.domain.CommentHierarchy;
 import com.ricky.commenthierarchy.domain.CommentHierarchyRepository;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
-import com.ricky.common.sensitive.service.SensitiveWordService;
 import com.ricky.publicfile.domain.PublicFileDomainService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -20,7 +20,8 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Set;
 
-import static com.ricky.apitest.RandomTestFixture.*;
+import static com.ricky.apitest.RandomTestFixture.rFolderName;
+import static com.ricky.apitest.RandomTestFixture.rGroupName;
 import static com.ricky.common.auth.Permission.DOWNLOAD;
 import static com.ricky.common.auth.Permission.PREVIEW;
 import static com.ricky.common.domain.SpaceType.personalCustomId;

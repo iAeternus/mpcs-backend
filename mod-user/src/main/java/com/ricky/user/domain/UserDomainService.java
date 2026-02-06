@@ -2,7 +2,6 @@ package com.ricky.user.domain;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
-import com.ricky.folder.domain.FolderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

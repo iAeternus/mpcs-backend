@@ -1,6 +1,5 @@
 package com.ricky.group.service.impl;
 
-import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.common.utils.ValidationUtils;
@@ -21,8 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
-
-import static com.ricky.common.domain.SpaceType.teamCustomId;
 
 @Slf4j
 @Service

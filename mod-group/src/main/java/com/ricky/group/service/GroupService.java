@@ -2,7 +2,6 @@ package com.ricky.group.service;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.group.command.*;
-import jakarta.validation.Valid;
 
 public interface GroupService {
     String createGroup(CreateGroupCommand command, UserContext userContext);

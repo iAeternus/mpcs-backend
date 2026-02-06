@@ -2,14 +2,10 @@ package com.ricky.common.domain.hierarchy;
 
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.common.exception.MyException;
-import com.ricky.common.mongo.test.Folder;
-import com.ricky.common.utils.ValidationUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
-import static com.ricky.common.exception.ErrorCodeEnum.HIERARCHY_ERROR;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static lombok.AccessLevel.PROTECTED;

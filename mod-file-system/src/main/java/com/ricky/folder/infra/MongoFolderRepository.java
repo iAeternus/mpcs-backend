@@ -1,7 +1,6 @@
 package com.ricky.folder.infra;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.common.exception.ErrorCodeEnum;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.mongo.MongoHierarchyRepository;
 import com.ricky.folder.domain.Folder;
@@ -88,7 +87,7 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
         );
 
         Folder folder = mongoTemplate.findOne(query, Folder.class);
-        if(isNull(folder)) {
+        if (isNull(folder)) {
             throw new MyException(FOLDER_NOT_FOUND, "根目录不存在", "customId", customId);
         }
 

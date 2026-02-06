@@ -187,18 +187,18 @@
 //        assertError(() -> FolderHierarchyApi.updateFolderHierarchyRaw(loginResponse.getJwt(), command), FOLDER_NAME_DUPLICATES);
 //    }
 //
-////    @Test
-////    public void should_cache_folder_hierarchy() {
-////        LoginResponse response = setupApi.registerWithLogin();
-////        String key = redisCacheKey(FOLDER_HIERARCHY_CACHE, response.getUserId());
-////        assertNotEquals(TRUE, stringRedisTemplate.hasKey(key));
-////
-////        folderHierarchyRepository.cachedByUserId(response.getUserId());
-////        assertTrue(stringRedisTemplate.hasKey(key));
-////
-////        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(response.getUserId());
-////        folderHierarchyRepository.save(hierarchy);
-////        assertFalse(stringRedisTemplate.hasKey(key));
-////    }
+/// /    @Test
+/// /    public void should_cache_folder_hierarchy() {
+/// /        LoginResponse response = setupApi.registerWithLogin();
+/// /        String key = redisCacheKey(FOLDER_HIERARCHY_CACHE, response.getUserId());
+/// /        assertNotEquals(TRUE, stringRedisTemplate.hasKey(key));
+/// /
+/// /        folderHierarchyRepository.cachedByUserId(response.getUserId());
+/// /        assertTrue(stringRedisTemplate.hasKey(key));
+/// /
+/// /        FolderHierarchy hierarchy = folderHierarchyRepository.byUserId(response.getUserId());
+/// /        folderHierarchyRepository.save(hierarchy);
+/// /        assertFalse(stringRedisTemplate.hasKey(key));
+/// /    }
 //
 //}
