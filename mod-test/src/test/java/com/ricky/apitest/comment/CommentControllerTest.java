@@ -7,8 +7,7 @@ import com.ricky.comment.command.CreateCommentCommand;
 import com.ricky.comment.command.CreateCommentResponse;
 import com.ricky.comment.command.DeleteCommentCommand;
 import com.ricky.comment.domain.Comment;
-import com.ricky.comment.query.CommentPageQuery;
-import com.ricky.comment.query.CommentResponse;
+import com.ricky.comment.query.*;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.domain.page.PagedList;
 import com.ricky.publicfile.domain.PublicFile;
@@ -143,5 +142,57 @@ public class CommentControllerTest extends BaseApiTest {
 
         // Then
         assertFalse(pagedList.isEmpty());
+    }
+
+    @Test
+    void should_page_direct() throws IOException {
+        // Given
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse manager = ctx.getManager();
+
+        String postId = PublicFileApi.post(manager.getJwt(), ctx.getFileId()).getPostId();
+        awaitLatestEventConsumed(postId, FILE_PUBLISHED, FilePublishedEvent.class);
+
+        String commentId1 = CommentApi.createComment(manager.getJwt(), postId).getCommentId();
+        String commentId2 = CommentApi.createReply(manager.getJwt(), postId, commentId1).getCommentId();
+        String commentId3 = CommentApi.createReply(manager.getJwt(), postId, commentId2).getCommentId();
+
+        // When
+        PagedList<CommentResponse> pagedList = CommentApi.pageDirect(manager.getJwt(), DirectReplyPageQuery.builder()
+                .parentId(commentId1)
+                .sortedBy("createdAt")
+                .ascSort(false)
+                .pageIndex(1)
+                .pageSize(10)
+                .build());
+
+        // Then
+        assertEquals(1, pagedList.size());
+    }
+
+    @Test
+    void should_page_my_comment() throws IOException {
+        // Given
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse manager = ctx.getManager();
+
+        String postId1 = PublicFileApi.post(manager.getJwt(), ctx.getFileId()).getPostId();
+        awaitLatestEventConsumed(postId1, FILE_PUBLISHED, FilePublishedEvent.class);
+        String postId2 = PublicFileApi.post(manager.getJwt(), ctx.getFileId()).getPostId();
+        awaitLatestEventConsumed(postId2, FILE_PUBLISHED, FilePublishedEvent.class);
+
+        String commentId1 = CommentApi.createComment(manager.getJwt(), postId1).getCommentId();
+        String commentId2 = CommentApi.createComment(manager.getJwt(), postId2).getCommentId();
+
+        // When
+        PagedList<MyCommentResponse> pagedList = CommentApi.pageMyComment(manager.getJwt(), MyCommentPageQuery.builder()
+                .sortedBy("createdAt")
+                .ascSort(false)
+                .pageIndex(1)
+                .pageSize(10)
+                .build());
+
+        // Then
+        assertEquals(2, pagedList.size());
     }
 }

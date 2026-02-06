@@ -1,6 +1,6 @@
 package com.ricky.group.service.impl;
 
-import com.ricky.common.domain.page.MongoPage;
+import com.ricky.common.domain.page.MongoPageQuery;
 import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
@@ -113,7 +113,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
     public PagedList<GroupResponse> pageMyGroupsAsForManager(MyGroupsAsForManagerPageQuery pageQuery, UserContext userContext) {
         rateLimiter.applyFor("Group:PageMyGroupFolders", 5);
 
-        return MongoPage.of(Group.class, GROUP_COLLECTION)
+        return MongoPageQuery.of(Group.class, GROUP_COLLECTION)
                 .pageQuery(pageQuery)
                 .where(c -> c.and("managers").is(userContext.getUid())) // my managed
                 .search((search, c, q) -> {
@@ -144,7 +144,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
     public PagedList<GroupResponse> pageMyGroupsAsForMember(MyGroupsAsForMemberPageQuery pageQuery, UserContext userContext) {
         rateLimiter.applyFor("Group:PageMyGroupFolders", 5);
 
-        return MongoPage.of(Group.class, GROUP_COLLECTION)
+        return MongoPageQuery.of(Group.class, GROUP_COLLECTION)
                 .pageQuery(pageQuery)
                 .where(c -> c.and("members").is(userContext.getUid())) // my joined
                 .search((search, c, q) -> {

@@ -4,7 +4,7 @@ import com.ricky.comment.domain.Comment;
 import com.ricky.comment.domain.CommentRepository;
 import com.ricky.comment.query.*;
 import com.ricky.comment.service.CommentQueryService;
-import com.ricky.common.domain.page.MongoPage;
+import com.ricky.common.domain.page.MongoPageQuery;
 import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.page.SortRegistry;
 import com.ricky.common.domain.user.UserContext;
@@ -51,7 +51,7 @@ public class CommentQueryServiceImpl implements CommentQueryService {
     public PagedList<CommentResponse> page(CommentPageQuery pageQuery) {
         rateLimiter.applyFor("Comment:Page", 5);
 
-        return MongoPage.of(Comment.class, COMMENT_COLLECTION)
+        return MongoPageQuery.of(Comment.class, COMMENT_COLLECTION)
                 .pageQuery(pageQuery)
                 .where(c -> c.and("customId").is(pageQuery.getPostId())
                         .and("parentId").isNull())
@@ -64,7 +64,7 @@ public class CommentQueryServiceImpl implements CommentQueryService {
     public PagedList<CommentResponse> pageDirect(DirectReplyPageQuery pageQuery) {
         rateLimiter.applyFor("Comment:PageDirect", 5);
 
-        return MongoPage.of(Comment.class, COMMENT_COLLECTION)
+        return MongoPageQuery.of(Comment.class, COMMENT_COLLECTION)
                 .pageQuery(pageQuery)
                 .where(c -> c.and("parentId").is(pageQuery.getParentId()))
                 .sort(SortRegistry.newInstance().resolve(pageQuery.getSortedBy(), pageQuery.getAscSort()))
@@ -94,7 +94,7 @@ public class CommentQueryServiceImpl implements CommentQueryService {
     public PagedList<MyCommentResponse> pageMyComment(MyCommentPageQuery pageQuery, UserContext userContext) {
         rateLimiter.applyFor("Comment:PageMyComment", 5);
 
-        return MongoPage.of(Comment.class, COMMENT_COLLECTION)
+        return MongoPageQuery.of(Comment.class, COMMENT_COLLECTION)
                 .pageQuery(pageQuery)
                 .where(c -> c.and("userId").is(userContext.getUid()))
                 .sort(SortRegistry.newInstance().resolve(pageQuery.getSortedBy(), pageQuery.getAscSort()))

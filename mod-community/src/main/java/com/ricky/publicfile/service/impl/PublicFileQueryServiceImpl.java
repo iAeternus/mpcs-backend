@@ -1,6 +1,6 @@
 package com.ricky.publicfile.service.impl;
 
-import com.ricky.common.domain.page.MongoPage;
+import com.ricky.common.domain.page.MongoPageQuery;
 import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.page.SortRegistry;
 import com.ricky.common.ratelimit.RateLimiter;
@@ -31,7 +31,7 @@ public class PublicFileQueryServiceImpl implements PublicFileQueryService {
     public PagedList<PublicFileResponse> page(PublicFilePageQuery pageQuery) {
         rateLimiter.applyFor("PublicFile:Page", 5);
 
-        return MongoPage.of(PublicFile.class, PUBLIC_FILE_COLLECTION)
+        return MongoPageQuery.of(PublicFile.class, PUBLIC_FILE_COLLECTION)
                 .pageQuery(pageQuery)
                 .noSpecifiedField()
                 .search((search, c, q) -> {

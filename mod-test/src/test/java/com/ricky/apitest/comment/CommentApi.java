@@ -4,8 +4,7 @@ import com.ricky.apitest.BaseApiTest;
 import com.ricky.comment.command.CreateCommentCommand;
 import com.ricky.comment.command.CreateCommentResponse;
 import com.ricky.comment.command.DeleteCommentCommand;
-import com.ricky.comment.query.CommentPageQuery;
-import com.ricky.comment.query.CommentResponse;
+import com.ricky.comment.query.*;
 import com.ricky.common.domain.page.PagedList;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
@@ -74,6 +73,30 @@ public class CommentApi {
                 .body(query)
                 .when()
                 .post(ROOT_URL + "/page")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<>() {
+                });
+    }
+
+    public static PagedList<CommentResponse> pageDirect(String token, DirectReplyPageQuery query) {
+        return BaseApiTest.given(token)
+                .body(query)
+                .when()
+                .post(ROOT_URL + "/page/direct")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(new TypeRef<>() {
+                });
+    }
+
+    public static PagedList<MyCommentResponse> pageMyComment(String token, MyCommentPageQuery query) {
+        return BaseApiTest.given(token)
+                .body(query)
+                .when()
+                .post(ROOT_URL + "/page/my")
                 .then()
                 .statusCode(200)
                 .extract()

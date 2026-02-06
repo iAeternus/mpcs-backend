@@ -7,6 +7,7 @@ import com.ricky.common.event.LocalDomainEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.annotation.Version;
 
@@ -31,6 +32,7 @@ import static lombok.AccessLevel.PROTECTED;
  * 2. 实现类不允许有默认的setter<br>
  */
 @Getter
+@FieldNameConstants
 @NoArgsConstructor(access = PROTECTED)
 public abstract class AggregateRoot implements Identified {
 
