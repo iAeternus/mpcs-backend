@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static com.ricky.auth.AuthScenario.FolderPath.path;
 import static com.ricky.auth.AuthTestKit.scenario;
 import static com.ricky.auth.FakeGroupBuilder.group;
-import static com.ricky.common.auth.Permission.*;
+import static com.ricky.common.permission.Permission.*;
 
 public class GroupDomainServiceTest {
 

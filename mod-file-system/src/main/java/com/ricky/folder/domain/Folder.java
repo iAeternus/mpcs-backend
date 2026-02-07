@@ -10,6 +10,7 @@ import com.ricky.folder.domain.event.FolderHierarchyChangedEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldNameConstants;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -23,6 +24,7 @@ import static com.ricky.common.constants.ConfigConstants.FOLDER_ID_PREFIX;
  * @brief 文件夹
  */
 @Getter
+@FieldNameConstants
 @Document(FOLDER_COLLECTION)
 @TypeAlias(FOLDER_COLLECTION)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

@@ -6,6 +6,10 @@ import com.ricky.file.command.RenameFileCommand;
 import com.ricky.file.query.FileInfoResponse;
 import com.ricky.file.query.FilePathResponse;
 import io.restassured.response.Response;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
 
 public class FileApi {
 
@@ -68,5 +72,35 @@ public class FileApi {
                 .extract()
                 .as(FileInfoResponse.class);
     }
+
+    public static DownloadedFile download(String token, String fileId) {
+        Response response = BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{fileId}/download", fileId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .response();
+
+        byte[] bytes = response.asByteArray();
+
+        return DownloadedFile.builder()
+                .content(bytes)
+                .contentType(response.getHeader("Content-Type"))
+                .contentDisposition(response.getHeader("Content-Disposition"))
+                .contentLength(response.getHeader("Content-Length"))
+                .build();
+    }
+
+    @Value
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class DownloadedFile {
+        byte[] content;
+        String contentType;
+        String contentDisposition;
+        String contentLength;
+    }
+
 
 }

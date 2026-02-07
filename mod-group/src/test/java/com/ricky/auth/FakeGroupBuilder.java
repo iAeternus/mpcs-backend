@@ -1,6 +1,6 @@
 package com.ricky.auth;
 
-import com.ricky.common.auth.Permission;
+import com.ricky.common.permission.Permission;
 import com.ricky.group.domain.Group;
 import com.ricky.group.domain.InheritancePolicy;
 

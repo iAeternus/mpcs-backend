@@ -1,6 +1,6 @@
 package com.ricky.group.domain;
 
-import com.ricky.common.auth.Permission;
+import com.ricky.common.permission.Permission;
 
 import java.util.HashSet;
 import java.util.List;

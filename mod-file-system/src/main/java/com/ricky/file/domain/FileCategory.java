@@ -2,12 +2,13 @@ package com.ricky.file.domain;
 
 import lombok.Getter;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import static com.ricky.common.utils.ValidationUtils.isBlank;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.file.domain.FileExtension.*;
+import static java.util.Collections.unmodifiableMap;
 
 @Getter
 public enum FileCategory {
@@ -23,14 +24,16 @@ public enum FileCategory {
     private final String name;
     private final FileExtension[] extensions;
 
-    private static final Map<FileExtension, FileCategory> EXTENSION_TO_CATEGORY = new HashMap<>();
+    private static final Map<FileExtension, FileCategory> EXTENSION_TO_CATEGORY;
 
     static {
+        Map<FileExtension, FileCategory> map = new EnumMap<>(FileExtension.class);
         for (FileCategory category : values()) {
             for (FileExtension extension : category.extensions) {
-                EXTENSION_TO_CATEGORY.put(extension, category);
+                map.put(extension, category);
             }
         }
+        EXTENSION_TO_CATEGORY = unmodifiableMap(map);
     }
 
     FileCategory(String name, FileExtension... extensions) {
@@ -60,4 +63,12 @@ public enum FileCategory {
         FileExtension ext = FileExtension.fromFilename(filename);
         return fromExtension(ext);
     }
+
+    public boolean isPreviewable() {
+        return switch (this) {
+            case IMAGE, TEXT, DOCUMENT -> true;
+            default -> false;
+        };
+    }
+
 }

@@ -1,6 +1,6 @@
 package com.ricky.group.command;
 
-import com.ricky.common.auth.Permission;
+import com.ricky.common.permission.Permission;
 import com.ricky.common.domain.marker.Command;
 import com.ricky.common.validation.collection.NoNullElement;
 import com.ricky.common.validation.id.Id;

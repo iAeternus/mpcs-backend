@@ -1,6 +1,9 @@
-package com.ricky.common.auth;
+package com.ricky.common.permission;
 
 import lombok.Getter;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * 权限
@@ -8,24 +11,22 @@ import lombok.Getter;
 @Getter
 public enum Permission {
 
-    CREATE("创建"), // 对父资源而言
+    CREATE("创建"),
     READ("读取"),
     WRITE("写入"),
     DELETE("删除"),
-    DELETE_FORCE("彻底删除"),
     MOVE("移动"),
     SHARE("分享"),
     MANAGE("管理"),
-    DOWNLOAD("下载"),
-    PREVIEW("预览"),
-    COMMENT("评论"),
-    APPROVE("审批"),
-    RENAME("重命名"),
     ;
 
     private final String desc;
 
     Permission(String desc) {
         this.desc = desc;
+    }
+
+    public static Set<Permission> all() {
+        return EnumSet.allOf(Permission.class);
     }
 }

@@ -1,8 +1,8 @@
 package com.ricky.folder;
 
-import com.ricky.common.auth.PermissionRequired;
 import com.ricky.common.domain.dto.resp.IdResponse;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.permission.PermissionRequired;
 import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.id.custom.CustomId;
 import com.ricky.folder.command.*;
@@ -19,8 +19,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import static com.ricky.common.auth.Permission.*;
 import static com.ricky.common.constants.ConfigConstants.FOLDER_ID_PREFIX;
+import static com.ricky.common.permission.Permission.*;
+import static com.ricky.common.permission.ResourceType.SPACE;
 import static org.springframework.http.HttpStatus.CREATED;
 
 @Validated
@@ -37,7 +38,7 @@ public class FolderController {
     @PostMapping
     @ResponseStatus(CREATED)
     @Operation(summary = "创建文件夹")
-    @PermissionRequired(value = CREATE, resources = {"#command.customId", "#command.parentId"})
+    @PermissionRequired(value = CREATE, resource = "#command.parentId")
     public IdResponse createFolder(@RequestBody @Valid CreateFolderCommand command,
                                    @AuthenticationPrincipal UserContext userContext) {
         String folderId = folderService.createFolder(command, userContext);
@@ -46,7 +47,7 @@ public class FolderController {
 
     @PostMapping("/{folderId}/name")
     @Operation(summary = "文件夹重命名")
-    @PermissionRequired(value = WRITE, resources = {"#command.customId", "#folderId"})
+    @PermissionRequired(value = {MANAGE, WRITE}, resource = "#folderId")
     public void renameFolder(@PathVariable @NotBlank @Id(FOLDER_ID_PREFIX) String folderId,
                              @RequestBody @Valid RenameFolderCommand command,
                              @AuthenticationPrincipal UserContext userContext) {
@@ -55,7 +56,7 @@ public class FolderController {
 
     @Operation(summary = "彻底删除文件夹")
     @DeleteMapping("/{folderId}/delete-force")
-    @PermissionRequired(value = DELETE_FORCE, resources = {"#command.customId", "#folderId"})
+    @PermissionRequired(value = MANAGE, resource = "#folderId")
     public void deleteFolderForce(@PathVariable @NotBlank @Id(FOLDER_ID_PREFIX) String folderId,
                                   @RequestBody @Valid DeleteFolderForceCommand command,
                                   @AuthenticationPrincipal UserContext userContext) {
@@ -64,7 +65,7 @@ public class FolderController {
 
     @PutMapping("/move")
     @Operation(summary = "移动文件夹")
-    @PermissionRequired(value = MOVE, resources = {"#command.customId", "#command.folderId"})
+    @PermissionRequired(value = MOVE, resource = "#command.folderId")
     public MoveFolderResponse moveFolder(@RequestBody @Valid MoveFolderCommand command,
                                          @AuthenticationPrincipal UserContext userContext) {
         return folderService.moveFolder(command, userContext);
@@ -72,6 +73,7 @@ public class FolderController {
 
     @Operation(summary = "获取文件夹内容")
     @GetMapping("/{customId}/{folderId}")
+    @PermissionRequired(value = READ, resource = "#folderId")
     public FolderContentResponse fetchFolderContent(@PathVariable @NotBlank @CustomId String customId,
                                                     @PathVariable @NotBlank @Id(FOLDER_ID_PREFIX) String folderId,
                                                     @AuthenticationPrincipal UserContext userContext) {
@@ -80,6 +82,7 @@ public class FolderController {
 
     @GetMapping("/{customId}")
     @Operation(summary = "获取文件层级结构")
+    @PermissionRequired(value = READ, resource = "#customId", resourceType = SPACE)
     public FolderHierarchyResponse fetchFolderHierarchy(@PathVariable @NotBlank @CustomId String customId,
                                                         @AuthenticationPrincipal UserContext userContext) {
         return folderQueryService.fetchFolderHierarchy(customId, userContext);

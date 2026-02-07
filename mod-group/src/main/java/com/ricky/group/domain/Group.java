@@ -1,6 +1,6 @@
 package com.ricky.group.domain;
 
-import com.ricky.common.auth.Permission;
+import com.ricky.common.permission.Permission;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;

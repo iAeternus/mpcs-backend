@@ -1,6 +1,7 @@
 package com.ricky.group.domain;
 
-import com.ricky.common.auth.Permission;
+import com.ricky.common.domain.SpaceType;
+import com.ricky.common.permission.Permission;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.folder.domain.FolderDomainService;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
+import static com.ricky.common.domain.SpaceType.TEAM;
 import static com.ricky.common.exception.ErrorCodeEnum.GROUP_WITH_NAME_ALREADY_EXISTS;
 import static com.ricky.common.exception.ErrorCodeEnum.NO_MORE_THAN_ONE_VISIBLE_GROUP_LEFT;
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
@@ -29,6 +31,10 @@ public class GroupDomainService {
      * 是否具备 required 中的所有权限（单资源）
      */
     public boolean hasPermission(String userId, String customId, String folderId, Set<Permission> required) {
+        if(notTeamSpace(customId)) {
+            return true;
+        }
+
         Set<Permission> permissions = resolvePermissions(userId, customId, folderId);
         return permissions.containsAll(required);
     }
@@ -37,6 +43,10 @@ public class GroupDomainService {
      * 是否在所有资源上都具备 required 中的所有权限
      */
     public boolean hasPermission(String userId, String customId, List<String> folderIds, Set<Permission> required) {
+        if(notTeamSpace(customId)) {
+            return true;
+        }
+
         return folderIds.stream()
                 .allMatch(folderId -> hasPermission(userId, customId, folderId, required));
     }
@@ -45,6 +55,10 @@ public class GroupDomainService {
      * 是否具备某一个权限
      */
     public boolean can(String userId, String customId, String folderId, Permission permission) {
+        if(notTeamSpace(customId)) {
+            return true;
+        }
+
         return resolvePermissions(userId, customId, folderId).contains(permission);
     }
 
@@ -61,6 +75,10 @@ public class GroupDomainService {
                 .filter(group -> group.appliesTo(folderId))
                 .flatMap(group -> group.permissionsOf(ancestors).stream())
                 .collect(toImmutableSet());
+    }
+
+    private boolean notTeamSpace(String customId) {
+        return SpaceType.fromCustomId(customId) != TEAM;
     }
 
     public void rename(Group group, String newName, UserContext userContext) {

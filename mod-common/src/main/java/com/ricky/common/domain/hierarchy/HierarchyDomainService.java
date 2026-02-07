@@ -65,7 +65,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
     public Set<String> allIds(String customId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
 
-        return repository.findSubtree(customId, "")
+        return repository.getSubtree(customId, "")
                 .stream()
                 .map(HierarchyNode::getId)
                 .collect(toImmutableSet());
@@ -98,7 +98,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
     public Set<String> directChildIdsUnder(String customId, String parentId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
 
-        return repository.findDirectChildren(customId, parentId)
+        return repository.getDirectChildren(customId, parentId)
                 .stream()
                 .map(HierarchyNode::getId)
                 .collect(toImmutableSet());
@@ -113,7 +113,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
     public Set<String> allRootIds(String customId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
 
-        return repository.findDirectChildren(customId, null)
+        return repository.getDirectChildren(customId, null)
                 .stream()
                 .map(HierarchyNode::getId)
                 .collect(toImmutableSet());
@@ -131,7 +131,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
         requireNotBlank(nodeId, "Node ID must not be blank");
 
         T node = repository.byId(customId, nodeId);
-        return repository.findDirectChildren(customId, node.getParentId())
+        return repository.getDirectChildren(customId, node.getParentId())
                 .stream()
                 .map(HierarchyNode::getId)
                 .filter(i -> !i.equals(nodeId))
@@ -182,7 +182,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
                 .map(HierarchyNode::getPath)
                 .orElse("");
 
-        return repository.findSubtree(customId, path)
+        return repository.getSubtree(customId, path)
                 .stream()
                 .map(HierarchyNode::getId)
                 .collect(toImmutableSet());
@@ -203,7 +203,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
                 .map(HierarchyNode::getPath)
                 .orElse("");
 
-        return repository.findAllDescendants(customId, path)
+        return repository.getAllDescendants(customId, path)
                 .stream()
                 .map(HierarchyNode::getId)
                 .collect(toImmutableSet());
@@ -304,7 +304,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
                 .map(HierarchyNode::getPath)
                 .orElse("");
 
-        List<T> subtree = repository.findSubtree(customId, path);
+        List<T> subtree = repository.getSubtree(customId, path);
         if (isEmpty(subtree)) {
             return;
         }
@@ -326,7 +326,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
         String oldPath = src.getPath();
         String newPath = dst.getPath() + NODE_ID_SEPARATOR + src.getId();
 
-        List<T> subtree = repository.findSubtree(customId, oldPath);
+        List<T> subtree = repository.getSubtree(customId, oldPath);
 
         // 处理根节点
         T root = subtree.stream()

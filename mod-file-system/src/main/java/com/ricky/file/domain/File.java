@@ -94,4 +94,5 @@ public class File extends AggregateRoot {
         this.parentId = newParentId;
         addOpsLog("移动文件到[" + newParentId + "]下", userContext);
     }
+
 }

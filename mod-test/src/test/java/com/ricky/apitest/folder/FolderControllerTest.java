@@ -34,7 +34,7 @@ public class FolderControllerTest extends BaseApiTest {
         String folderName = rFolderName();
 
         // When
-        String folderId = FolderApi.createFolder(manager.getJwt(), customId, folderName);
+        String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, folderName);
 
         // Then
         Folder folder = folderRepository.byId(folderId);
@@ -61,7 +61,7 @@ public class FolderControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String parentFolderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String parentFolderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         // When
         String subFolderId = FolderApi.createFolder(manager.getJwt(), CreateFolderCommand.builder()
@@ -87,7 +87,7 @@ public class FolderControllerTest extends BaseApiTest {
         String folderName = rFolderName();
 
         // When
-        String parentFolderId = FolderApi.createFolder(manager.getJwt(), customId, folderName);
+        String parentFolderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, folderName);
         String subFolderId = FolderApi.createFolder(manager.getJwt(), CreateFolderCommand.builder()
                 .customId(customId)
                 .folderName(folderName)
@@ -144,8 +144,10 @@ public class FolderControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
+        Folder root = folderRepository.getRoot(customId);
         CreateFolderCommand command = CreateFolderCommand.builder()
                 .customId(customId)
+                .parentId(root.getId())
                 .folderName(rFolderName())
                 .build();
         FolderApi.createFolder(manager.getJwt(), command);
@@ -160,7 +162,7 @@ public class FolderControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         String newName = rFolderName();
 
         // When
@@ -181,7 +183,7 @@ public class FolderControllerTest extends BaseApiTest {
         String customId = personalCustomId(manager.getUserId());
 
         String folderName = rFolderName();
-        String parentFolderId = FolderApi.createFolder(manager.getJwt(), customId, folderName);
+        String parentFolderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, folderName);
         String subFolderId = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), parentFolderId);
 
 
@@ -202,8 +204,8 @@ public class FolderControllerTest extends BaseApiTest {
         String customId = personalCustomId(manager.getUserId());
 
         String folderName = rFolderName();
-        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, folderName);
-        String folderId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, folderName);
+        String folderId2 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
 
         // When & Then
@@ -219,7 +221,7 @@ public class FolderControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         // When
         FolderApi.deleteFolderForce(manager.getJwt(), folderId, DeleteFolderForceCommand.builder()
@@ -240,7 +242,7 @@ public class FolderControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         String subFolderId = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId);
 
         // When
@@ -260,7 +262,7 @@ public class FolderControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
@@ -289,7 +291,7 @@ public class FolderControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         String folderId2 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId1);
         String folderId3 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId1);
         String folderId4 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId2);
@@ -327,7 +329,7 @@ public class FolderControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         String folderId2 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId1);
 
         // When
@@ -349,7 +351,7 @@ public class FolderControllerTest extends BaseApiTest {
         String customId = personalCustomId(manager.getUserId());
 
         String folderName = rFolderName();
-        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, folderName);
+        String folderId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, folderName);
         String folderId2 = FolderApi.createFolderWithParent(manager.getJwt(), customId, folderName, folderId1);
 
         // When & Then
@@ -365,7 +367,7 @@ public class FolderControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         String folderId2 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), folderId1);
 
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");

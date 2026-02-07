@@ -8,7 +8,6 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface FolderRepository extends HierarchyRepository<Folder> {
-//    List<UserCachedFolder> cachedUserAllFolders(String userId);
 
     void save(Folder folder);
 
@@ -39,4 +38,6 @@ public interface FolderRepository extends HierarchyRepository<Folder> {
     FolderHierarchy cachedByCustomId(String customId);
 
     boolean existsByParentIdAndName(String newParentId, String folderName);
+
+    Folder byFileId(String fileId);
 }

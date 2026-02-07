@@ -33,7 +33,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String parentId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
 
@@ -63,8 +63,8 @@ class FileUploadControllerTest extends BaseApiTest {
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
 
-        String parentId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-        String parentId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String parentId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+        String parentId2 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         // When
         // 先上传文件，抢占 storageId
@@ -97,7 +97,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String parentId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         int chunkSize = fileProperties.getUpload().getChunkSize();
         long totalSize = file.length();
@@ -209,7 +209,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String parentId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
         InitUploadResponse initResp = FileUploadApi.initUpload(
@@ -255,7 +255,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File file = resource.getFile();
-        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String parentId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
 

@@ -55,7 +55,7 @@ public abstract class MongoHierarchyRepository<T extends HierarchyNode>
     }
 
     @Override
-    public List<T> findAllDescendants(String customId, String path) {
+    public List<T> getAllDescendants(String customId, String path) {
         requireNotBlank(customId, "Custom Id cannot be blank");
 
         Query query = query(
@@ -66,7 +66,7 @@ public abstract class MongoHierarchyRepository<T extends HierarchyNode>
     }
 
     @Override
-    public List<T> findSubtree(String customId, String path) {
+    public List<T> getSubtree(String customId, String path) {
         requireNotBlank(customId, "Custom Id cannot be blank");
 
         Query query = query(
@@ -77,7 +77,7 @@ public abstract class MongoHierarchyRepository<T extends HierarchyNode>
     }
 
     @Override
-    public List<T> findDirectChildren(String customId, String parentId) {
+    public List<T> getDirectChildren(String customId, String parentId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
 
         Query query = query(

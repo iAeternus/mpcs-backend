@@ -1,5 +1,7 @@
 package com.ricky.folder.infra;
 
+import com.ricky.common.domain.AggregateRoot;
+import com.ricky.common.domain.hierarchy.HierarchyNode;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.mongo.MongoHierarchyRepository;
@@ -16,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static com.ricky.common.exception.ErrorCodeEnum.FOLDER_NOT_FOUND;
+import static com.ricky.common.exception.ErrorCodeEnum.SYSTEM_ERROR;
 import static com.ricky.common.utils.ValidationUtils.*;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -75,9 +78,9 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
         requireNotBlank(customId, "Custom ID must not be blank.");
 
         Query query = query(
-                where("customId").is(customId)
-                        .and("parentId").isNull()
-                        .and("folderName").is(customId)
+                where(HierarchyNode.Fields.customId).is(customId)
+                        .and(HierarchyNode.Fields.parentId).isNull()
+                        .and(Folder.Fields.folderName).is(customId)
         );
 
         Folder folder = mongoTemplate.findOne(query, Folder.class);
@@ -92,7 +95,7 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
     public List<Folder> getAllByCustomId(String customId) {
         requireNotBlank(customId, "Custom ID must not be blank.");
 
-        Query query = query(where("customId").is(customId));
+        Query query = query(where(HierarchyNode.Fields.customId).is(customId));
         List<Folder> folders = mongoTemplate.find(query, Folder.class);
         if (isEmpty(folders)) {
             return Collections.emptyList();
@@ -111,9 +114,9 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
         requireNotBlank(customId, "Custom ID must not be blank.");
 
         Query query = query(
-                where("customId").is(customId)
-                        .and("parentId").isNull()
-                        .and("folderName").is(customId)
+                where(HierarchyNode.Fields.customId).is(customId)
+                        .and(HierarchyNode.Fields.parentId).isNull()
+                        .and(Folder.Fields.folderName).is(customId)
         );
         return mongoTemplate.exists(query, Folder.class);
     }
@@ -134,7 +137,7 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
         if (isEmpty(folderIds)) {
             return true;
         }
-        Query query = query(where("_id").in(folderIds));
+        Query query = query(where(AggregateRoot.Fields.id).in(folderIds));
         return mongoTemplate.count(query, Folder.class) == folderIds.size();
     }
 
@@ -149,7 +152,23 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
         requireNotBlank(newParentId, "New Parent ID must not be blank.");
         requireNotBlank(folderName, "Folder Name must not be blank.");
 
-        Query query = query(where("parentId").is(newParentId).and("folderName").is(folderName));
+        Query query = query(
+                where(HierarchyNode.Fields.parentId).is(newParentId)
+                        .and(Folder.Fields.folderName).is(folderName)
+        );
         return mongoTemplate.exists(query, Folder.class);
+    }
+
+    @Override
+    public Folder byFileId(String fileId) {
+        requireNotBlank(fileId, "File ID must not be blank.");
+
+        Query query = query(where(Folder.Fields.fileIds).in(fileId));
+        Folder folder = mongoTemplate.findOne(query, Folder.class);
+        if (isNull(folder)) {
+            throw new MyException(SYSTEM_ERROR, "父文件夹不存在", "fileId", fileId);
+        }
+
+        return folder;
     }
 }

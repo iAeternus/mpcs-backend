@@ -17,7 +17,7 @@ public class FileUploadedLocalEventHandler extends AbstractLocalDomainEventHandl
     private final SyncFileToEsTask syncFileToEsTask;
     private final GenerateSummaryTask generateSummaryTask;
 
-    // 执行顺序：TODO 这个处理很慢，大约需要 6~8s，考虑异步
+    // 执行顺序：
     // 1, extractTextTask
     // 2. generateSummaryTask/syncFileToEsTask
     @Override

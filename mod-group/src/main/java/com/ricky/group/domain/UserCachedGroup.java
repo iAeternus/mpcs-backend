@@ -1,6 +1,6 @@
 package com.ricky.group.domain;
 
-import com.ricky.common.auth.Permission;
+import com.ricky.common.permission.Permission;
 import com.ricky.common.domain.marker.ValueObject;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

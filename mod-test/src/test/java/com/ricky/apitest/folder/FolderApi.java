@@ -25,14 +25,6 @@ public class FolderApi {
                 .as(IdResponse.class).getId();
     }
 
-    public static String createFolder(String token, String customId, String folderName) {
-        return createFolderRaw(token, CreateFolderCommand.builder().customId(customId).folderName(folderName).build())
-                .then()
-                .statusCode(201)
-                .extract()
-                .as(IdResponse.class).getId();
-    }
-
     public static String createFolderWithParent(String token, String customId, String folderName, String parentId) {
         return createFolderRaw(token, CreateFolderCommand.builder().customId(customId).folderName(folderName).parentId(parentId).build())
                 .then()

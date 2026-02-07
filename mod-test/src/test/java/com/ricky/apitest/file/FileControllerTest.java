@@ -71,8 +71,8 @@ public class FileControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String parentId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-        String parentId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String parentId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+        String parentId2 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
@@ -102,8 +102,8 @@ public class FileControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        String parentId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-        String parentId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String parentId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+        String parentId2 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File file = resource.getFile();
@@ -126,7 +126,7 @@ public class FileControllerTest extends BaseApiTest {
 
         String parentFolderName = rFolderName();
         String childFolderName = rFolderName();
-        String parentFolderId = FolderApi.createFolder(manager.getJwt(), customId, parentFolderName);
+        String parentFolderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, parentFolderName);
         String childFolderId = FolderApi.createFolderWithParent(manager.getJwt(), customId, childFolderName, parentFolderId);
 
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
@@ -158,5 +158,23 @@ public class FileControllerTest extends BaseApiTest {
         assertEquals(dbFile.getFilename(), response.getFilename());
         assertEquals(instantToLocalDateTime(dbFile.getCreatedAt()), response.getCreateTime());
         assertEquals(instantToLocalDateTime(dbFile.getUpdatedAt()), response.getUpdateTime());
+    }
+
+    @Test
+    void should_download() throws IOException {
+        // Given
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse manager = ctx.getManager();
+        String fileId = ctx.getFileId();
+
+        // When
+        FileApi.DownloadedFile downloaded = FileApi.download(manager.getJwt(), fileId);
+
+        // Then
+        File file = fileRepository.byId(fileId);
+        assertTrue(downloaded.getContent().length > 0);
+        assertEquals(file.getSize(), downloaded.getContent().length);
+        assertTrue(downloaded.getContentType().startsWith("text/"));
+        assertTrue(downloaded.getContentDisposition().contains(file.getFilename()));
     }
 }

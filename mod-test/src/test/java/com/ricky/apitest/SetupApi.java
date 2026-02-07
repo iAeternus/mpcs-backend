@@ -9,7 +9,9 @@ import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.folder.domain.event.FolderCreatedEvent;
+import com.ricky.folder.command.CreateFolderCommand;
+import com.ricky.folder.domain.Folder;
+import com.ricky.folder.domain.FolderRepository;
 import com.ricky.upload.domain.StorageService;
 import com.ricky.upload.domain.event.FileUploadedLocalEvent;
 import com.ricky.user.command.RegisterCommand;
@@ -28,7 +30,6 @@ import java.util.List;
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.apitest.RandomTestFixture.*;
 import static com.ricky.common.domain.SpaceType.personalCustomId;
-import static com.ricky.common.event.DomainEventType.FOLDER_CREATED;
 import static com.ricky.common.event.DomainEventType.USER_CREATED;
 
 @Component
@@ -38,6 +39,7 @@ public class SetupApi {
     private final VerificationCodeRepository verificationCodeRepository;
     private final FileHasherFactory fileHasherFactory;
     private final FileRepository fileRepository;
+    private final FolderRepository folderRepository;
     private final StorageService storageService;
     private final EventUtils eventUtils;
 
@@ -82,18 +84,19 @@ public class SetupApi {
         ClassPathResource resource = new ClassPathResource(path);
         java.io.File file = resource.getFile();
 
-        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-        eventUtils.awaitLatestEventConsumed(parentId, FOLDER_CREATED, FolderCreatedEvent.class);
+//        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+//        eventUtils.awaitLatestEventConsumed(parentId, FOLDER_CREATED, FolderCreatedEvent.class);
+        Folder root = folderRepository.getRoot(customId);
 
         String fileHash = deleteFileWithSameHash(file);
-        String fileId = FileUploadApi.upload(manager.getJwt(), file, parentId).getFileId();
+        String fileId = FileUploadApi.upload(manager.getJwt(), file, root.getId()).getFileId();
 
         eventUtils.awaitLatestLocalEventConsumed(fileId, FileUploadedLocalEvent.class);
 
         return TestFileContext.builder()
                 .manager(manager)
                 .customId(customId)
-                .parentId(parentId)
+                .parentId(root.getId())
                 .fileHash(fileHash)
                 .fileId(fileId)
                 .originalFile(file)
@@ -111,5 +114,15 @@ public class SetupApi {
         fileRepository.delete(files);
 
         return fileHash;
+    }
+
+    public String createFolderUnderRoot(String token, String customId, String folderName) {
+        Folder root = folderRepository.getRoot(customId);
+        CreateFolderCommand command = CreateFolderCommand.builder()
+                .customId(customId)
+                .parentId(root.getId())
+                .folderName(folderName)
+                .build();
+        return FolderApi.createFolder(token, command);
     }
 }

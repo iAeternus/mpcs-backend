@@ -2,6 +2,8 @@ package com.ricky.group.domain.aspect;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.properties.SystemProperties;
+import com.ricky.group.domain.permission.PermissionMetadata;
+import com.ricky.group.domain.permission.PermissionResource;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -9,7 +11,6 @@ import org.aspectj.lang.annotation.Before;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
-import java.util.List;
 
 import static com.ricky.common.exception.MyException.accessDeniedException;
 import static com.ricky.common.utils.ValidationUtils.isNull;
@@ -23,8 +24,8 @@ public class PermissionCheckAspect {
     private final PermissionEvaluator permissionEvaluator;
     private final SystemProperties systemProperties;
 
-    @Before("@annotation(com.ricky.common.auth.PermissionRequired) || " +
-            "@within(com.ricky.common.auth.PermissionRequired)")
+    @Before("@annotation(com.ricky.common.permission.PermissionRequired) || " +
+            "@within(com.ricky.common.permission.PermissionRequired)")
     public void check(JoinPoint joinPoint) {
         if (!systemProperties.isAuth()) {
             return;
@@ -40,9 +41,8 @@ public class PermissionCheckAspect {
             throw new IllegalStateException("无法获取 UserContext");
         }
 
-        List<Object> resources = metadataResolver.resolveResources(joinPoint, metadata);
-
-        boolean allowed = permissionEvaluator.allowed(user, metadata, resources);
+        PermissionResource resource = metadataResolver.resolveResource(joinPoint, metadata);
+        boolean allowed = permissionEvaluator.allowed(user, metadata, resource);
         if (!allowed) {
             throw accessDeniedException();
         }

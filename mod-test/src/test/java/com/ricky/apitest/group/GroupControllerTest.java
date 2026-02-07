@@ -1,10 +1,9 @@
 package com.ricky.apitest.group;
 
 import com.ricky.apitest.BaseApiTest;
-import com.ricky.apitest.folder.FolderApi;
-import com.ricky.common.auth.Permission;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.common.domain.page.PagedList;
+import com.ricky.common.permission.Permission;
 import com.ricky.folder.domain.Folder;
 import com.ricky.group.command.*;
 import com.ricky.group.domain.Group;
@@ -22,12 +21,12 @@ import java.util.Set;
 
 import static com.ricky.apitest.RandomTestFixture.rFolderName;
 import static com.ricky.apitest.RandomTestFixture.rGroupName;
-import static com.ricky.common.auth.Permission.DOWNLOAD;
-import static com.ricky.common.auth.Permission.PREVIEW;
 import static com.ricky.common.domain.SpaceType.personalCustomId;
 import static com.ricky.common.event.DomainEventType.GROUP_DELETED;
 import static com.ricky.common.event.DomainEventType.GROUP_MEMBERS_CHANGED;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
+import static com.ricky.common.permission.Permission.READ;
+import static com.ricky.common.permission.Permission.WRITE;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GroupControllerTest extends BaseApiTest {
@@ -386,14 +385,14 @@ public class GroupControllerTest extends BaseApiTest {
         String groupId = GroupApi.createGroup(manager.getJwt());
 
         String customId = personalCustomId(manager.getUserId());
-        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-        Set<Permission> permissions = Set.of(PREVIEW, DOWNLOAD);
+        String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+        Set<Permission> permissions = Set.of(READ, WRITE);
 
         // When
         GroupApi.addGrant(manager.getJwt(), AddGrantCommand.builder()
                 .groupId(groupId)
                 .folderId(folderId)
-                .permissions(Set.of(PREVIEW, DOWNLOAD))
+                .permissions(permissions)
                 .build());
 
         // Then
@@ -409,12 +408,13 @@ public class GroupControllerTest extends BaseApiTest {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
         String groupId = GroupApi.createGroup(manager.getJwt());
+        Set<Permission> permissions = Set.of(READ, WRITE);
 
         // When & Then
         assertError(() -> GroupApi.addGrantRaw(manager.getJwt(), AddGrantCommand.builder()
                 .groupId(groupId)
                 .folderId(Folder.newFolderId())
-                .permissions(Set.of(PREVIEW, DOWNLOAD))
+                .permissions(permissions)
                 .build()), NOT_ALL_FOLDERS_EXIST);
     }
 
@@ -426,15 +426,15 @@ public class GroupControllerTest extends BaseApiTest {
         String groupId = GroupApi.createGroup(manager.getJwt());
 
         String customId = personalCustomId(manager.getUserId());
-        String folderId1 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-        String folderId2 = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-        Set<Permission> permissions = Set.of(PREVIEW, DOWNLOAD);
+        String folderId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+        String folderId2 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+        Set<Permission> permissions = Set.of(READ, WRITE);
 
         // When
         GroupApi.addGrants(manager.getJwt(), AddGrantsCommand.builder()
                 .groupId(groupId)
                 .folderIds(List.of(folderId1, folderId2))
-                .permissions(Set.of(PREVIEW, DOWNLOAD))
+                .permissions(permissions)
                 .build());
 
         // Then
@@ -456,13 +456,14 @@ public class GroupControllerTest extends BaseApiTest {
         String groupId = GroupApi.createGroup(manager.getJwt());
 
         String customId = personalCustomId(manager.getUserId());
-        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+        Set<Permission> permissions = Set.of(READ, WRITE);
 
         // When & Then
         assertError(() -> GroupApi.addGrantsRaw(manager.getJwt(), AddGrantsCommand.builder()
                 .groupId(groupId)
                 .folderIds(List.of(folderId, Folder.newFolderId()))
-                .permissions(Set.of(PREVIEW, DOWNLOAD))
+                .permissions(permissions)
                 .build()), NOT_ALL_FOLDERS_EXIST);
     }
 
@@ -473,7 +474,7 @@ public class GroupControllerTest extends BaseApiTest {
 
         String groupId = GroupApi.createGroup(manager.getJwt());
         String customId = personalCustomId(manager.getUserId());
-        String folderId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
+        String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
         GroupApi.addGrant(manager.getJwt(), groupId, folderId);
 

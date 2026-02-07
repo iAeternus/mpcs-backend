@@ -29,7 +29,7 @@ public class CreateFolderCommand implements Command {
     /**
      * 父文件夹ID
      */
-    @Nullable
+    @NotBlank
     @Id(FOLDER_ID_PREFIX)
     String parentId;
 

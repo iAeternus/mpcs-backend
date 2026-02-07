@@ -174,7 +174,7 @@
                 <version>${spring.retry.version}</version>
             </dependency>
 
-            <!-- AI 1.0.0-M2 -->
+            <!-- AI -->
             <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>

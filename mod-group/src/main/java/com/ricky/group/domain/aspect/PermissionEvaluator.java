@@ -1,36 +1,43 @@
 package com.ricky.group.domain.aspect;
 
-import com.ricky.common.domain.SpaceType;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.folder.domain.Folder;
+import com.ricky.folder.domain.FolderRepository;
 import com.ricky.group.domain.GroupDomainService;
+import com.ricky.group.domain.permission.FilePermissionResource;
+import com.ricky.group.domain.permission.FolderPermissionResource;
+import com.ricky.group.domain.permission.PermissionMetadata;
+import com.ricky.group.domain.permission.PermissionResource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-
-import static com.ricky.common.domain.SpaceType.fromCustomId;
-import static com.ricky.common.utils.CommonUtils.objectToListString;
 
 @Component
 @RequiredArgsConstructor
 public class PermissionEvaluator {
 
     private final GroupDomainService groupDomainService;
+    private final FolderRepository folderRepository;
 
-    public boolean allowed(UserContext user, PermissionMetadata metadata, List<Object> resources) {
-        String customId = resources.get(0).toString();
-        SpaceType spaceType = fromCustomId(customId);
-
-        if (spaceType == SpaceType.PERSONAL || spaceType == SpaceType.PUBLIC) {
-            return true;
+    public boolean allowed(UserContext user, PermissionMetadata metadata, PermissionResource resource) {
+        if (resource instanceof FolderPermissionResource folder) {
+            return groupDomainService.hasPermission(
+                    user.getUid(),
+                    folder.getCustomId(),
+                    folder.getFolderId(),
+                    metadata.getRequired()
+            );
         }
 
-        if (metadata.batch()) {
-            List<String> folderIds = objectToListString(resources.get(1));
-            return groupDomainService.hasPermission(user.getUid(), customId, folderIds, metadata.required());
+        if (resource instanceof FilePermissionResource file) {
+            Folder folder = folderRepository.byFileId(file.getFileId());
+            return groupDomainService.hasPermission(
+                    user.getUid(),
+                    folder.getCustomId(),
+                    folder.getId(),
+                    metadata.getRequired()
+            );
         }
 
-        String folderId = resources.get(1).toString();
-        return groupDomainService.hasPermission(user.getUid(), customId, folderId, metadata.required());
+        return false;
     }
 }

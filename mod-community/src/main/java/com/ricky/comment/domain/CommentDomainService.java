@@ -23,7 +23,7 @@ public class CommentDomainService extends HierarchyDomainService<Comment, Commen
                 .map(HierarchyNode::getPath)
                 .orElse("");
 
-        List<Comment> subtree = repository.findSubtree(postId, path);
+        List<Comment> subtree = repository.getSubtree(postId, path);
         if (isEmpty(subtree)) {
             return;
         }

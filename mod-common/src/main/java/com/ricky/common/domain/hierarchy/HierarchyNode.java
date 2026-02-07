@@ -4,6 +4,7 @@ import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.experimental.FieldNameConstants;
 
 import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.utils.ValidationUtils.isNull;
@@ -11,6 +12,7 @@ import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static lombok.AccessLevel.PROTECTED;
 
 @Getter
+@FieldNameConstants
 @NoArgsConstructor(access = PROTECTED)
 public abstract class HierarchyNode extends AggregateRoot {
 

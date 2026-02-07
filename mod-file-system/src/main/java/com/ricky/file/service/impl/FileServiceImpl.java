@@ -4,16 +4,19 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.command.MoveFileCommand;
 import com.ricky.file.command.RenameFileCommand;
-import com.ricky.file.domain.File;
-import com.ricky.file.domain.FileDomainService;
-import com.ricky.file.domain.FileRepository;
+import com.ricky.file.domain.*;
+import com.ricky.file.query.DownloadFileResponse;
 import com.ricky.file.service.FileService;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderRepository;
+import com.ricky.upload.domain.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.InputStream;
 
 @Slf4j
 @Service
@@ -21,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 public class FileServiceImpl implements FileService {
 
     private final RateLimiter rateLimiter;
+    private final MimeTypeResolver mimeTypeResolver;
+    private final StorageService storageService;
     private final FileDomainService fileDomainService;
     private final FileRepository fileRepository;
     private final FolderRepository folderRepository;
@@ -72,5 +77,26 @@ public class FileServiceImpl implements FileService {
         Folder newParentFolder = folderRepository.byId(command.getNewParentId());
         newParentFolder.addFile(file.getId(), userContext);
         folderRepository.save(newParentFolder);
+    }
+
+    @Override
+    public DownloadFileResponse download(String fileId, UserContext userContext) {
+        rateLimiter.applyFor("File:Download", 5);
+
+        File file = fileRepository.cachedById(fileId);
+
+        FileExtension extension = FileExtension.fromFilename(file.getFilename());
+        String contentType = mimeTypeResolver.resolve(extension);
+
+        StorageId storageId = file.getStorageId();
+        InputStream inputStream = storageService.getFileStream(storageId);
+        InputStreamResource resource = new InputStreamResource(inputStream);
+
+        return DownloadFileResponse.builder()
+                .filename(file.getFilename())
+                .contentType(contentType)
+                .size(file.getSize())
+                .resource(resource)
+                .build();
     }
 }

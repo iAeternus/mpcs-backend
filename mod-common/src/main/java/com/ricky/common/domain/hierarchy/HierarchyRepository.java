@@ -44,15 +44,15 @@ public interface HierarchyRepository<T extends HierarchyNode> {
     /**
      * 查询某节点下所有子孙节点（不含自身）
      */
-    List<T> findAllDescendants(String customId, String path);
+    List<T> getAllDescendants(String customId, String path);
 
     /**
      * 查询某节点及其所有子孙节点（含自身）
      */
-    List<T> findSubtree(String customId, String path);
+    List<T> getSubtree(String customId, String path);
 
     /**
      * 查询直接子节点
      */
-    List<T> findDirectChildren(String customId, String parentId);
+    List<T> getDirectChildren(String customId, String parentId);
 }
