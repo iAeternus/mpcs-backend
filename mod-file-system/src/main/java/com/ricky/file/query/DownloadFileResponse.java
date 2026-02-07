@@ -25,12 +25,30 @@ public class DownloadFileResponse implements Response {
     Long size; // 文件大小（字节）
     InputStreamResource resource;
 
-    public ResponseEntity<Resource> toResponseEntity() {
+    /**
+     * 用于下载（浏览器弹出保存框）
+     */
+    public ResponseEntity<Resource> toDownloadResponse() {
         return ResponseEntity.ok()
-                .header(CONTENT_DISPOSITION, "attachment; filename=\"" + URLEncoder.encode(filename, DEFAULT_CHARSET) + "\"")
+                .header(CONTENT_DISPOSITION, disposition("attachment"))
                 .contentType(MediaType.parseMediaType(contentType))
                 .contentLength(size)
                 .body(resource);
     }
 
+    /**
+     * 用于预览（浏览器直接打开，如 PDF / 图片 / 视频）
+     */
+    public ResponseEntity<Resource> toPreviewResponse() {
+        return ResponseEntity.ok()
+                .header(CONTENT_DISPOSITION, disposition("inline"))
+                .contentType(MediaType.parseMediaType(contentType))
+                .contentLength(size)
+                .body(resource);
+    }
+
+    private String disposition(String type) {
+        return type + "; filename=\"" +
+                URLEncoder.encode(filename, DEFAULT_CHARSET) + "\"";
+    }
 }

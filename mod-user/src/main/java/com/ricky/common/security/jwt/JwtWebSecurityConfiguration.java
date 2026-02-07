@@ -20,8 +20,7 @@ import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import static org.springframework.http.HttpMethod.DELETE;
-import static org.springframework.http.HttpMethod.POST;
+import static org.springframework.http.HttpMethod.*;
 
 @Configuration
 @RequiredArgsConstructor
@@ -48,6 +47,7 @@ public class JwtWebSecurityConfiguration {
                         .requestMatchers(POST, "/verification-codes/for-register").permitAll()
                         .requestMatchers(POST, "/verification-codes/for-login").permitAll()
                         .requestMatchers(POST, "/verification-codes/for-find-back-password").permitAll()
+                        .requestMatchers(GET, "/files/*/preview").permitAll() // TODO test
                         .requestMatchers("/about",
                                 "/favicon.ico",
                                 "/error").permitAll()

@@ -68,7 +68,15 @@ public class FileController {
     @PermissionRequired(value = READ, resource = "#fileId", resourceType = FILE)
     public ResponseEntity<Resource> download(@PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
                                              @AuthenticationPrincipal UserContext userContext) {
-        return fileService.download(fileId, userContext).toResponseEntity();
+        return fileService.download(fileId, userContext).toDownloadResponse();
+    }
+
+    @Operation(summary = "预览文件")
+    @GetMapping("/{fileId}/preview")
+    @PermissionRequired(value = READ, resource = "#fileId", resourceType = FILE)
+    public ResponseEntity<Resource> preview(@PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
+                                            @AuthenticationPrincipal UserContext userContext) {
+        return fileService.download(fileId, userContext).toPreviewResponse();
     }
 
     @Operation(summary = "获取文件路径")

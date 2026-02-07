@@ -66,7 +66,7 @@ public enum FileCategory {
 
     public boolean isPreviewable() {
         return switch (this) {
-            case IMAGE, TEXT, DOCUMENT -> true;
+            case IMAGE, TEXT, DOCUMENT, MEDIA -> true;
             default -> false;
         };
     }

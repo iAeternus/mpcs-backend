@@ -95,7 +95,7 @@ class FileUploadControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
+        ClassPathResource resource = new ClassPathResource("testdata/Linux System Programming, 2nd Edition.pdf");
         java.io.File file = resource.getFile();
         String parentId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
