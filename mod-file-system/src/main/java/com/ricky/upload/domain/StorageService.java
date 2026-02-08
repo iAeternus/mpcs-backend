@@ -1,6 +1,5 @@
 package com.ricky.upload.domain;
 
-import com.mongodb.client.gridfs.model.GridFSFile;
 import com.ricky.file.domain.storage.StorageId;
 import com.ricky.file.domain.storage.StoredFile;
 import org.springframework.web.multipart.MultipartFile;

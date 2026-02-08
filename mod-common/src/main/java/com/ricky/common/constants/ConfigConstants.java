@@ -128,6 +128,6 @@ public interface ConfigConstants {
     int SUMMARY_MAX_TOKENS = 300; // 摘要Token限制
 
     // OSS
-    String FILE_BUCKET = "mpcs-file";
+    String FILE_BUCKET = "files";
 
 }

@@ -15,6 +15,7 @@ import com.ricky.upload.domain.UploadSession;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
@@ -32,14 +33,15 @@ import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
+import static com.ricky.common.properties.SystemProperties.StorageType.GRID_FS;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.nonNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
-@Primary
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "mpcs.config", name = "storage", havingValue = "grid_fs")
 public class GridFsStorageService implements StorageService {
 
     private final FileHasherFactory fileHasherFactory;

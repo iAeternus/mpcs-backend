@@ -30,4 +30,14 @@ public class SystemProperties {
      */
     private boolean auth = false;
 
+    /**
+     * 存储后端
+     */
+    private StorageType storage;
+
+    public enum StorageType {
+        OSS,
+        GRID_FS,
+    }
+
 }

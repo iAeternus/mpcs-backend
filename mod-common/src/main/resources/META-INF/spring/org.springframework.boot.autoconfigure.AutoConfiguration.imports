@@ -5,6 +5,8 @@ com.ricky.common.json.JsonAutoConfiguration
 #com.ricky.common.llm.LLMChatAutoConfiguration
 com.ricky.common.lock.LockAutoConfiguration
 com.ricky.common.mongo.MongoAutoConfiguration
+com.ricky.common.oss.minio.MinioAutoConfiguration
+com.ricky.common.oss.OssAutoConfiguration
 com.ricky.common.password.PasswordAutoConfiguration
 com.ricky.common.properties.PropertiesAutoConfiguration
 com.ricky.common.redis.RedisAutoConfiguration
