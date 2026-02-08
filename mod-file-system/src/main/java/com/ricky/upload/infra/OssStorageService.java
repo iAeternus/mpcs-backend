@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.ricky.common.constants.ConfigConstants.FILE_BUCKET;
+import static com.ricky.common.exception.ErrorCodeEnum.MERGE_CHUNKS_FAILED;
 import static com.ricky.common.exception.ErrorCodeEnum.OSS_ERROR;
 
 @Primary
@@ -89,7 +90,7 @@ public class OssStorageService implements StorageService {
                     .size(session.getTotalSize())
                     .build();
         } catch (IOException e) {
-            throw new MyException(OSS_ERROR, "Merge chunks and upload to OSS failed",
+            throw new MyException(MERGE_CHUNKS_FAILED, "Merge chunks and upload to OSS failed",
                     "uploadSessionId", session.getId());
         } finally {
             // 清理分片
