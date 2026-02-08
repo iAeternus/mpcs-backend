@@ -1,7 +1,7 @@
 package com.ricky.upload.command;
 
 import com.ricky.common.domain.marker.Response;
-import com.ricky.file.domain.StorageId;
+import com.ricky.file.domain.storage.StorageId;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

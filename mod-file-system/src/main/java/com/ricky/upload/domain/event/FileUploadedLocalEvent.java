@@ -4,7 +4,7 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.event.LocalDomainEvent;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileCategory;
-import com.ricky.file.domain.StorageId;
+import com.ricky.file.domain.storage.StorageId;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

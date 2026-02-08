@@ -1,4 +1,4 @@
-package com.ricky.file.domain;
+package com.ricky.file.domain.storage;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

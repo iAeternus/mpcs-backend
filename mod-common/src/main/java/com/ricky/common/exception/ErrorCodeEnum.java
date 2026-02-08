@@ -92,6 +92,7 @@ public enum ErrorCodeEnum {
     NOT_ALL_FOLDERS_EXIST(409),
     HIERARCHY_ERROR(409),
     CANNOT_MOVE_ROOT(409),
+    OSS_ERROR(409),
 
     // 422
     CONFIG_ERROR(422),

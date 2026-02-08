@@ -127,4 +127,7 @@ public interface ConfigConstants {
     int MAX_INPUT_TEXT_LENGTH = 100000;
     int SUMMARY_MAX_TOKENS = 300; // 摘要Token限制
 
+    // OSS
+    String FILE_BUCKET = "mpcs-file";
+
 }

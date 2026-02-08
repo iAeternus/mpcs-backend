@@ -2,6 +2,7 @@ package com.ricky.file.domain;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
+import com.ricky.file.domain.storage.StorageId;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.folder.domain.Folder;

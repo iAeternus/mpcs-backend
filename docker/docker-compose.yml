@@ -21,83 +21,58 @@ services:
 
   mongo1:
     image: mongo:latest
-    restart: unless-stopped
     container_name: mongodb1
-    command: --replSet app --bind_ip_all --keyFile /data/mongodb/keyFile
-    environment:
-      TZ: 'Asia/Shanghai'
-      MONGO_INITDB_ROOT_USERNAME: 'admin'
-      MONGO_INITDB_ROOT_PASSWORD: '123456'
+    command: --replSet app --bind_ip_all
     ports:
-      - "27020:27017"  # 宿主机:容器端口
+      - "27020:27017"
     volumes:
-      - ./data1:/data/db
-      - ./keyFile:/data/mongodb/keyFile
+      - ./mongo/data/data1:/data/db
     networks:
       app-network:
         aliases:
-          - mongo1.local  # 网络别名，容器间通信使用
+          - mongo1.local
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      retries: 20
 
   mongo2:
     image: mongo:latest
-    restart: unless-stopped
     container_name: mongodb2
-    command: --replSet app --bind_ip_all --keyFile /data/mongodb/keyFile
-    environment:
-      TZ: 'Asia/Shanghai'
-      MONGO_INITDB_ROOT_USERNAME: 'admin'
-      MONGO_INITDB_ROOT_PASSWORD: '123456'
+    command: --replSet app --bind_ip_all
     ports:
-      - "27018:27017"  # 宿主机:容器端口
+      - "27018:27017"
     volumes:
-      - ./data2:/data/db
-      - ./keyFile:/data/mongodb/keyFile
+      - ./mongo/data/data2:/data/db
     networks:
       app-network:
         aliases:
-          - mongo2.local  # 网络别名，容器间通信使用
+          - mongo2.local
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      retries: 20
 
   mongo3:
     image: mongo:latest
-    restart: unless-stopped
     container_name: mongodb3
-    command: --replSet app --bind_ip_all --keyFile /data/mongodb/keyFile
-    environment:
-      TZ: 'Asia/Shanghai'
-      MONGO_INITDB_ROOT_USERNAME: 'admin'
-      MONGO_INITDB_ROOT_PASSWORD: '123456'
+    command: --replSet app --bind_ip_all
     ports:
-      - "27019:27017"  # 宿主机:容器端口
+      - "27019:27017"
     volumes:
-      - ./data3:/data/db
-      - ./keyFile:/data/mongodb/keyFile
+      - ./mongo/data/data3:/data/db
     networks:
       app-network:
         aliases:
-          - mongo3.local  # 网络别名，容器间通信使用
+          - mongo3.local
     healthcheck:
-      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      retries: 20
 
   mongo-init:
     image: mongo:latest
     container_name: mongo-init
-    restart: "no"  # 只运行一次
     depends_on:
       mongo1:
         condition: service_healthy
@@ -106,8 +81,7 @@ services:
       mongo3:
         condition: service_healthy
     volumes:
-      - ./init-script.sh:/init-script.sh
-      - ./keyFile:/data/mongodb/keyFile
+      - ./mongo/init-script.sh:/init-script.sh
     entrypoint: [ "sh", "/init-script.sh" ]
     networks:
       - app-network
@@ -126,7 +100,7 @@ services:
       - "9300:9300" # 集群通信端口（通常用不到）
     volumes:
       - ./es/data:/usr/share/elasticsearch/data # 数据持久化
-    #      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml # 自定义配置
+    # - ./es/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml # 自定义配置
     networks:
       - app-network
     healthcheck:
@@ -147,6 +121,23 @@ services:
       - "5601:5601"
     depends_on:
       - elasticsearch
+    networks:
+      - app-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"   # API 端口
+      - "9001:9001"   # 控制台端口
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+      TZ: Asia/Shanghai
+    command: server /data --console-address ":9001"
+    volumes:
+      - ./minio/data:/data
     networks:
       - app-network
 

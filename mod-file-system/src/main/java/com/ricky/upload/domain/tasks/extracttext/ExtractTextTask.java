@@ -4,7 +4,7 @@ import com.ricky.common.domain.task.RetryableTask;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.file.domain.FileCategory;
-import com.ricky.file.domain.StorageId;
+import com.ricky.file.domain.storage.StorageId;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.upload.domain.StorageService;

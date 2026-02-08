@@ -2,7 +2,7 @@ package com.ricky.upload.command;
 
 import com.ricky.common.domain.marker.Command;
 import com.ricky.common.validation.id.Id;
-import com.ricky.file.domain.StorageId;
+import com.ricky.file.domain.storage.StorageId;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;

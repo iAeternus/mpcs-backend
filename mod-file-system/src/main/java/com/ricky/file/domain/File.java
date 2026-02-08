@@ -5,6 +5,7 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.file.domain.event.FileDeletedEvent;
+import com.ricky.file.domain.storage.StorageId;
 import com.ricky.upload.domain.event.FileUploadedLocalEvent;
 import lombok.AccessLevel;
 import lombok.Getter;

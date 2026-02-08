@@ -7,13 +7,15 @@ import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.properties.FileProperties;
-import com.ricky.file.domain.StorageId;
-import com.ricky.file.domain.StoredFile;
+import com.ricky.file.domain.storage.GridFsStorageId;
+import com.ricky.file.domain.storage.StorageId;
+import com.ricky.file.domain.storage.StoredFile;
 import com.ricky.upload.domain.StorageService;
 import com.ricky.upload.domain.UploadSession;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.security.crypto.codec.Hex;
@@ -35,6 +37,7 @@ import static com.ricky.common.utils.ValidationUtils.nonNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
+@Primary
 @Component
 @RequiredArgsConstructor
 public class GridFsStorageService implements StorageService {
@@ -53,7 +56,9 @@ public class GridFsStorageService implements StorageService {
                     filename,
                     multipartFile.getContentType()
             );
-            return new StorageId(objectId.toHexString());
+            return GridFsStorageId.builder()
+                    .value(objectId.toHexString())
+                    .build();
         } catch (IOException e) {
             throw new MyException(STORE_FILE_FAILED, "Store file failed", "filename", filename);
         }
@@ -88,8 +93,12 @@ public class GridFsStorageService implements StorageService {
                 Files.deleteIfExists(chunk);
             }
 
+            GridFsStorageId gridFsStorageId = GridFsStorageId.builder()
+                    .value(uploadStream.getObjectId().toHexString())
+                    .build();
+
             return StoredFile.builder()
-                    .storageId(new StorageId(uploadStream.getObjectId().toHexString()))
+                    .storageId(gridFsStorageId)
                     .hash(String.valueOf(Hex.encode(digest.digest())))
                     .size(writtenBytes)
                     .build();
@@ -98,16 +107,7 @@ public class GridFsStorageService implements StorageService {
         }
     }
 
-    @Override
-    public GridFSFile findFile(StorageId storageId) {
-        GridFSFile gridFSFile = findGridFSFile(storageId);
-        if (isNull(gridFSFile)) {
-            throw new MyException(FILE_NOT_FOUND, "File not found", "storageId", storageId);
-        }
-        return gridFSFile;
-    }
-
-    private GridFSFile findGridFSFile(StorageId storageId) {
+    private GridFSFile findGridFSFile(GridFsStorageId storageId) {
         try {
             ObjectId objectId = storageId.toObjectId();
             return gridFsTemplate.findOne(query(where("_id").is(objectId)));
@@ -119,20 +119,21 @@ public class GridFsStorageService implements StorageService {
 
     @Override
     public InputStream getFileStream(StorageId storageId) {
-        return gridFSBucket.openDownloadStream(storageId.toObjectId());
+        GridFsStorageId gridFSStorageId = (GridFsStorageId) storageId;
+        return gridFSBucket.openDownloadStream(gridFSStorageId.toObjectId());
     }
 
     @Override
     public void delete(StorageId storageId) {
-        ObjectId objectId = storageId.toObjectId();
-        Query query = query(where("_id").is(objectId));
+        GridFsStorageId gridFSStorageId = (GridFsStorageId) storageId;
+        Query query = query(where("_id").is(gridFSStorageId.toObjectId()));
         gridFsTemplate.delete(query);
     }
 
     @Override
     public void delete(List<StorageId> storageIds) {
         List<ObjectId> objectIds = storageIds.stream()
-                .map(StorageId::toObjectId)
+                .map(storageId -> ((GridFsStorageId) storageId).toObjectId())
                 .collect(toImmutableList());
         Query query = query(where("_id").in(objectIds));
         gridFsTemplate.delete(query);
@@ -140,7 +141,8 @@ public class GridFsStorageService implements StorageService {
 
     @Override
     public boolean exists(StorageId storageId) {
-        return nonNull(findGridFSFile(storageId));
+        GridFsStorageId gridFsStorageId = (GridFsStorageId) storageId;
+        return nonNull(findGridFSFile(gridFsStorageId));
     }
 
 }

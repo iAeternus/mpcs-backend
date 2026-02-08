@@ -1,7 +1,7 @@
 package com.ricky.upload.domain.tasks.extracttext;
 
 import com.ricky.file.domain.FileCategory;
-import com.ricky.file.domain.StorageId;
+import com.ricky.file.domain.storage.StorageId;
 
 import java.io.IOException;
 import java.io.InputStream;

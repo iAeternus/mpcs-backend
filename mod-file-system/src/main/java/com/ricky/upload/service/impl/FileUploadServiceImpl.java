@@ -6,6 +6,8 @@ import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.*;
+import com.ricky.file.domain.storage.StorageId;
+import com.ricky.file.domain.storage.StoredFile;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.folder.domain.Folder;

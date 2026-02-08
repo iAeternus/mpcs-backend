@@ -1,8 +1,8 @@
 package com.ricky.upload.domain;
 
 import com.mongodb.client.gridfs.model.GridFSFile;
-import com.ricky.file.domain.StorageId;
-import com.ricky.file.domain.StoredFile;
+import com.ricky.file.domain.storage.StorageId;
+import com.ricky.file.domain.storage.StoredFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -17,8 +17,6 @@ public interface StorageService {
     StorageId store(MultipartFile multipartFile);
 
     StoredFile mergeChunksAndStore(UploadSession session, Path chunkDir);
-
-    GridFSFile findFile(StorageId storageId);
 
     InputStream getFileStream(StorageId storageId);
 

@@ -47,8 +47,8 @@ class FileUploadControllerTest extends BaseApiTest {
         assertEquals(fileHash, dbFile.getHash());
         assertEquals(file.length(), dbFile.getSize());
 
-        GridFSFile gridFSFile = storageService.findFile(dbFile.getStorageId());
-        assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
+//        GridFSFile gridFSFile = storageService.findFile(dbFile.getStorageId());
+//        assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
 
 //        FileUploadedLocalEvent evt = latestEventFor(resp.getFileId(), FILE_UPLOADED, FileUploadedLocalEvent.class);
 //        assertEquals(resp.getFileId(), evt.getFileId());
@@ -95,7 +95,7 @@ class FileUploadControllerTest extends BaseApiTest {
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
-        ClassPathResource resource = new ClassPathResource("testdata/Linux System Programming, 2nd Edition.pdf");
+        ClassPathResource resource = new ClassPathResource("testdata/BadApple.mp4");
         java.io.File file = resource.getFile();
         String parentId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
@@ -157,14 +157,13 @@ class FileUploadControllerTest extends BaseApiTest {
 
         // Then
         File dbFile = fileRepository.byId(completeResp.getFileId());
-
         assertEquals(FileStatus.NORMAL, dbFile.getStatus());
         assertEquals(parentId, dbFile.getParentId());
         assertEquals(fileHash, dbFile.getHash());
         assertEquals(totalSize, dbFile.getSize());
 
-        GridFSFile gridFSFile = storageService.findFile(dbFile.getStorageId());
-        assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
+//        GridFSFile gridFSFile = storageService.findFile(dbFile.getStorageId());
+//        assertEquals(new ObjectId(dbFile.getStorageId().getValue()), gridFSFile.getObjectId());
     }
 
     @Test

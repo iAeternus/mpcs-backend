@@ -1,5 +1,7 @@
 package com.ricky.file.domain;
 
+import com.ricky.file.domain.storage.StorageId;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

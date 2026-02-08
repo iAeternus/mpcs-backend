@@ -1,6 +1,8 @@
 package com.ricky.file.domain;
 
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.file.domain.storage.StorageId;
+import com.ricky.file.domain.storage.StoredFile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
