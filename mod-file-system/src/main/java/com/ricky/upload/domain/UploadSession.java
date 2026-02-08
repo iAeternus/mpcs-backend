@@ -21,6 +21,7 @@ import java.util.Set;
 import static com.ricky.common.constants.ConfigConstants.UPLOAD_SESSION_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.UPLOAD_SESSION_ID_PREFIX;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
+import static com.ricky.common.utils.ValidationUtils.isEmpty;
 
 @Getter
 @TypeAlias("upload_session")
@@ -131,7 +132,23 @@ public class UploadSession extends AggregateRoot {
     }
 
     public void checkAllChunksUploaded() {
-        // TODO
+        if (isEmpty(uploadedChunks)) {
+            throw new MyException(MERGE_CHUNKS_FAILED, "No chunks uploaded",
+                    "uploadId", getId());
+        }
+
+        if (uploadedChunks.size() != totalChunks) {
+            throw new MyException(MERGE_CHUNKS_FAILED, "Chunks not complete",
+                    "uploadId", getId(), "uploaded", uploadedChunks.size(), "total", totalChunks);
+        }
+
+        // 校验是否包含 0 ~ totalChunks-1
+        for (int i = 0; i < totalChunks; i++) {
+            if (!uploadedChunks.contains(i)) {
+                throw new MyException(MERGE_CHUNKS_FAILED, "Missing chunk",
+                        "uploadId", getId(), "missingChunk", i);
+            }
+        }
     }
 
     public void checkHash(String actualHash) {

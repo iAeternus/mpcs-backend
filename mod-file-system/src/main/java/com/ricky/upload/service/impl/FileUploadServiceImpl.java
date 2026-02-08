@@ -158,7 +158,6 @@ public class FileUploadServiceImpl implements FileUploadService {
             return FileUploadResponse.builder().fileId(file.getId()).build();
         }
 
-        // 分片路径
         uploadSession.checkAllChunksUploaded();
 
         Path chunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), uploadSession.getId());

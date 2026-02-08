@@ -1,7 +1,8 @@
-package com.ricky.file.domain;
+package com.ricky.file.domain.es;
 
 import com.ricky.common.domain.marker.Identified;
 import com.ricky.common.exception.MyException;
+import com.ricky.file.domain.FileCategory;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

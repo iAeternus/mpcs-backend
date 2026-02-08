@@ -7,7 +7,7 @@ import co.elastic.clients.elasticsearch.core.search.Hit;
 import co.elastic.clients.elasticsearch.core.search.TotalHits;
 import com.ricky.common.exception.ErrorCodeEnum;
 import com.ricky.common.exception.MyException;
-import com.ricky.file.domain.EsFile;
+import com.ricky.file.domain.es.EsFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
