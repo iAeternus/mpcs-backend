@@ -378,6 +378,22 @@ public class FolderControllerTest extends BaseApiTest {
     }
 
     @Test
+    void should_fail_to_move_root() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = personalCustomId(manager.getUserId());
+
+        Folder root = folderRepository.getRoot(customId);
+
+        // When & Then
+        assertError(() -> FolderApi.moveFolderRaw(manager.getJwt(), MoveFolderCommand.builder()
+                .customId(customId)
+                .folderId(root.getId())
+                .newParentId(null)
+                .build()), CANNOT_MOVE_ROOT);
+    }
+
+    @Test
     void should_fetch_folder_content() throws IOException {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();

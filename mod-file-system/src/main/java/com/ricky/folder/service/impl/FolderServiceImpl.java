@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import static com.ricky.common.exception.ErrorCodeEnum.CANNOT_DELETE_ROOT_FOLDER;
+import static com.ricky.common.exception.ErrorCodeEnum.CANNOT_MOVE_ROOT;
 
 @Slf4j
 @Service
@@ -84,6 +85,11 @@ public class FolderServiceImpl implements FolderService {
     @Transactional
     public MoveFolderResponse moveFolder(MoveFolderCommand command, UserContext userContext) {
         rateLimiter.applyFor("Folder:MoveFolder", 10);
+
+        if (folderDomainService.isRoot(command.getCustomId(), command.getFolderId())) {
+            throw new MyException(CANNOT_MOVE_ROOT, "不能移动根目录",
+                    "customId", command.getCustomId(), "userId", userContext.getUid());
+        }
 
         String newParentId = folderDomainService.resolveParentId(command.getCustomId(), command.getNewParentId());
         var moveResult = folderDomainService.moveFolder(command.getCustomId(), command.getFolderId(), newParentId, userContext);

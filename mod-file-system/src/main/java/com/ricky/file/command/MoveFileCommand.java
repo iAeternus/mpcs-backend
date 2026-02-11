@@ -23,14 +23,8 @@ public class MoveFileCommand implements Command {
     @Id(FILE_ID_PREFIX)
     String fileId;
 
+    @NotBlank
     @Id(FOLDER_ID_PREFIX)
     String newParentId;
 
-    @Override
-    public void correctAndValidate() {
-        if (isBlank(newParentId)) {
-            throw new MyException(CANNOT_MOVE_FILE_TO_ROOT, "不能将文件移动到根目录下",
-                    "fileId", getFileId());
-        }
-    }
 }

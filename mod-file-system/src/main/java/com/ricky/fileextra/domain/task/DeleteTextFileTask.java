@@ -10,12 +10,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_DELETE_FAILED;
+import static com.ricky.common.utils.ValidationUtils.isBlank;
 
 @Slf4j
 @Component
 public class DeleteTextFileTask implements RetryableTask {
 
     public void run(String textFilePath) {
+        if (isBlank(textFilePath)) {
+            log.warn("Cannot delete text file because textFilePath is blank");
+            return;
+        }
         Path path = Path.of(textFilePath);
 
         // 首先检查文件是否存在

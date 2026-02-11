@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 
 import java.util.Map;
 
@@ -40,6 +42,13 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleMyException(MyException ex, HttpServletRequest request) {
         log.error("Mpcs error: {}", ex.getMessage());
         return createErrorResponse(ex, request.getRequestURI());
+    }
+
+    @ResponseBody
+    @ExceptionHandler({ClientAbortException.class, AsyncRequestNotUsableException.class})
+    public void handleClientAbortException(Exception ex) {
+        // 客户端主动断开连接，不是服务端错误
+        log.debug("Client aborted connection: {}", ex.getMessage());
     }
 
     @ResponseBody
