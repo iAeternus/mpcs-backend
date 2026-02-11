@@ -1,6 +1,7 @@
 package com.ricky.user;
 
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.folder.query.FolderHierarchyResponse;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
 import com.ricky.user.query.UserInfoResponse;
@@ -23,7 +24,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @RestController
 @Tag(name = "用户模块")
 @RequiredArgsConstructor
-@RequestMapping(value = "/user")
+@RequestMapping("/user")
 public class UserController {
 
     private final UserService userService;
@@ -36,16 +37,15 @@ public class UserController {
         return userService.register(command);
     }
 
-    @GetMapping(value = "/me")
+    @GetMapping("/me")
     @Operation(summary = "获取我的个人资料")
     public UserProfileResponse fetchMyProfile(@AuthenticationPrincipal UserContext userContext) {
         return userQueryService.fetchMyProfile(userContext);
     }
 
-    @GetMapping(value = "/me/info")
+    @GetMapping("/me/info")
     @Operation(summary = "获取我的用户信息")
     public UserInfoResponse fetchMyUserInfo(@AuthenticationPrincipal UserContext userContext) {
         return userQueryService.fetchMyUserInfo(userContext);
     }
-
 }

@@ -8,6 +8,8 @@ import com.ricky.file.command.MoveFileCommand;
 import com.ricky.file.command.RenameFileCommand;
 import com.ricky.file.query.FileInfoResponse;
 import com.ricky.file.query.FilePathResponse;
+import com.ricky.file.query.SearchPageQuery;
+import com.ricky.file.query.SearchResponse;
 import com.ricky.file.service.FileQueryService;
 import com.ricky.file.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -94,6 +96,13 @@ public class FileController {
     public FileInfoResponse fetchFileInfo(@PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
                                           @AuthenticationPrincipal UserContext userContext) {
         return fileQueryService.fetchFileInfo(fileId, userContext);
+    }
+
+    @PostMapping("/search")
+    @Operation(summary = "随处搜索")
+    public SearchResponse search(@RequestBody @Valid SearchPageQuery query,
+                                 @AuthenticationPrincipal UserContext userContext) {
+        return fileQueryService.search(query, userContext);
     }
 
 }

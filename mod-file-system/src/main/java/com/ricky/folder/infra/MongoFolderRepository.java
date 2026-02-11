@@ -32,8 +32,13 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
     @Override
     public void save(Folder folder) {
         super.save(folder);
-        cachedFolderRepository.evictFolderHierarchyCache(folder.getCustomId());
-        cachedFolderRepository.evictFolderCache(folder.getId());
+        cachedFolderRepository.evictAll();
+    }
+
+    @Override
+    public void save(List<Folder> folders) {
+        super.save(folders);
+        cachedFolderRepository.evictAll();
     }
 
     @Override
@@ -55,12 +60,7 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
         }
 
         super.delete(folders);
-        folders.stream()
-                .findAny()
-                .ifPresent(folder -> {
-                    cachedFolderRepository.evictFolderHierarchyCache(folder.getCustomId());
-                    cachedFolderRepository.evictFolderCache(folder.getId());
-                });
+        cachedFolderRepository.evictAll();
     }
 
     @Override
@@ -80,7 +80,6 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
         Query query = query(
                 where(HierarchyNode.Fields.customId).is(customId)
                         .and(HierarchyNode.Fields.parentId).isNull()
-                        .and(Folder.Fields.folderName).is(customId)
         );
 
         Folder folder = mongoTemplate.findOne(query, Folder.class);
@@ -116,7 +115,6 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
         Query query = query(
                 where(HierarchyNode.Fields.customId).is(customId)
                         .and(HierarchyNode.Fields.parentId).isNull()
-                        .and(Folder.Fields.folderName).is(customId)
         );
         return mongoTemplate.exists(query, Folder.class);
     }
@@ -148,12 +146,13 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
     }
 
     @Override
-    public boolean existsByParentIdAndName(String newParentId, String folderName) {
+    public boolean existsByParentIdAndName(String customId, String newParentId, String folderName) {
         requireNotBlank(newParentId, "New Parent ID must not be blank.");
         requireNotBlank(folderName, "Folder Name must not be blank.");
 
         Query query = query(
-                where(HierarchyNode.Fields.parentId).is(newParentId)
+                where(HierarchyNode.Fields.customId).is(customId)
+                        .and(HierarchyNode.Fields.parentId).is(newParentId)
                         .and(Folder.Fields.folderName).is(folderName)
         );
         return mongoTemplate.exists(query, Folder.class);

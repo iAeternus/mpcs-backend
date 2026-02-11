@@ -98,8 +98,20 @@ public class MpcsSystemInitializer implements ApplicationListener<ApplicationRea
 
     private void ensureFolderIndex() {
         IndexOperations indexOperations = mongoTemplate.indexOps(FOLDER_COLLECTION);
+
         indexOperations.createIndex(new Index().on("customId", DESC));
         indexOperations.createIndex(new Index().on("parentId", DESC));
+
+        // (customId, parentId, folderName) UNIQUE
+        Index uniqueIndex = new Index()
+                .on("customId", DESC)
+                .on("parentId", DESC)
+                .on("folderName", DESC)
+                .unique()
+                .named("uk_custom_parent_name");
+
+        indexOperations.createIndex(uniqueIndex);
     }
+
 
 }

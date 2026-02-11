@@ -5,6 +5,8 @@ import com.ricky.file.command.MoveFileCommand;
 import com.ricky.file.command.RenameFileCommand;
 import com.ricky.file.query.FileInfoResponse;
 import com.ricky.file.query.FilePathResponse;
+import com.ricky.file.query.SearchPageQuery;
+import com.ricky.file.query.SearchResponse;
 import io.restassured.response.Response;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -92,6 +94,17 @@ public class FileApi {
                 .build();
     }
 
+    public static SearchResponse search(String token, SearchPageQuery query) {
+        return BaseApiTest.given(token)
+                .body(query)
+                .when()
+                .post(ROOT_URL + "/search")
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(SearchResponse.class);
+    }
+
     @Value
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -101,6 +114,5 @@ public class FileApi {
         String contentDisposition;
         String contentLength;
     }
-
 
 }

@@ -66,20 +66,20 @@ public class GroupController {
         groupService.addGroupManagers(groupId, command, userContext);
     }
 
-    @Operation(summary = "删除组成员")
-    @DeleteMapping("/{groupId}/members/{memberId}")
-    public void removeGroupMember(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
-                                  @PathVariable @NotBlank @Id(USER_ID_PREFIX) String memberId,
-                                  @AuthenticationPrincipal UserContext userContext) {
-        groupService.removeGroupMember(groupId, memberId, userContext);
-    }
-
     @Operation(summary = "添加组管理员")
     @PutMapping("/{groupId}/managers/{memberId}")
     public void addGroupManager(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
                                 @PathVariable @NotBlank @Id(USER_ID_PREFIX) String memberId,
                                 @AuthenticationPrincipal UserContext userContext) {
         groupService.addGroupManager(groupId, memberId, userContext);
+    }
+
+    @Operation(summary = "删除组成员")
+    @DeleteMapping("/{groupId}/members/{memberId}")
+    public void removeGroupMember(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId,
+                                  @PathVariable @NotBlank @Id(USER_ID_PREFIX) String memberId,
+                                  @AuthenticationPrincipal UserContext userContext) {
+        groupService.removeGroupMember(groupId, memberId, userContext);
     }
 
     @Operation(summary = "删除组管理员")
@@ -125,6 +125,7 @@ public class GroupController {
         groupService.addGrants(command, userContext);
     }
 
+    @Deprecated
     @GetMapping("/{groupId}/folders")
     @Operation(summary = "获取权限组管理的文件夹")
     public GroupFoldersResponse fetchGroupFolders(@PathVariable @NotBlank @Id(GROUP_ID_PREFIX) String groupId) {

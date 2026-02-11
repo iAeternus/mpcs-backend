@@ -136,7 +136,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
 
                     return by(direction, sortedBy).and(by(DESC, "createdAt"));
                 })
-                .project("_id", "name", "active", "inheritancePolicy", "createdAt", "updatedAt")
+                .project("_id", "name", "active", "customId", "inheritancePolicy", "createdAt", "updatedAt")
                 .fetchAs(GroupResponse.class, mongoTemplate);
     }
 
@@ -167,7 +167,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
 
                     return by(direction, sortedBy).and(by(DESC, "createdAt"));
                 })
-                .project("_id", "name", "active", "inheritancePolicy", "createdAt", "updatedAt")
+                .project("_id", "name", "active", "customId", "inheritancePolicy", "createdAt", "updatedAt")
                 .fetchAs(GroupResponse.class, mongoTemplate);
     }
 }

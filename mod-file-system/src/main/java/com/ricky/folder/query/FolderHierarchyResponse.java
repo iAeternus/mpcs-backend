@@ -2,6 +2,8 @@ package com.ricky.folder.query;
 
 import com.ricky.common.domain.idtree.IdTree;
 import com.ricky.common.domain.marker.Response;
+import com.ricky.file.domain.FileCategory;
+import com.ricky.file.domain.FileStatus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -25,6 +27,17 @@ public class FolderHierarchyResponse implements Response {
         String folderName;
         String parentId;
         String path;
+        List<HierarchyFile> files;
+    }
+
+    @Value
+    @Builder
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    public static class HierarchyFile {
+        String id;
+        String filename;
+        Long size;
+        FileStatus status;
     }
 
 }

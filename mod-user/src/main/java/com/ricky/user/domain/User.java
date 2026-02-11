@@ -18,7 +18,7 @@ import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.USER_ID_PREFIX;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_ALREADY_LOCKED;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_MOBILE_AND_EMAIL_BOTH_BLANK;
-import static com.ricky.common.utils.ValidationUtils.isBlank;
+import static com.ricky.common.utils.ValidationUtils.*;
 import static java.time.LocalDate.now;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -40,6 +40,7 @@ public class User extends AggregateRoot {
     private Role role;
     private boolean mobileIdentified; // 是否已验证手机号
     private FailedLoginCount failedLoginCount; // 登录失败次数
+    private String customId;
     private Set<String> groupIds; // 权限组集合
 
     public User(String mobile, String email, String password, UserContext userContext) {
@@ -107,6 +108,11 @@ public class User extends AggregateRoot {
 
     public boolean containsGroup(String groupId) {
         return this.groupIds.contains(groupId);
+    }
+
+    public void setCustomId(String customId) {
+        requireNotBlank(customId, "Custom ID must not be blank");
+        this.customId = customId;
     }
 
     @Getter

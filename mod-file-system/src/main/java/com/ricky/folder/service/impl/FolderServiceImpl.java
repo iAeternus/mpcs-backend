@@ -1,6 +1,7 @@
 package com.ricky.folder.service.impl;
 
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.exception.MyException;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileDomainService;
@@ -17,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+
+import static com.ricky.common.exception.ErrorCodeEnum.CANNOT_DELETE_ROOT_FOLDER;
 
 @Slf4j
 @Service
@@ -58,16 +61,21 @@ public class FolderServiceImpl implements FolderService {
     public void deleteFolderForce(String folderId, DeleteFolderForceCommand command, UserContext userContext) {
         rateLimiter.applyFor("Folder:DeleteFolder", 10);
 
+        if (folderDomainService.isRoot(command.getCustomId(), folderId)) {
+            throw new MyException(CANNOT_DELETE_ROOT_FOLDER, "不能删除根目录",
+                    "customId", command.getCustomId(), "userId", userContext.getUid());
+        }
+
         FolderDomainService.DeleteFolderContext ctx = folderDomainService.collectDeleteFolderContext(command.getCustomId(), folderId);
 
         List<Folder> folders = ctx.getFolders();
         List<File> files = ctx.getFiles();
 
-        folders.forEach(folder -> folder.onDelete(userContext));
-        folderRepository.delete(folders);
-
         files.forEach(file -> file.onDelete(userContext));
         fileDomainService.deleteFilesForce(files, userContext);
+
+        folders.forEach(folder -> folder.onDelete(userContext));
+        folderRepository.delete(folders);
 
         log.info("Deleted folder[{}]", folderId);
     }

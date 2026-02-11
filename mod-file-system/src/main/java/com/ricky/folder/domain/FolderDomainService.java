@@ -78,7 +78,7 @@ public class FolderDomainService extends HierarchyDomainService<Folder, FolderRe
         Folder folder = repository.byId(customId, folderId);
         Folder newParent = repository.byId(customId, newParentId);
 
-        checkNoSameNameChild(newParentId, folder.getFolderName());
+        checkNoSameNameChild(customId, newParentId, folder.getFolderName());
 
         List<Folder> subtree = super.moveNode(customId, folder, newParent, userContext);
 
@@ -100,8 +100,8 @@ public class FolderDomainService extends HierarchyDomainService<Folder, FolderRe
         return new MoveResult(movedFolderIds, movedFileIds);
     }
 
-    private void checkNoSameNameChild(String newParentId, String folderName) {
-        if (repository.existsByParentIdAndName(newParentId, folderName)) {
+    private void checkNoSameNameChild(String customId, String newParentId, String folderName) {
+        if (repository.existsByParentIdAndName(customId, newParentId, folderName)) {
             throw new MyException(FOLDER_NAME_DUPLICATES, "目标目录下存在同名文件夹", "parentId", newParentId, "folderName", folderName);
         }
     }

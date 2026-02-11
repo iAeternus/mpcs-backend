@@ -90,4 +90,16 @@ public class EsFile implements Identified {
         }
     }
 
+    @Override
+    public String toString() {
+        return "EsFile{" +
+                "id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", category='" + category + '\'' +
+                ", summary='" + summary + '\'' +
+                ", keywords=" + keywords +
+                ", sizeInBytes=" + sizeInBytes +
+                ", lastModified=" + lastModified +
+                '}';
+    }
 }

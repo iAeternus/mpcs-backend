@@ -10,7 +10,10 @@ import com.ricky.file.command.RenameFileCommand;
 import com.ricky.file.domain.File;
 import com.ricky.file.query.FileInfoResponse;
 import com.ricky.file.query.FilePathResponse;
+import com.ricky.file.query.SearchPageQuery;
+import com.ricky.file.query.SearchResponse;
 import com.ricky.folder.domain.Folder;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
@@ -176,5 +179,28 @@ public class FileControllerTest extends BaseApiTest {
         assertEquals(file.getSize(), downloaded.getContent().length);
         assertTrue(downloaded.getContentType().startsWith("text/"));
         assertTrue(downloaded.getContentDisposition().contains(file.getFilename()));
+    }
+
+    @Test
+    @Disabled
+    void should_search() throws IOException {
+        // Given
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse manager = ctx.getManager();
+
+        // When
+        SearchResponse response1 = FileApi.search(manager.getJwt(), SearchPageQuery.builder()
+                .keyword("file")
+                .pageIndex(1)
+                .pageSize(10)
+                .build());
+        SearchResponse response2 = FileApi.search(manager.getJwt(), SearchPageQuery.builder()
+                .keyword("To be, or not to be, that is the question")
+                .pageIndex(1)
+                .pageSize(10)
+                .build());
+
+        // Then
+        assertEquals(response1.toString(), response2.toString());
     }
 }

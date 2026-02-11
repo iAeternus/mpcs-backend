@@ -11,7 +11,6 @@ import com.ricky.file.domain.es.EsFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -108,7 +107,7 @@ public class FileElasticSearchService implements ElasticSearchService<EsFile> {
                     .size(size);
 
             // 构建查询条件
-            if (StringUtils.hasText(keyword)) {
+            if (isNotBlank(keyword)) {
                 // 多字段搜索
                 BoolQuery.Builder boolQuery = new BoolQuery.Builder();
 
@@ -123,7 +122,7 @@ public class FileElasticSearchService implements ElasticSearchService<EsFile> {
                         .match(m -> m
                                 .field("name")
                                 .query(keyword)
-                                .analyzer("ik_smart")
+                                .analyzer("ik_filename")
                                 .boost(2.0f)
                         )
                 );
@@ -141,15 +140,15 @@ public class FileElasticSearchService implements ElasticSearchService<EsFile> {
 
                 // 关键词和分类：精确匹配
                 boolQuery.should(s -> s
-                        .match(m -> m
+                        .term(m -> m
                                 .field("keywords")
-                                .query(keyword)
+                                .value(keyword)
                                 .boost(1.0f)
                         )
                 ).should(s -> s
-                        .match(m -> m
+                        .term(m -> m
                                 .field("category")
-                                .query(keyword)
+                                .value(keyword)
                                 .boost(0.5f)
                         )
                 );
@@ -222,7 +221,7 @@ public class FileElasticSearchService implements ElasticSearchService<EsFile> {
 
         BulkRequest.Builder br = new BulkRequest.Builder();
         ids.forEach(id -> {
-            if (StringUtils.hasText(id)) {
+            if (isNotBlank(id)) {
                 br.operations(op -> op
                         .delete(d -> d
                                 .index(FILE_ES_INDEX_NAME)

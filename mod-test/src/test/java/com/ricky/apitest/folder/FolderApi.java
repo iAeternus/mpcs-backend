@@ -4,6 +4,7 @@ import com.ricky.apitest.BaseApiTest;
 import com.ricky.common.domain.dto.resp.IdResponse;
 import com.ricky.folder.command.*;
 import com.ricky.folder.query.FolderContentResponse;
+import com.ricky.folder.query.FolderHierarchyResponse;
 import io.restassured.response.Response;
 
 public class FolderApi {
@@ -82,6 +83,16 @@ public class FolderApi {
                 .statusCode(200)
                 .extract()
                 .as(FolderContentResponse.class);
+    }
+
+    public static FolderHierarchyResponse fetchFolderHierarchyApi(String token, String customId) {
+        return BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{customId}", customId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(FolderHierarchyResponse.class);
     }
 
 }

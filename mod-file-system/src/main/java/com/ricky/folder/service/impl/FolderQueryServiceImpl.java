@@ -5,10 +5,7 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
-import com.ricky.folder.domain.Folder;
-import com.ricky.folder.domain.FolderDomainService;
-import com.ricky.folder.domain.FolderHierarchy;
-import com.ricky.folder.domain.FolderRepository;
+import com.ricky.folder.domain.*;
 import com.ricky.folder.query.FolderContentResponse;
 import com.ricky.folder.query.FolderHierarchyResponse;
 import com.ricky.folder.service.FolderQueryService;
@@ -16,9 +13,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
 import static com.ricky.common.utils.CommonUtils.instantToLocalDateTime;
 
 @Service
@@ -67,15 +66,28 @@ public class FolderQueryServiceImpl implements FolderQueryService {
     public FolderHierarchyResponse fetchFolderHierarchy(String customId, UserContext userContext) {
         rateLimiter.applyFor("Folder:FetchFolderHierarchy", 50);
 
-        FolderHierarchy folderHierarchy = folderRepository.cachedByCustomId(customId);
+        FolderHierarchy hierarchy = folderRepository.cachedByCustomId(customId);
 
-        IdTree idTree = folderHierarchy.buildIdTree();
-        var allFolders = folderHierarchy.getFolders().stream()
+        Map<String, List<FolderHierarchyResponse.HierarchyFile>> folderFilesMap = hierarchy.getFolders().stream()
+                .collect(toImmutableMap(FolderMeta::getId,
+                        folder -> fileRepository.byIds(folder.getFileIds()).stream()
+                                .map(file -> FolderHierarchyResponse.HierarchyFile.builder()
+                                        .id(file.getId())
+                                        .filename(file.getFilename())
+                                        .size(file.getSize())
+                                        .status(file.getStatus())
+                                        .build())
+                                .collect(toImmutableList())
+                ));
+
+        IdTree idTree = hierarchy.buildIdTree();
+        var allFolders = hierarchy.getFolders().stream()
                 .map(cachedFolder -> FolderHierarchyResponse.HierarchyFolder.builder()
                         .id(cachedFolder.getId())
                         .folderName(cachedFolder.getFolderName())
                         .parentId(cachedFolder.getParentId())
                         .path(cachedFolder.getPath())
+                        .files(folderFilesMap.get(cachedFolder.getId()))
                         .build())
                 .collect(toImmutableList());
 

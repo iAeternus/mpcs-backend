@@ -1,7 +1,9 @@
 package com.ricky.apitest.folder;
 
 import com.ricky.apitest.BaseApiTest;
+import com.ricky.apitest.login.LoginApi;
 import com.ricky.apitest.upload.FileUploadApi;
+import com.ricky.apitest.user.UserApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
 import com.ricky.folder.command.*;
@@ -11,6 +13,7 @@ import com.ricky.folder.domain.event.FolderDeletedEvent;
 import com.ricky.folder.domain.event.FolderHierarchyChangedEvent;
 import com.ricky.folder.query.FolderContentResponse;
 import com.ricky.upload.domain.event.FileUploadedLocalEvent;
+import com.ricky.user.query.UserInfoResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
@@ -286,6 +289,19 @@ public class FolderControllerTest extends BaseApiTest {
     }
 
     @Test
+    void should_fail_to_delete_force_if_delete_root() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = personalCustomId(manager.getUserId());
+        Folder root = folderRepository.getRoot(customId);
+
+        // When & Then
+        assertError(() -> FolderApi.deleteFolderForceRaw(manager.getJwt(), root.getId(), DeleteFolderForceCommand.builder()
+                .customId(customId)
+                .build()), CANNOT_DELETE_ROOT_FOLDER);
+    }
+
+    @Test
     void should_move_folder() throws IOException {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
@@ -399,5 +415,23 @@ public class FolderControllerTest extends BaseApiTest {
 //        DepartmentApi.createDepartment(response.getJwt(), CreateDepartmentCommand.builder().name(rDepartmentName()).build());
 //        assertEquals(FALSE, stringRedisTemplate.hasKey(key));
 //    }
+
+    @Test
+    void front_end_data() {
+        String token = LoginApi.loginWithMobileOrEmail("w_ziwei2004@163.com", "Wzw_757723");
+        UserInfoResponse myUserInfo = UserApi.myUserInfo(token);
+
+        Folder root = folderRepository.getRoot(myUserInfo.getCustomId());
+
+//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test4", root.getId());
+//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test5", root.getId());
+//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test6", root.getId());
+//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test7", root.getId());
+//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test8", root.getId());
+//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test9", root.getId());
+//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test10", root.getId());
+
+//        String test1Test1Id = FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test1Test1", test1Id);
+    }
 
 }

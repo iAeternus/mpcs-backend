@@ -147,7 +147,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
      */
     public boolean isRoot(String customId, String nodeId) {
         requireNotBlank(customId, "Custom Id cannot be blank");
-        return isBlank(schemaOf(customId, nodeId));
+        return isBlank(repository.byId(customId, nodeId).getParentId());
     }
 
     /**
@@ -351,7 +351,7 @@ public abstract class HierarchyDomainService<T extends HierarchyNode, R extends 
     }
 
     private void checkNotMoveIntoDescendant(T src, T dst) {
-        if (dst.getPath().startsWith(src.getPath())) {
+        if (dst.getPath().startsWith(src.getPath() + NODE_ID_SEPARATOR)) {
             throw new MyException(HIERARCHY_ERROR, "不能移动到子目录",
                     "srcPath", src.getPath(), "dstPath", dst.getPath());
         }

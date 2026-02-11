@@ -15,7 +15,7 @@ import java.util.Set;
 public class InitUploadResponse implements Response {
 
     boolean uploaded; // 是否秒传 true=是 false=否
-    StorageId storageId; // 存储ID，uploaded=true时返回，否则返回null
+    StorageId storageId; // 存储ID，uploaded=true时返回，否则返回null TODO 这里不应该返回接口，最好返回字符串
     String uploadId; // 分片上传 ID，uploaded=false时返回，否则返回null
     Set<Integer> uploadedChunks; // 已上传分片（断点），uploaded=false时返回，否则返回null
 

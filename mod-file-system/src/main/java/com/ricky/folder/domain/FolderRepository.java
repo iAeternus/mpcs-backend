@@ -2,14 +2,18 @@ package com.ricky.folder.domain;
 
 import com.ricky.common.domain.hierarchy.HierarchyRepository;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.file.domain.File;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 public interface FolderRepository extends HierarchyRepository<Folder> {
 
     void save(Folder folder);
+
+    void save(List<Folder> folders);
 
     Folder byIdAndCheckUserShip(String id, UserContext userContext);
 
@@ -37,7 +41,8 @@ public interface FolderRepository extends HierarchyRepository<Folder> {
 
     FolderHierarchy cachedByCustomId(String customId);
 
-    boolean existsByParentIdAndName(String newParentId, String folderName);
+    boolean existsByParentIdAndName(String customId, String newParentId, String folderName);
 
     Folder byFileId(String fileId);
+
 }

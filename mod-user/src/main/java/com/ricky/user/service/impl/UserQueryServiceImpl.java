@@ -42,6 +42,7 @@ public class UserQueryServiceImpl implements UserQueryService {
                 .email(user.getEmail())
                 .mobile(user.getMobile())
                 .role(user.getRole())
+                .customId(user.getCustomId())
                 .build();
     }
 }

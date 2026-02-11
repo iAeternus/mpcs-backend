@@ -17,5 +17,6 @@ public class UserInfoResponse implements Response {
     String email;
     String mobile;
     Role role;
+    String customId;
 
 }

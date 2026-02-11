@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
@@ -31,8 +32,8 @@ public class MongoCachedFolderRepository extends MongoBaseRepository<Folder> {
     public FolderHierarchy cachedByCustomId(String customId) {
         requireNotBlank(customId, "Custom ID must not be blank.");
 
-        Query query = query(where("customId").is(customId));
-        query.fields().include("_id", "folderName", "parentId", "path");
+        Query query = query(where("customId").is(customId)).with(Sort.by("path"));
+        query.fields().include("_id", "folderName", "parentId", "path", "fileIds");
         List<Folder> folders = mongoTemplate.find(query, Folder.class);
 
         List<FolderMeta> folderMetas = folders.stream()
@@ -41,6 +42,7 @@ public class MongoCachedFolderRepository extends MongoBaseRepository<Folder> {
                         .folderName(folder.getFolderName())
                         .parentId(folder.getParentId())
                         .path(folder.getPath())
+                        .fileIds(folder.getFileIds())
                         .build())
                 .collect(toImmutableList());
 
@@ -56,26 +58,6 @@ public class MongoCachedFolderRepository extends MongoBaseRepository<Folder> {
 
         log.debug("Evicted folder hierarchy cache for customId[{}].", customId);
     }
-
-//    @Cacheable(value = USER_FOLDERS_CACHE, key = "#userId")
-//    public UserCachedFolders cachedUserAllFolders(String userId) {
-//        requireNotBlank(userId, "User ID must not be blank.");
-//
-//        Query query = query(where("userId").is(userId));
-//        query.fields().include("_id", "folderName");
-//
-//        List<UserCachedFolder> userCachedFolders = mongoTemplate.find(query, UserCachedFolder.class, FOLDER_COLLECTION);
-//        return UserCachedFolders.builder()
-//                .folders(emptyIfNull(userCachedFolders))
-//                .build();
-//    }
-//
-//    @Caching(evict = {@CacheEvict(value = USER_FOLDERS_CACHE, key = "#userId")})
-//    public void evictUserAllFoldersCache(String userId) {
-//        requireNotBlank(userId, "User ID must not be blank.");
-//
-//        log.debug("Evicted all folders cache for user[{}].", userId);
-//    }
 
     @Cacheable(value = FOLDER_CACHE, key = "#folderId")
     public Folder cachedById(String folderId) {
@@ -95,5 +77,13 @@ public class MongoCachedFolderRepository extends MongoBaseRepository<Folder> {
         requireNotBlank(folderId, "Folder ID must not be blank.");
 
         log.debug("Evicted folder cache for Folder[{}].", folderId);
+    }
+
+    @Caching(evict = {
+            @CacheEvict(value = FOLDER_CACHE, allEntries = true),
+            @CacheEvict(value = FOLDER_HIERARCHY_CACHE, allEntries = true)
+    })
+    public void evictAll() {
+        log.info("Evicting all folder cache");
     }
 }

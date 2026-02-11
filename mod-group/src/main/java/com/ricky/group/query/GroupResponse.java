@@ -15,6 +15,7 @@ import java.time.Instant;
 public class GroupResponse implements Response {
 
     String groupId;
+    String customId;
     String name;
     Boolean active;
     InheritancePolicy inheritancePolicy;
