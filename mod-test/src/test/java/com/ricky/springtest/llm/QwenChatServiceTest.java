@@ -15,6 +15,8 @@ import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.ricky.common.constants.LLMChatConstants.GENERATE_SUMMARY_PROMPT;
+
 @Slf4j
 @SpringBootTest(classes = MpcsBackendApplication.class)
 class QwenChatServiceTest {
@@ -22,10 +24,8 @@ class QwenChatServiceTest {
     @Autowired
     private LLMChatService llmChatService;
 
-    private static final String GENERATE_SUMMARY_PROMPT = "请为以下文档生成中文摘要，要求：总结核心内容，语言精炼专业，字数不超过100字。输出仅包含摘要正文，不加任何解释和标签。";
-
     @Test
-    @Disabled("测试正确，在CI环境下没必要继续测试")
+    @Disabled("测试通过，在CI环境下没必要继续测试")
     void chat() {
         // Given
         final String userMessage = """
