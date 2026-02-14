@@ -180,12 +180,15 @@ public class UserControllerTest extends BaseApiTest {
 
     @Test
     public void should_upload_my_avatar() throws IOException {
+        // Given
         LoginResponse manager = setupApi.registerWithLogin();
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
         java.io.File avatar = resource.getFile();
 
+        // When
         UploadAvatarResponse resp = UserApi.uploadAvatar(manager.getJwt(), avatar);
 
+        // Then
         User user = userRepository.byId(manager.getUserId());
         assertNotNull(resp.getAvatarUrl());
         assertEquals(resp.getAvatarUrl(), user.getAvatarUrl());
@@ -194,17 +197,21 @@ public class UserControllerTest extends BaseApiTest {
 
     @Test
     public void should_fail_to_upload_avatar_if_file_type_unsupported() throws IOException {
+        // Given
         LoginResponse manager = setupApi.registerWithLogin();
         ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
         java.io.File avatar = resource.getFile();
 
+        // When & Then
         assertError(() -> UserApi.uploadAvatarRaw(manager.getJwt(), avatar), UNSUPPORTED_FILE_TYPES);
     }
 
     @Test
     public void should_fail_to_upload_avatar_if_file_empty() {
+        // Given
         LoginResponse manager = setupApi.registerWithLogin();
 
+        // When & Then
         assertError(() -> UserApi.uploadAvatarRaw(manager.getJwt(), "empty.png", new byte[0], "image/png"),
                 FILE_MUST_NOT_BE_EMPTY);
     }

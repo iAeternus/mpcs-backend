@@ -84,8 +84,6 @@ public class SetupApi {
         ClassPathResource resource = new ClassPathResource(path);
         java.io.File file = resource.getFile();
 
-//        String parentId = FolderApi.createFolder(manager.getJwt(), customId, rFolderName());
-//        eventUtils.awaitLatestEventConsumed(parentId, FOLDER_CREATED, FolderCreatedEvent.class);
         Folder root = folderRepository.getRoot(customId);
 
         String fileHash = deleteFileWithSameHash(file);

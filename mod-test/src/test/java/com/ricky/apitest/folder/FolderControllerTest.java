@@ -361,6 +361,40 @@ public class FolderControllerTest extends BaseApiTest {
     }
 
     @Test
+    void should_move_folder_with_files() throws IOException {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        String customId = personalCustomId(manager.getUserId());
+        Folder root = folderRepository.getRoot(customId);
+
+        String folderId1 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), root.getId());
+        String folderId2 = FolderApi.createFolderWithParent(manager.getJwt(), customId, rFolderName(), root.getId());
+
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        setupApi.deleteFileWithSameHash(file);
+        String fileId = FileUploadApi.upload(manager.getJwt(), file, folderId1).getFileId();
+        eventUtils.awaitLatestLocalEventConsumed(fileId, FileUploadedLocalEvent.class);
+
+        // When
+        MoveFolderResponse resp = FolderApi.moveFolder(manager.getJwt(), MoveFolderCommand.builder()
+                .customId(customId)
+                .folderId(folderId1)
+                .newParentId(folderId2)
+                .build());
+        
+        // Then
+        assertEquals(1, resp.getMovedFolderCount());
+        assertEquals(1, resp.getMovedFileCount());
+
+        File dbFile = fileRepository.byId(fileId);
+        assertEquals(folderId1, dbFile.getParentId());
+
+        Folder dbFolder = folderRepository.byId(folderId1);
+        assertEquals(folderId2,  dbFolder.getParentId());
+    }
+
+    @Test
     void should_fail_to_move_folder_if_folder_name_duplicated() {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();

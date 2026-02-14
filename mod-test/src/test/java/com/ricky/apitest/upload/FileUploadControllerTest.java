@@ -34,6 +34,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
     @Test
     void should_upload_file() throws IOException {
+        // Given
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
@@ -43,8 +44,10 @@ class FileUploadControllerTest extends BaseApiTest {
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
 
+        // When
         FileUploadResponse resp = FileUploadApi.upload(manager.getJwt(), file, parentId);
 
+        // Then
         File dbFile = fileRepository.byId(resp.getFileId());
         assertEquals(FileStatus.NORMAL, dbFile.getStatus());
         assertEquals(parentId, dbFile.getParentId());
@@ -54,6 +57,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
     @Test
     void should_upload_file_if_hash_already_exist() throws IOException {
+        // Given
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
@@ -63,9 +67,11 @@ class FileUploadControllerTest extends BaseApiTest {
         String parentId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         String parentId2 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
+        // When
         FileUploadResponse resp = FileUploadApi.upload(manager.getJwt(), file, parentId1);
         FileUploadResponse resp2 = FileUploadApi.upload(manager.getJwt(), file, parentId2);
 
+        // Then
         File dbFile = fileRepository.byId(resp.getFileId());
         File dbFile2 = fileRepository.byId(resp2.getFileId());
         assertEquals(dbFile.getStorageId(), dbFile2.getStorageId());
@@ -73,16 +79,19 @@ class FileUploadControllerTest extends BaseApiTest {
 
     @Test
     void should_fail_to_upload_file_if_file_name_duplicates_at_same_folder() throws IOException {
+        // Given
         TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         java.io.File originalFile = ctx.getOriginalFile();
         String parentId = ctx.getParentId();
 
+        // When & Then
         assertError(() -> FileUploadApi.uploadRaw(manager.getJwt(), originalFile, parentId), FILE_NAME_DUPLICATES);
     }
 
     @Test
     void should_upload_large_file_by_chunks() throws IOException {
+        // Given
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
@@ -96,6 +105,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
         String fileHash = setupApi.deleteFileWithSameHash(file);
 
+        // When init upload
         InitUploadResponse initResp = FileUploadApi.initUpload(
                 manager.getJwt(),
                 InitUploadCommand.builder()
@@ -108,11 +118,13 @@ class FileUploadControllerTest extends BaseApiTest {
                         .build()
         );
 
+        // Then
         assertFalse(initResp.isUploaded());
         assertNotNull(initResp.getUploadId());
         assertNotNull(initResp.getUploadedChunks());
-        String uploadId = initResp.getUploadId();
 
+        // When upload chunks and complete upload
+        String uploadId = initResp.getUploadId();
         try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             byte[] buffer = new byte[chunkSize];
 
@@ -143,6 +155,7 @@ class FileUploadControllerTest extends BaseApiTest {
                         .build()
         );
 
+        // Then
         File dbFile = fileRepository.byId(completeResp.getFileId());
         assertEquals(FileStatus.NORMAL, dbFile.getStatus());
         assertEquals(parentId, dbFile.getParentId());
@@ -152,6 +165,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
     @Test
     void should_fast_upload_when_hash_exists() throws IOException {
+        // Given
         TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
         LoginResponse manager = ctx.getManager();
         String fileId = ctx.getFileId();
@@ -163,6 +177,7 @@ class FileUploadControllerTest extends BaseApiTest {
         String fileHash2 = dbFile2.getHash();
         assertEquals(fileHash, fileHash2);
 
+        // When
         InitUploadResponse initResp = FileUploadApi.initUpload(
                 manager.getJwt(),
                 InitUploadCommand.builder()
@@ -175,6 +190,7 @@ class FileUploadControllerTest extends BaseApiTest {
                         .build()
         );
 
+        // Then
         assertTrue(initResp.isUploaded());
         assertNotNull(initResp.getFileId());
         assertNull(initResp.getUploadId());
@@ -190,6 +206,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
     @Test
     void should_fail_when_complete_upload_twice() throws IOException {
+        // Given
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
@@ -224,6 +241,7 @@ class FileUploadControllerTest extends BaseApiTest {
                         .build()
         );
 
+        // When & Then
         assertError(() -> FileUploadApi.completeUploadRaw(manager.getJwt(), CompleteUploadCommand.builder()
                 .uploadId(uploadId)
                 .parentId(parentId)
@@ -235,6 +253,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
     @Test
     void should_fail_complete_when_chunks_missing() throws IOException {
+        // Given
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
 
@@ -263,6 +282,7 @@ class FileUploadControllerTest extends BaseApiTest {
                 Files.readAllBytes(file.toPath())
         );
 
+        // When & Then
         assertError(() -> FileUploadApi.completeUploadRaw(manager.getJwt(), CompleteUploadCommand.builder()
                 .uploadId(initResp.getUploadId())
                 .parentId(parentId)
@@ -274,6 +294,7 @@ class FileUploadControllerTest extends BaseApiTest {
 
     @Test
     void should_fail_to_init_upload_if_filename_invalid() throws IOException {
+        // Given
         LoginResponse manager = setupApi.registerWithLogin();
         String customId = personalCustomId(manager.getUserId());
         ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
@@ -291,6 +312,7 @@ class FileUploadControllerTest extends BaseApiTest {
                 .totalChunks(1)
                 .build();
 
+        // When & Then
         assertError(() -> FileUploadApi.initUploadRaw(manager.getJwt(), command), REQUEST_VALIDATION_FAILED);
     }
 

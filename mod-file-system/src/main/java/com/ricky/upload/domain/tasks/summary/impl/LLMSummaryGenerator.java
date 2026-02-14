@@ -5,6 +5,7 @@ import com.ricky.common.exception.MyException;
 import com.ricky.common.llm.domain.LLMChatRequest;
 import com.ricky.common.llm.domain.LLMChatResponse;
 import com.ricky.common.llm.service.LLMChatService;
+import com.ricky.common.profile.NonCiProfile;
 import com.ricky.upload.domain.tasks.summary.SummaryGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import static com.ricky.common.utils.ValidationUtils.isBlank;
 
 @Slf4j
 @Component
+@NonCiProfile
 @RequiredArgsConstructor
 public class LLMSummaryGenerator implements SummaryGenerator {
 
