@@ -48,9 +48,6 @@ public abstract class AbstractTextExtractor implements TextExtractor {
         return TextFileCache.buildPath(textFileDir, storageId);
     }
 
-    /**
-     * 确保目录存在
-     */
     private void ensureDirectoryExists(String textFileDir) throws IOException {
         Path dir = Paths.get(textFileDir);
         if (!Files.exists(dir)) {

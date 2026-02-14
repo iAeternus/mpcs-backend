@@ -9,6 +9,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 
+import static com.ricky.common.constants.ConfigConstants.DEFAULT_CHARSET;
+
 /**
  * Text file cache utilities.
  */
@@ -43,7 +45,7 @@ public final class TextFileCache {
     private static String sha256Hex(String raw) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(raw.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            byte[] hash = digest.digest(raw.getBytes(DEFAULT_CHARSET));
             return HexFormat.of().formatHex(hash);
         } catch (NoSuchAlgorithmException e) {
             throw new IllegalStateException("SHA-256 not available", e);
