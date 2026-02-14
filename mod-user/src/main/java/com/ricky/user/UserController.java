@@ -40,6 +40,14 @@ public class UserController {
         return userService.register(command);
     }
 
+    @ResponseStatus(CREATED)
+    @Operation(summary = "上传我的头像")
+    @PostMapping(value = "/me/avatar", consumes = MULTIPART_FORM_DATA_VALUE)
+    public UploadAvatarResponse uploadMyAvatar(@RequestParam("avatar") @NotNull MultipartFile avatar,
+                                               @AuthenticationPrincipal UserContext userContext) {
+        return userService.uploadAvatar(avatar, userContext);
+    }
+
     @GetMapping("/me")
     @Operation(summary = "获取我的个人资料")
     public UserProfileResponse fetchMyProfile(@AuthenticationPrincipal UserContext userContext) {
@@ -52,11 +60,4 @@ public class UserController {
         return userQueryService.fetchMyUserInfo(userContext);
     }
 
-    @ResponseStatus(CREATED)
-    @PostMapping(value = "/me/avatar", consumes = MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "上传我的头像")
-    public UploadAvatarResponse uploadMyAvatar(@RequestParam("avatar") @NotNull MultipartFile avatar,
-                                               @AuthenticationPrincipal UserContext userContext) {
-        return userService.uploadAvatar(avatar, userContext);
-    }
 }
