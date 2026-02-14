@@ -5,7 +5,9 @@ import com.ricky.common.exception.MyException;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.common.ratelimit.RateLimiter;
-import com.ricky.file.domain.*;
+import com.ricky.file.domain.File;
+import com.ricky.file.domain.FileFactory;
+import com.ricky.file.domain.FileRepository;
 import com.ricky.file.domain.storage.StorageId;
 import com.ricky.file.domain.storage.StoredFile;
 import com.ricky.fileextra.domain.FileExtra;
@@ -13,7 +15,10 @@ import com.ricky.fileextra.domain.FileExtraRepository;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.upload.command.*;
-import com.ricky.upload.domain.*;
+import com.ricky.upload.domain.FileUploadDomainService;
+import com.ricky.upload.domain.StorageService;
+import com.ricky.upload.domain.UploadSession;
+import com.ricky.upload.domain.UploadSessionRepository;
 import com.ricky.upload.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,10 +28,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 
-import static com.ricky.common.exception.ErrorCodeEnum.FILE_ORIGINAL_NAME_MUST_NOT_BE_BLANK;
-import static com.ricky.common.exception.ErrorCodeEnum.UPLOAD_ALREADY_COMPLETED;
+import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
 
 @Slf4j
@@ -39,7 +44,6 @@ public class FileUploadServiceImpl implements FileUploadService {
     private final FileHasherFactory fileHasherFactory;
     private final FileFactory fileFactory;
     private final StorageService storageService;
-    private final UploadChunkCleaner uploadChunkCleaner;
     private final FileUploadDomainService fileUploadDomainService;
     private final FileRepository fileRepository;
     private final UploadSessionRepository uploadSessionRepository;
@@ -53,27 +57,20 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         if (isBlank(multipartFile.getOriginalFilename())) {
             throw new MyException(FILE_ORIGINAL_NAME_MUST_NOT_BE_BLANK,
-                    "文件原始名称不能为空。", "filename", multipartFile.getName());
+                    "File original name must not be blank.", "filename", multipartFile.getName());
         }
 
-        // 校验重名
         fileUploadDomainService.checkFilenameDuplicates(parentId, multipartFile.getOriginalFilename());
 
-        // 存储文件内容
         String hash = fileHasherFactory.getFileHasher().hash(multipartFile);
         StorageId storageId = fileRepository.byFileHashOptional(hash)
                 .orElseGet(() -> storageService.store(multipartFile));
 
-        // 落库聚合根
         File file = fileFactory.create(parentId, storageId, multipartFile, hash, userContext);
         fileRepository.save(file);
 
-        Folder parentFolder = folderRepository.cachedById(parentId);
-        parentFolder.addFile(file.getId(), userContext);
-        folderRepository.save(parentFolder);
-
-        FileExtra fileExtra = new FileExtra(file.getId(), userContext);
-        fileExtraRepository.save(fileExtra);
+        attachToFolder(file, parentId, userContext);
+        fileExtraRepository.save(new FileExtra(file.getId(), userContext));
 
         log.info("File[{}] upload complete", file.getId());
         return FileUploadResponse.builder()
@@ -86,16 +83,34 @@ public class FileUploadServiceImpl implements FileUploadService {
     public InitUploadResponse initUpload(InitUploadCommand command, UserContext userContext) {
         rateLimiter.applyFor("Upload:InitUpload", 10);
 
-        // 秒传判断
-//        List<StorageId> storageIds = fileRepository.cachedByFileHash(command.getFileHash()).getStorageIds();
-        Optional<StorageId> storageId = fileRepository.byFileHashOptional(command.getFileHash());
-        if (storageId.isPresent()) { // 文件已存在
-//            StorageId storageId = storageIds.get(0);
-            return InitUploadResponse.fastUploaded(storageId.get());
+        Optional<File> existingFile = findExistingFile(command.getFileHash(), command.getParentId(), command.getFileName());
+        if (existingFile.isPresent()) {
+            return InitUploadResponse.fastUploaded(
+                    existingFile.get().getId(),
+                    existingFile.get().getStorageId().getValue()
+            );
         }
 
-        // 查找UploadSession，不存在则创建
-        UploadSession uploadSession = uploadSessionRepository.byFileHashAndOwnerIdOptional(command.getFileHash(), userContext.getUid())
+        fileUploadDomainService.checkFilenameDuplicates(command.getParentId(), command.getFileName());
+
+        Optional<StorageId> storageId = fileRepository.byFileHashOptional(command.getFileHash());
+        if (storageId.isPresent()) {
+            File file = fileFactory.create(
+                    command.getParentId(),
+                    command.getFileName(),
+                    storageId.get(),
+                    command.getFileHash(),
+                    command.getTotalSize(),
+                    userContext
+            );
+            fileRepository.save(file);
+            attachToFolder(file, command.getParentId(), userContext);
+            fileExtraRepository.save(new FileExtra(file.getId(), userContext));
+            return InitUploadResponse.fastUploaded(file.getId(), storageId.get().getValue());
+        }
+
+        UploadSession uploadSession = uploadSessionRepository
+                .byFileHashAndOwnerIdOptional(command.getFileHash(), userContext.getUid())
                 .orElseGet(() -> {
                     UploadSession session = UploadSession.create(
                             userContext.getUid(),
@@ -120,11 +135,13 @@ public class FileUploadServiceImpl implements FileUploadService {
         rateLimiter.applyFor("Upload:UploadChunk", 50);
 
         UploadSession uploadSession = uploadSessionRepository.byId(uploadId);
+        if (!uploadSession.getOwnerId().equals(userContext.getUid())) {
+            throw MyException.accessDeniedException();
+        }
         if (uploadSession.isCompleted()) {
             throw new MyException(UPLOAD_ALREADY_COMPLETED, "Chunk upload has been completed.");
         }
 
-        // 保证幂等性
         if (!uploadSession.containsUploadedChunk(chunkIndex)) {
             uploadSession.saveChunk(chunkIndex, chunk, fileProperties.getUpload().getChunkDir());
             uploadSessionRepository.save(uploadSession);
@@ -139,52 +156,79 @@ public class FileUploadServiceImpl implements FileUploadService {
     public FileUploadResponse completeUpload(CompleteUploadCommand command, UserContext userContext) {
         rateLimiter.applyFor("Upload:UploadChunk", 10);
 
-        UploadSession uploadSession = uploadSessionRepository.byId(command.getUploadId());
-        if (uploadSession.isCompleted()) {
-            throw new MyException(UPLOAD_ALREADY_COMPLETED, "Chunk upload has been completed.");
-        }
+        if (command.isChunkUpload()) {
+            UploadSession uploadSession = uploadSessionRepository.byId(command.getUploadId());
+            if (!uploadSession.getOwnerId().equals(userContext.getUid())) {
+                throw MyException.accessDeniedException();
+            }
+            if (uploadSession.isCompleted()) {
+                throw new MyException(UPLOAD_ALREADY_COMPLETED, "Chunk upload has been completed.");
+            }
 
-        // 秒传路径
-        if (command.isFastUpload()) {
+            fileUploadDomainService.checkFilenameDuplicates(command.getParentId(), uploadSession.getFilename());
+            uploadSession.checkHash(command.getFileHash());
+            uploadSession.checkAllChunksUploaded();
+
+            Path chunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), uploadSession.getId());
+            StoredFile storedFile = storageService.mergeChunksAndStore(uploadSession, chunkDir);
+            uploadSession.checkHash(storedFile.getHash());
+
             File file = fileFactory.create(
                     command.getParentId(),
                     uploadSession.getFilename(),
-                    command.getStorageId(),
-                    command.getFileHash(),
-                    command.getTotalSize(),
+                    storedFile,
                     userContext
             );
             fileRepository.save(file);
+
+            attachToFolder(file, command.getParentId(), userContext);
+            fileExtraRepository.save(new FileExtra(file.getId(), userContext));
+
+            uploadSession.complete(userContext);
+            uploadSessionRepository.save(uploadSession);
+
+            log.info("File [{}] upload completed via chunks", file.getId());
             return FileUploadResponse.builder().fileId(file.getId()).build();
         }
 
-        uploadSession.checkAllChunksUploaded();
+        if (isBlank(command.getFileName())) {
+            throw MyException.requestValidationException("fileName", command.getFileName());
+        }
 
-        Path chunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), uploadSession.getId());
-        StoredFile storedFile = storageService.mergeChunksAndStore(uploadSession, chunkDir);
+        Optional<File> existingFile = findExistingFile(command.getFileHash(), command.getParentId(), command.getFileName());
+        if (existingFile.isPresent()) {
+            return FileUploadResponse.builder().fileId(existingFile.get().getId()).build();
+        }
+
+        fileUploadDomainService.checkFilenameDuplicates(command.getParentId(), command.getFileName());
+
+        StorageId storageId = fileRepository.byFileHashOptional(command.getFileHash())
+                .orElseThrow(() -> new MyException(FILE_NOT_FOUND, "File content not found", "fileHash", command.getFileHash()));
 
         File file = fileFactory.create(
                 command.getParentId(),
-                uploadSession.getFilename(),
-                storedFile,
+                command.getFileName(),
+                storageId,
+                command.getFileHash(),
+                command.getTotalSize(),
                 userContext
         );
         fileRepository.save(file);
+        attachToFolder(file, command.getParentId(), userContext);
+        fileExtraRepository.save(new FileExtra(file.getId(), userContext));
+        return FileUploadResponse.builder().fileId(file.getId()).build();
+    }
 
-        Folder parentFolder = folderRepository.cachedById(command.getParentId());
+    private Optional<File> findExistingFile(String fileHash, String parentId, String filename) {
+        List<File> files = fileRepository.listByFileHash(fileHash);
+        return files.stream()
+                .filter(file -> parentId.equals(file.getParentId()) && filename.equals(file.getFilename()))
+                .findFirst();
+    }
+
+    private void attachToFolder(File file, String parentId, UserContext userContext) {
+        Folder parentFolder = folderRepository.byId(parentId);
         parentFolder.addFile(file.getId(), userContext);
         folderRepository.save(parentFolder);
-
-        FileExtra fileExtra = new FileExtra(file.getId(), userContext);
-        fileExtraRepository.save(fileExtra);
-
-        uploadSession.complete(userContext);
-        uploadSessionRepository.save(uploadSession);
-
-        // 事务commit成功时，清理分片目录
-        uploadChunkCleaner.cleanAfterCommit(uploadSession.getId());
-
-        log.info("File [{}] upload completed via chunks", file.getId());
-        return FileUploadResponse.builder().fileId(file.getId()).build();
     }
 }

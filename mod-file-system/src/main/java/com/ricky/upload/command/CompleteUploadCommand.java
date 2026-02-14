@@ -1,8 +1,8 @@
 package com.ricky.upload.command;
 
 import com.ricky.common.domain.marker.Command;
+import com.ricky.common.validation.filename.Filename;
 import com.ricky.common.validation.id.Id;
-import com.ricky.file.domain.storage.StorageId;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -29,23 +29,30 @@ public class CompleteUploadCommand implements Command {
     long totalSize;
 
     /**
-     * 分片上传场景：必须提供
+     * 分块上传场景
      */
     @Nullable
     String uploadId;
 
     /**
-     * 秒传场景：必须提供
+     * 快速上传场景：客户端原始文件名
      */
     @Nullable
-    StorageId storageId;
+    @Filename
+    String fileName;
+
+    /**
+     * 快速上传场景：可选的存储 ID 值以实现兼容性
+     */
+    @Nullable
+    String storageId;
 
     public boolean isFastUpload() {
-        return uploadId == null && storageId != null;
+        return uploadId == null || uploadId.isBlank();
     }
 
     public boolean isChunkUpload() {
-        return uploadId != null;
+        return uploadId != null && !uploadId.isBlank();
     }
 
 }

@@ -1,11 +1,11 @@
-package com.ricky.upload.domain;
+package com.ricky.upload.eventhandler;
 
+import com.ricky.common.event.local.AbstractLocalDomainEventHandler;
 import com.ricky.common.properties.FileProperties;
+import com.ricky.upload.domain.event.UploadSessionCompletedLocalEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,18 +17,14 @@ import java.util.stream.Stream;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class UploadChunkCleaner {
+public class UploadSessionCompletedLocalEventHandler extends AbstractLocalDomainEventHandler<UploadSessionCompletedLocalEvent> {
 
     private final FileProperties fileProperties;
 
-    public void cleanAfterCommit(String uploadId) {
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                Path userChunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), uploadId);
-                deleteQuietly(userChunkDir);
-            }
-        });
+    @Override
+    protected void doHandle(UploadSessionCompletedLocalEvent event) {
+        Path userChunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), event.getUploadId());
+        deleteQuietly(userChunkDir);
     }
 
     private void deleteQuietly(Path dir) {
@@ -49,4 +45,5 @@ public class UploadChunkCleaner {
             log.warn("Failed to clean chunk dir {}", dir, e);
         }
     }
+
 }

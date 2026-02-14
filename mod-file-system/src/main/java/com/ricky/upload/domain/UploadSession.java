@@ -4,6 +4,7 @@ import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.SnowflakeIdGenerator;
+import com.ricky.upload.domain.event.UploadSessionCompletedLocalEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -97,6 +98,7 @@ public class UploadSession extends AggregateRoot {
         }
 
         this.status = UploadStatus.COMPLETED;
+        raiseLocalEvent(new UploadSessionCompletedLocalEvent(this, getId(), userContext));
         addOpsLog("上传完成", userContext);
     }
 
