@@ -1,4 +1,4 @@
-package com.ricky.upload.domain.tasks;
+package com.ricky.upload.domain.tasks.es;
 
 import com.ricky.common.domain.task.RetryableTask;
 import com.ricky.common.es.FileElasticSearchService;

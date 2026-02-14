@@ -3,7 +3,7 @@ package com.ricky.upload.eventhandler;
 import com.ricky.common.event.local.AbstractLocalDomainEventHandler;
 import com.ricky.common.utils.TaskRunner;
 import com.ricky.upload.domain.event.FileUploadedLocalEvent;
-import com.ricky.upload.domain.tasks.SyncFileToEsTask;
+import com.ricky.upload.domain.tasks.es.SyncFileToEsTask;
 import com.ricky.upload.domain.tasks.extracttext.ExtractTextTask;
 import com.ricky.upload.domain.tasks.summary.GenerateSummaryTask;
 import lombok.RequiredArgsConstructor;

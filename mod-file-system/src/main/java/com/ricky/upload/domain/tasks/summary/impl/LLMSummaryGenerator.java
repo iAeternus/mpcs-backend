@@ -27,11 +27,6 @@ public class LLMSummaryGenerator implements SummaryGenerator {
 
     private final LLMChatService llmChatService;
 
-    /**
-     * 基于已生成的文本文件路径生成摘要
-     *
-     * @param textFilePath 已落盘的纯文本文件路径
-     */
     @Override
     public String generate(String textFilePath) {
         StopWatch stopWatch = new StopWatch("LLMSummaryGenerator");
@@ -49,8 +44,6 @@ public class LLMSummaryGenerator implements SummaryGenerator {
         String processedText = preprocessText(rawText);
 
         // 调用 AI
-        log.error("AI 摘要生成失败，启用降级方案，path={}", textFilePath); // TODO 由于AI模块的不可靠，这里暂时不使用AI，仅供测试
-//        return createFallbackSummary(rawText);
         try {
             String summary = generateSummaryWithAI(processedText);
             stopWatch.stop();
@@ -77,11 +70,6 @@ public class LLMSummaryGenerator implements SummaryGenerator {
         }
     }
 
-    /**
-     * 文本预处理：
-     * - 合并多余空白
-     * - 控制最大输入长度
-     */
     private String preprocessText(String rawText) {
         String cleaned = rawText.replaceAll("\\s+", " ").trim();
 
@@ -93,9 +81,6 @@ public class LLMSummaryGenerator implements SummaryGenerator {
         return cleaned;
     }
 
-    /**
-     * 调用 LLM 生成摘要
-     */
     private String generateSummaryWithAI(String text) {
         LLMChatRequest req = LLMChatRequest.builder()
                 .userMessage(text)
@@ -106,9 +91,6 @@ public class LLMSummaryGenerator implements SummaryGenerator {
         return resp.getText();
     }
 
-    /**
-     * AI失败时的降级摘要方案
-     */
     private String createFallbackSummary(String rawText) {
         // 优先取第一段较完整内容
         String[] paragraphs = rawText.split("\\n\\s*\\n");
