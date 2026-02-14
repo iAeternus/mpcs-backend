@@ -34,10 +34,10 @@ public class LLMSummaryGenerator implements SummaryGenerator {
      */
     @Override
     public String generate(String textFilePath) {
-//        StopWatch stopWatch = new StopWatch("LLMSummaryGenerator");
-//        stopWatch.start();
+        StopWatch stopWatch = new StopWatch("LLMSummaryGenerator");
+        stopWatch.start();
 
-        // 读取文本文件（IO 失败直接抛异常，不做降级）
+        // 读取文本文件
         String rawText = readTextFile(textFilePath);
 
         if (isBlank(rawText)) {
@@ -48,25 +48,25 @@ public class LLMSummaryGenerator implements SummaryGenerator {
         // 文本预处理
         String processedText = preprocessText(rawText);
 
-        // 调用 AI（仅 AI 失败才允许降级）
+        // 调用 AI
         log.error("AI 摘要生成失败，启用降级方案，path={}", textFilePath); // TODO 由于AI模块的不可靠，这里暂时不使用AI，仅供测试
-        return createFallbackSummary(rawText);
-//        try {
-//            String summary = generateSummaryWithAI(processedText);
-//            stopWatch.stop();
-//
-//            log.info(
-//                    "摘要生成成功，path={}, 原文长度={}，摘要长度={}，耗时={}ms",
-//                    textFilePath,
-//                    rawText.length(),
-//                    summary.length(),
-//                    stopWatch.getTotalTimeMillis()
-//            );
-//            return summary;
-//        } catch (Exception ex) {
-//            log.error("AI 摘要生成失败，启用降级方案，path={}", textFilePath, ex);
-//            return createFallbackSummary(rawText);
-//        }
+//        return createFallbackSummary(rawText);
+        try {
+            String summary = generateSummaryWithAI(processedText);
+            stopWatch.stop();
+
+            log.info(
+                    "摘要生成成功，path={}, 原文长度={}，摘要长度={}，耗时={}ms",
+                    textFilePath,
+                    rawText.length(),
+                    summary.length(),
+                    stopWatch.getTotalTimeMillis()
+            );
+            return summary;
+        } catch (Exception ex) {
+            log.error("AI 摘要生成失败，启用降级方案，path={}", textFilePath, ex);
+            return createFallbackSummary(rawText);
+        }
     }
 
     private String readTextFile(String path) {
