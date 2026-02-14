@@ -22,8 +22,10 @@ public class FileUploadedLocalEventHandler extends AbstractLocalDomainEventHandl
     // 2. generateSummaryTask/syncFileToEsTask
     @Override
     protected void doHandle(FileUploadedLocalEvent evt) {
-        TaskRunner.run("extractTextTask", () -> extractTextTask.run(evt.getFileId(), evt.getStorageId(), evt.getCategory()));
-        TaskRunner.run("generateSummaryTask", () -> generateSummaryTask.run(evt.getFileId()));
-        TaskRunner.run("syncFileToEsTask", () -> syncFileToEsTask.run(evt.getFileId()));
+        TaskRunner.run("fileUploadedPostProcess", () -> {
+            extractTextTask.run(evt.getFileId(), evt.getStorageId(), evt.getCategory());
+            generateSummaryTask.run(evt.getFileId());
+            syncFileToEsTask.run(evt.getFileId());
+        });
     }
 }

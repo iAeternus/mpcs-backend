@@ -15,7 +15,7 @@ public class FileExtraDeletedEventHandler extends AbstractDomainEventHandler<Fil
 
     @Override
     protected void doHandle(FileExtraDeletedEvent evt) {
-        TaskRunner.run(() -> deleteTextFileTask.run(evt.getTextFilePath()));
+        TaskRunner.run(() -> deleteTextFileTask.run(evt.getTextFileKey(), evt.getTextFilePath()));
     }
 
     @Override

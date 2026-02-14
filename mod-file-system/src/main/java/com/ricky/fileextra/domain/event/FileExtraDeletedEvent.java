@@ -15,10 +15,12 @@ import static com.ricky.common.event.DomainEventType.FILE_EXTRA_DELETED;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FileExtraDeletedEvent extends DomainEvent {
 
+    private String textFileKey;
     private String textFilePath;
 
-    public FileExtraDeletedEvent(String textFilePath, UserContext userContext) {
+    public FileExtraDeletedEvent(String textFileKey, String textFilePath, UserContext userContext) {
         super(FILE_EXTRA_DELETED, userContext);
+        this.textFileKey = textFileKey;
         this.textFilePath = textFilePath;
     }
 

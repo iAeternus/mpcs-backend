@@ -21,7 +21,7 @@ public class OssStorageId implements StorageId {
 
     @Override
     public String getValue() {
-        return objectKey;
+        return bucket + "\\" + objectKey;
     }
 
     public static OssStorageId withFileBucket(String objectId) {

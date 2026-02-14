@@ -2,6 +2,7 @@ package com.ricky.upload.domain.tasks.extracttext.impl;
 
 import com.ricky.file.domain.FileCategory;
 import com.ricky.file.domain.storage.StorageId;
+import com.ricky.fileextra.domain.TextFileCache;
 import com.ricky.upload.domain.tasks.extracttext.TextExtractor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,8 +45,7 @@ public abstract class AbstractTextExtractor implements TextExtractor {
      * 格式: {textFileDir}/{storageId}.txt
      */
     private String generateFilePath(StorageId storageId, String textFileDir) {
-        String filename = String.format("%s.txt", storageId.getValue());
-        return Paths.get(textFileDir, filename).toString();
+        return TextFileCache.buildPath(textFileDir, storageId);
     }
 
     /**

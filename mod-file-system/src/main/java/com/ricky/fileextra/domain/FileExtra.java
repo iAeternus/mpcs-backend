@@ -27,6 +27,7 @@ import static com.ricky.common.utils.ValidationUtils.*;
 public class FileExtra extends AggregateRoot {
 
     private String fileId; // 对应文件ID
+    private String textFileKey; // 提取文本文件的缓存定位键
     private String textFilePath; // 提取出来的文本文件缓存绝对路径
     private String summary; // 文件摘要
     private List<String> keywords; // 关键词列表
@@ -34,6 +35,7 @@ public class FileExtra extends AggregateRoot {
     public FileExtra(String fileId, UserContext userContext) {
         super(newFileExtraId(), userContext);
         this.fileId = fileId;
+        this.textFileKey = "";
         this.textFilePath = "";
         this.summary = "";
         this.keywords = new ArrayList<>();
@@ -42,6 +44,12 @@ public class FileExtra extends AggregateRoot {
 
     public static String newFileExtraId() {
         return FILE_EXTRA_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
+    }
+
+    public void setTextFileKey(String textFileKey) {
+        if (isNotBlank(textFileKey) && notEquals(textFileKey, this.textFileKey)) {
+            this.textFileKey = textFileKey;
+        }
     }
 
     public void setTextFilePath(String textFilePath) {
@@ -63,6 +71,6 @@ public class FileExtra extends AggregateRoot {
     }
 
     public void onDelete(UserContext userContext) {
-        raiseEvent(new FileExtraDeletedEvent(textFilePath, userContext));
+        raiseEvent(new FileExtraDeletedEvent(textFileKey, textFilePath, userContext));
     }
 }

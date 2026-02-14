@@ -7,6 +7,7 @@ import com.ricky.file.domain.FileCategory;
 import com.ricky.file.domain.storage.StorageId;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.fileextra.domain.FileExtraRepository;
+import com.ricky.fileextra.domain.TextFileCache;
 import com.ricky.upload.domain.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,12 +39,14 @@ public class ExtractTextTask implements RetryableTask {
                 .orElseThrow(() ->
                         new UnsupportedOperationException(String.format("No extractor found for category: %s", category)));
 
+        String textFileKey = TextFileCache.buildKey(storageId);
         String filepath = extract(storageId, extractor);
         if (isBlank(filepath)) {
             return;
         }
 
         FileExtra fileExtra = fileExtraRepository.byFileId(fileId);
+        fileExtra.setTextFileKey(textFileKey);
         fileExtra.setTextFilePath(filepath);
         fileExtraRepository.save(fileExtra);
     }
