@@ -92,6 +92,12 @@ public class UploadSession extends AggregateRoot {
         return this.status == UploadStatus.COMPLETED;
     }
 
+    public void checkOwner(String userId) {
+        if (!this.ownerId.equals(userId)) {
+            throw MyException.accessDeniedException();
+        }
+    }
+
     public void complete(UserContext userContext) {
         if (isCompleted()) {
             throw new MyException(UPLOAD_ALREADY_COMPLETED, "Upload already completed", "uploadId", getId());
