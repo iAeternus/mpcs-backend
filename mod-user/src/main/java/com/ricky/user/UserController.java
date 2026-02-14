@@ -1,9 +1,9 @@
 package com.ricky.user;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.folder.query.FolderHierarchyResponse;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
+import com.ricky.user.command.UploadAvatarResponse;
 import com.ricky.user.query.UserInfoResponse;
 import com.ricky.user.query.UserProfileResponse;
 import com.ricky.user.service.UserQueryService;
@@ -11,13 +11,16 @@ import com.ricky.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
 @Slf4j
 @Validated
@@ -47,5 +50,13 @@ public class UserController {
     @Operation(summary = "获取我的用户信息")
     public UserInfoResponse fetchMyUserInfo(@AuthenticationPrincipal UserContext userContext) {
         return userQueryService.fetchMyUserInfo(userContext);
+    }
+
+    @ResponseStatus(CREATED)
+    @PostMapping(value = "/me/avatar", consumes = MULTIPART_FORM_DATA_VALUE)
+    @Operation(summary = "上传我的头像")
+    public UploadAvatarResponse uploadMyAvatar(@RequestParam("avatar") @NotNull MultipartFile avatar,
+                                               @AuthenticationPrincipal UserContext userContext) {
+        return userService.uploadAvatar(avatar, userContext);
     }
 }

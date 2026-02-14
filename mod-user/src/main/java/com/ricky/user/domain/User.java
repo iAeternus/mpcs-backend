@@ -16,6 +16,7 @@ import java.util.Set;
 
 import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.USER_ID_PREFIX;
+import static com.ricky.common.constants.ConfigConstants.MAX_URL_LENGTH;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_ALREADY_LOCKED;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_MOBILE_AND_EMAIL_BOTH_BLANK;
 import static com.ricky.common.utils.ValidationUtils.*;
@@ -113,6 +114,13 @@ public class User extends AggregateRoot {
     public void setCustomId(String customId) {
         requireNotBlank(customId, "Custom ID must not be blank");
         this.customId = customId;
+    }
+
+    public void updateAvatarUrl(String avatarUrl, UserContext userContext) {
+        requireNotBlank(avatarUrl, "Avatar URL must not be blank");
+        requireTrue(avatarUrl.length() <= MAX_URL_LENGTH, "Avatar URL is too long");
+        this.avatarUrl = avatarUrl;
+        addOpsLog("更新头像", userContext);
     }
 
     @Getter

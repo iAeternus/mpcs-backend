@@ -2,11 +2,16 @@ package com.ricky.apitest.user;
 
 import com.ricky.apitest.BaseApiTest;
 import com.ricky.apitest.verification.VerificationCodeApi;
+import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
+import com.ricky.user.command.UploadAvatarResponse;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.event.UserCreatedEvent;
 import org.junit.jupiter.api.Test;
+import org.springframework.core.io.ClassPathResource;
+
+import java.io.IOException;
 
 import static com.ricky.apitest.RandomTestFixture.*;
 import static com.ricky.common.domain.SpaceType.personalCustomId;
@@ -171,6 +176,37 @@ public class UserControllerTest extends BaseApiTest {
         // Then
         UserCreatedEvent evt = latestEventFor(response.getUserId(), USER_CREATED, UserCreatedEvent.class);
         assertEquals(response.getUserId(), evt.getUserId());
+    }
+
+    @Test
+    public void should_upload_my_avatar() throws IOException {
+        LoginResponse manager = setupApi.registerWithLogin();
+        ClassPathResource resource = new ClassPathResource("testdata/large-file.png");
+        java.io.File avatar = resource.getFile();
+
+        UploadAvatarResponse resp = UserApi.uploadAvatar(manager.getJwt(), avatar);
+
+        User user = userRepository.byId(manager.getUserId());
+        assertNotNull(resp.getAvatarUrl());
+        assertEquals(resp.getAvatarUrl(), user.getAvatarUrl());
+        assertTrue(resp.getAvatarUrl().startsWith(manager.getUserId() + "/"));
+    }
+
+    @Test
+    public void should_fail_to_upload_avatar_if_file_type_unsupported() throws IOException {
+        LoginResponse manager = setupApi.registerWithLogin();
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File avatar = resource.getFile();
+
+        assertError(() -> UserApi.uploadAvatarRaw(manager.getJwt(), avatar), UNSUPPORTED_FILE_TYPES);
+    }
+
+    @Test
+    public void should_fail_to_upload_avatar_if_file_empty() {
+        LoginResponse manager = setupApi.registerWithLogin();
+
+        assertError(() -> UserApi.uploadAvatarRaw(manager.getJwt(), "empty.png", new byte[0], "image/png"),
+                FILE_MUST_NOT_BE_EMPTY);
     }
 
 }

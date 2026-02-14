@@ -129,5 +129,6 @@ public interface ConfigConstants {
 
     // OSS
     String FILE_BUCKET = "files";
+    String AVATAR_BUCKET = "avatars";
 
 }

@@ -12,6 +12,18 @@ public class MinioOssService implements OssService {
     private final MinioClient minioClient;
 
     @Override
+    public void ensureBucket(String bucket) {
+        try {
+            boolean exists = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucket).build());
+            if (!exists) {
+                minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucket).build());
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("MinIO ensureBucket failed", e);
+        }
+    }
+
+    @Override
     public void putObject(String bucket, String objectKey, InputStream input, long size, String contentType) {
         try {
             minioClient.putObject(

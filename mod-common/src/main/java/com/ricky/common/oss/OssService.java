@@ -5,6 +5,11 @@ import java.io.InputStream;
 public interface OssService {
 
     /**
+     * Ensure bucket exists.
+     */
+    void ensureBucket(String bucket);
+
+    /**
      * 上传对象
      */
     void putObject(String bucket, String objectKey, InputStream input, long size, String contentType);
