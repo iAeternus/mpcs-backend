@@ -53,7 +53,7 @@ public class ExtractTextTask implements RetryableTask {
             String textFileDir = fileProperties.getTextFileDir();
             return extractor.extract(storageId, inputStream, textFileDir);
         } catch (IOException ex) {
-            throw new MyException(EXTRACT_FILE_TEXT_FAILED, "提取文件文本失败", "storageId", storageId);
+            throw new MyException(EXTRACT_FILE_TEXT_FAILED, "提取文件文本失败", "storageId", storageId, "exception", ex);
         }
     }
 }

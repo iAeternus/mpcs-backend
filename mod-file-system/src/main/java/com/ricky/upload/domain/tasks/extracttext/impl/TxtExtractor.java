@@ -21,7 +21,7 @@ public class TxtExtractor extends AbstractTextExtractor {
     protected void doExtract(InputStream inputStream, String textFilePath) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
              BufferedWriter writer = Files.newBufferedWriter(Paths.get(textFilePath))) {
-
+            // TODO 这里如果用OssStorageId，由于objectId结构与gridFs不同，会导致目录不存在的问题
             String line;
             while ((line = reader.readLine()) != null) {
                 writer.write(line);

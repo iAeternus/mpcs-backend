@@ -44,7 +44,7 @@ public class GenerateSummaryTask implements RetryableTask {
         try {
             return summaryGenerator.generate(textFilePath);
         } catch (IOException ex) {
-            throw new MyException(GENERATE_SUMMARY_FAILED, "摘要生成失败", "textFilePath", textFilePath);
+            throw new MyException(GENERATE_SUMMARY_FAILED, "摘要生成失败", "textFilePath", textFilePath, "exception", ex);
         }
     }
 

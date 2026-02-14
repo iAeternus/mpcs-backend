@@ -34,8 +34,8 @@ public class LLMSummaryGenerator implements SummaryGenerator {
      */
     @Override
     public String generate(String textFilePath) {
-        StopWatch stopWatch = new StopWatch("LLMSummaryGenerator");
-        stopWatch.start();
+//        StopWatch stopWatch = new StopWatch("LLMSummaryGenerator");
+//        stopWatch.start();
 
         // 读取文本文件（IO 失败直接抛异常，不做降级）
         String rawText = readTextFile(textFilePath);
