@@ -70,12 +70,14 @@ public class PublicFileController {
         return publicFileQueryService.page(query);
     }
 
+    // TODO 数据不一致
     @GetMapping("/{postId}/comment")
     @Operation(summary = "获取发布物评论数")
     public CommentCountResponse fetchCommentCount(@PathVariable @NotBlank @Id(POST_ID_PREFIX) String postId) {
         return publicFileQueryService.fetchCommentCount(postId);
     }
 
+    // TODO 数据不一致
     @GetMapping("/{postId}/like")
     @Operation(summary = "获取发布物点赞数")
     public LikeCountResponse fetchLikeCount(@PathVariable @NotBlank @Id(POST_ID_PREFIX) String postId) {

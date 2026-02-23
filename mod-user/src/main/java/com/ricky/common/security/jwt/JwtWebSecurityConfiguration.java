@@ -6,8 +6,10 @@ import com.ricky.common.security.IpJwtCookieUpdater;
 import com.ricky.common.security.MdcFilter;
 import com.ricky.common.tracing.TracingService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,9 +38,49 @@ public class JwtWebSecurityConfiguration {
     private final JsonCodec jsonCodec;
     private final TracingService tracingService;
 
+    // 预览允许嵌入的前端来源
+    @Value("${security.preview.frame-ancestors:'self' http://localhost:5173 http://127.0.0.1:5173 http://localhost:3000 http://127.0.0.1:3000}")
+    private String previewFrameAncestors;
+
     @Bean
+    @Order(1)
+    public SecurityFilterChain previewFilterChain(HttpSecurity http) throws Exception {
+        ProviderManager authenticationManager = new ProviderManager(this.jwtAuthenticationProvider);
+        // 仅预览接口放开 iframe 嵌入
+        http.securityMatcher("/files/*/preview")
+                .authorizeHttpRequests(registry -> registry.anyRequest().permitAll())
+                .authenticationManager(authenticationManager)
+                .exceptionHandling(it -> it.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint))
+                .addFilterAfter(new JwtAuthenticationFilter(authenticationManager, jsonCodec, tracingService), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AutoRefreshJwtFilter(jwtService,
+                                jwtCookieFactory,
+                                ipJwtCookieUpdater,
+                                jwtProperties.getAheadAutoRefresh()),
+                        AuthorizationFilter.class)
+                .addFilterBefore(new MdcFilter(), ExceptionTranslationFilter.class)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.disable())
+                        .contentSecurityPolicy(csp -> csp.policyDirectives(
+                                "frame-ancestors " + previewFrameAncestors
+                        )))
+                .cors(AbstractHttpConfigurer::disable)
+                .anonymous(configurer -> configurer.authenticationFilter(new JwtAnonymousAuthenticationFilter()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .servletApi(AbstractHttpConfigurer::disable)
+                .logout(AbstractHttpConfigurer::disable)
+                .sessionManagement(AbstractHttpConfigurer::disable)
+                .securityContext(AbstractHttpConfigurer::disable)
+                .requestCache(RequestCacheConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable);
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
     public SecurityFilterChain jwtFilterChain(HttpSecurity http) throws Exception {
         ProviderManager authenticationManager = new ProviderManager(this.jwtAuthenticationProvider);
+        // 默认链保持原有安全头策略。
         http.authorizeHttpRequests(registry -> registry
                         .requestMatchers(POST, "/user/registration").permitAll()
                         .requestMatchers(POST, "/login").permitAll()
@@ -47,7 +89,6 @@ public class JwtWebSecurityConfiguration {
                         .requestMatchers(POST, "/verification-codes/for-register").permitAll()
                         .requestMatchers(POST, "/verification-codes/for-login").permitAll()
                         .requestMatchers(POST, "/verification-codes/for-find-back-password").permitAll()
-                        .requestMatchers(GET, "/files/*/preview").permitAll() // TODO test
                         .requestMatchers("/about",
                                 "/favicon.ico",
                                 "/error").permitAll()
