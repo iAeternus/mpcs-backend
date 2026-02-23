@@ -14,6 +14,7 @@ public class UserProfileResponse implements Response {
 
     String userId;
     String username;
+    String mobileOrEmail;
     Role role;
     String avatarUrl; // TODO 考虑换成 UploadedFile
     boolean mobileIdentified;

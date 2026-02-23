@@ -15,6 +15,7 @@ import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserAvatarStorage;
 import com.ricky.user.domain.UserDomainService;
 import com.ricky.user.domain.UserRepository;
+import com.ricky.user.infra.AvatarUrlResolver;
 import com.ricky.user.service.UserService;
 import com.ricky.verification.domain.VerificationCodeChecker;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final FolderRepository folderRepository;
     private final UserAvatarStorage userAvatarStorage;
+    private final AvatarUrlResolver avatarUrlResolver;
 
     @Override
     @Transactional
@@ -91,7 +93,7 @@ public class UserServiceImpl implements UserService {
         log.info("User[{}] avatar uploaded", user.getId());
 
         return UploadAvatarResponse.builder()
-                .avatarUrl(objectKey)
+                .avatarUrl(avatarUrlResolver.toPublicUrl(objectKey))
                 .build();
     }
 }
