@@ -1,9 +1,9 @@
 package com.ricky.group.domain;
 
-import com.ricky.common.permission.Permission;
 import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
+import com.ricky.common.permission.Permission;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.group.domain.event.GroupDeletedEvent;
@@ -14,18 +14,19 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.constants.ConfigConstants.*;
 import static com.ricky.common.domain.SpaceType.teamCustomId;
 import static com.ricky.common.exception.ErrorCodeEnum.MAX_GROUP_MANAGER_REACHED;
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
-import static com.ricky.common.utils.ValidationUtils.notEquals;
+import static com.ricky.group.domain.MemberRole.ADMIN;
+import static com.ricky.group.domain.MemberRole.ORDINARY;
 
 /**
- * 权限组，描述用户集合对资源集合的权限集合，用来映射真实团队组织架构
+ * 权限组，描述用户集合对资源集合的权限集合，用来映射真实团队组织结构。
  */
 @Getter
 @TypeAlias("group")
@@ -35,12 +36,10 @@ public class Group extends AggregateRoot {
 
     private String name; // 名称
     private boolean active; // 是否启用
-    private Set<String> managers; // 管理员，members子集
-    private Set<String> members; // 所有成员
+    private List<Member> members; // 成员列表（含角色）
     private String customId; // 文件夹层次结构自定义ID
     private Map<String, Set<Permission>> grants; // 资源ID -> 权限集合
     private InheritancePolicy inheritancePolicy; // 继承策略
-
 
     public Group(String name, UserContext userContext) {
         super(newGroupId(), userContext);
@@ -50,8 +49,7 @@ public class Group extends AggregateRoot {
     private void init(String name, UserContext userContext) {
         this.name = name;
         this.active = true;
-        this.members = new HashSet<>();
-        this.managers = new HashSet<>();
+        this.members = new ArrayList<>();
         this.customId = teamCustomId(getId());
         this.grants = new HashMap<>();
         this.inheritancePolicy = InheritancePolicy.NONE;
@@ -63,103 +61,172 @@ public class Group extends AggregateRoot {
     }
 
     public void rename(String newName, UserContext userContext) {
-        if (name.equals(newName)) {
+        if (ValidationUtils.equals(name, newName)) {
             return;
         }
 
         this.name = newName;
-        addOpsLog("重命名为：" + name, userContext);
+        addOpsLog("重命名为:" + name, userContext);
     }
 
     public void addMembers(List<String> userIds, UserContext userContext) {
-        Set<String> resultMembers = Stream.concat(members.stream(), userIds.stream()).collect(toImmutableSet());
-        if (notEquals(members, resultMembers)) {
-            raiseEvent(new GroupMembersChangedEvent(getId(), userIds, userContext));
+        if (isEmpty(userIds)) {
+            return;
         }
 
-        this.members = resultMembers;
+        Set<String> distinctUserIds = new HashSet<>(userIds);
+        List<String> addedMemberIds = new ArrayList<>();
+        for (String userId : distinctUserIds) {
+            if (containsMember(userId)) {
+                continue;
+            }
+            this.members.add(Member.builder()
+                    .userId(userId)
+                    .role(ORDINARY)
+                    .joinedAt(Instant.now())
+                    .build());
+            addedMemberIds.add(userId);
+        }
+
+        if (!addedMemberIds.isEmpty()) {
+            raiseEvent(new GroupMembersChangedEvent(getId(), addedMemberIds, userContext));
+        }
+
         addOpsLog("设置成员", userContext);
     }
 
     public void removeMember(String userId, UserContext userContext) {
-        this.managers.remove(userId);
+        int beforeSize = members.size();
+        this.members = members.stream()
+                .filter(member -> !ValidationUtils.equals(member.getUserId(), userId))
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
 
-        Set<String> remainMembers = members.stream()
-                .filter(id -> !ValidationUtils.equals(id, userId))
-                .collect(toImmutableSet());
-        if (notEquals(remainMembers, userId)) {
+        if (beforeSize != members.size()) {
             raiseEvent(new GroupMembersChangedEvent(getId(), List.of(userId), userContext));
         }
 
-        this.members = remainMembers;
         addOpsLog("移除成员", userContext);
     }
 
     public void removeMembers(List<String> userIds, UserContext userContext) {
-        this.managers = managers.stream().filter(id -> !userIds.contains(id)).collect(toImmutableSet());
-
-        Set<String> remainMembers = members.stream().filter(id -> !userIds.contains(id)).collect(toImmutableSet());
-        if (notEquals(members, remainMembers)) {
-            raiseEvent(new GroupMembersChangedEvent(getId(), userIds, userContext));
-        }
-
-        this.members = remainMembers;
-        addOpsLog("移除成员(多)", userContext);
-    }
-
-    public void addManager(String userId, UserContext userContext) {
-        if (managers.contains(userId)) {
+        if (isEmpty(userIds)) {
             return;
         }
 
-        if (managers.size() + 1 > MAX_GROUP_MANAGER_SIZE) {
+        Set<String> removedUserIds = new HashSet<>(userIds);
+        int beforeSize = members.size();
+        this.members = members.stream()
+                .filter(member -> !removedUserIds.contains(member.getUserId()))
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+
+        if (beforeSize != members.size()) {
+            raiseEvent(new GroupMembersChangedEvent(getId(), userIds, userContext));
+        }
+
+        addOpsLog("移除成员(批量)", userContext);
+    }
+
+    public void addManager(String userId, UserContext userContext) {
+        if (containsManager(userId)) {
+            return;
+        }
+
+        if (adminCount() + 1 > MAX_GROUP_MANAGER_SIZE) {
             throw new MyException(MAX_GROUP_MANAGER_REACHED,
-                    "无法添加管理员，管理员数量已达所允许的最大值(" + MAX_GROUP_MANAGER_SIZE + "个)。", "groupId", this.getId());
+                    "无法添加管理员，管理员数量已达所允许的最大值:" + MAX_GROUP_MANAGER_SIZE + "。", "groupId", this.getId());
         }
 
-        if (!members.contains(userId)) {
-            this.members.add(userId);
-            raiseEvent(new GroupMembersChangedEvent(getId(), List.of(userId), userContext));
+        int index = indexOfMember(userId);
+        if (index >= 0) {
+            promoteToAdmin(index);
+            addOpsLog("添加管理员", userContext);
+            return;
         }
 
-        this.managers.add(userId);
-
+        this.members.add(Member.builder()
+                .userId(userId)
+                .role(ADMIN)
+                .joinedAt(Instant.now())
+                .build());
+        raiseEvent(new GroupMembersChangedEvent(getId(), List.of(userId), userContext));
         addOpsLog("添加管理员", userContext);
     }
 
     public void addManagers(List<String> userIds, UserContext userContext) {
-        if (managers.containsAll(userIds)) {
+        if (isEmpty(userIds)) {
             return;
         }
 
-        if (managers.size() + userIds.size() > MAX_GROUP_MANAGER_SIZE) {
+        Set<String> distinctUserIds = new HashSet<>(userIds);
+        long newAdmins = distinctUserIds.stream().filter(id -> !containsManager(id)).count();
+        if (adminCount() + newAdmins > MAX_GROUP_MANAGER_SIZE) {
             throw new MyException(MAX_GROUP_MANAGER_REACHED,
-                    "无法添加管理员，管理员数量已达所允许的最大值(" + MAX_GROUP_MANAGER_SIZE + "个)。", "groupId", this.getId());
+                    "无法添加管理员，管理员数量已达所允许的最大值:" + MAX_GROUP_MANAGER_SIZE + "。", "groupId", this.getId());
         }
 
-        Set<String> resultMembers = Stream.concat(members.stream(), userIds.stream()).collect(toImmutableSet());
-        if (notEquals(members, resultMembers)) {
-            raiseEvent(new GroupMembersChangedEvent(getId(), userIds, userContext));
+        List<String> addedMemberIds = new ArrayList<>();
+        for (String userId : distinctUserIds) {
+            if (containsManager(userId)) {
+                continue;
+            }
+
+            int index = indexOfMember(userId);
+            if (index >= 0) {
+                promoteToAdmin(index);
+                continue;
+            }
+
+            this.members.add(Member.builder()
+                    .userId(userId)
+                    .role(ADMIN)
+                    .joinedAt(Instant.now())
+                    .build());
+            addedMemberIds.add(userId);
         }
-        this.members = resultMembers;
 
-        this.managers = Stream.concat(managers.stream(), userIds.stream()).collect(toImmutableSet());
+        if (!addedMemberIds.isEmpty()) {
+            raiseEvent(new GroupMembersChangedEvent(getId(), addedMemberIds, userContext));
+        }
 
-        addOpsLog("添加管理员(多)", userContext);
+        addOpsLog("添加管理员(批量)", userContext);
     }
 
     public void removeManager(String userId, UserContext userContext) {
-        if (!managers.contains(userId)) {
+        int index = indexOfMember(userId);
+        if (index < 0) {
             return;
         }
 
-        this.managers.remove(userId);
+        Member member = members.get(index);
+        if (member.getRole() != ADMIN) {
+            return;
+        }
+
+        demoteToNormal(index);
         addOpsLog("移除管理员", userContext);
     }
 
     public void removeManagers(List<String> userIds, UserContext userContext) {
-        this.managers = managers.stream().filter(id -> !userIds.contains(id)).collect(toImmutableSet());
-        addOpsLog("移除管理员(多)", userContext);
+        if (isEmpty(userIds)) {
+            return;
+        }
+
+        Set<String> demoteUserIds = new HashSet<>(userIds);
+        boolean changed = false;
+        for (int i = 0; i < members.size(); i++) {
+            Member member = members.get(i);
+            if (!demoteUserIds.contains(member.getUserId())) {
+                continue;
+            }
+            if (member.getRole() == ADMIN) {
+                demoteToNormal(i);
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            addOpsLog("移除管理员(批量)", userContext);
+        }
     }
 
     public void activate(UserContext userContext) {
@@ -181,15 +248,20 @@ public class Group extends AggregateRoot {
     }
 
     public boolean containsManager(String userId) {
-        return this.managers.contains(userId);
+        return members.stream()
+                .anyMatch(member -> ValidationUtils.equals(member.getUserId(), userId) && member.getRole() == ADMIN);
     }
 
     public boolean containsMember(String userId) {
-        return containsManager(userId) || this.members.contains(userId);
+        return members.stream()
+                .anyMatch(member -> ValidationUtils.equals(member.getUserId(), userId));
     }
 
     public Set<String> allManagerIds() {
-        return managers;
+        return members.stream()
+                .filter(member -> member.getRole() == ADMIN)
+                .map(Member::getUserId)
+                .collect(toImmutableSet());
     }
 
     public boolean appliesTo(String folderId) {
@@ -197,9 +269,9 @@ public class Group extends AggregateRoot {
     }
 
     /**
-     * 获取当前文件夹的权限集合
+     * 获取当前文件夹的权限集合。
      *
-     * @param ancestors 当前文件夹的祖先集合，包括自身
+     * @param ancestors 当前文件夹的祖先集合，包含自身
      * @return 权限集合
      */
     public Set<Permission> permissionsOf(List<String> ancestors) {
@@ -208,7 +280,7 @@ public class Group extends AggregateRoot {
 
     public void addGrant(String folderId, Set<Permission> permissions, UserContext userContext) {
         grants.put(folderId, new HashSet<>(permissions));
-        addOpsLog("设置资源权限：" + folderId, userContext);
+        addOpsLog("设置资源权限:" + folderId, userContext);
     }
 
     public void addGrants(List<String> folderIds, Set<Permission> permissions, UserContext userContext) {
@@ -227,11 +299,41 @@ public class Group extends AggregateRoot {
 
     public void revoke(String folderId, UserContext userContext) {
         grants.remove(folderId);
-        addOpsLog("移除资源权限：" + folderId, userContext);
+        addOpsLog("移除资源权限:" + folderId, userContext);
     }
 
     public void onDelete(UserContext userContext) {
         raiseEvent(new GroupDeletedEvent(getCustomId(), userContext));
     }
 
+    private int indexOfMember(String userId) {
+        for (int i = 0; i < members.size(); i++) {
+            if (ValidationUtils.equals(members.get(i).getUserId(), userId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private void promoteToAdmin(int index) {
+        Member member = members.get(index);
+        members.set(index, Member.builder()
+                .userId(member.getUserId())
+                .role(ADMIN)
+                .joinedAt(member.getJoinedAt())
+                .build());
+    }
+
+    private void demoteToNormal(int index) {
+        Member member = members.get(index);
+        members.set(index, Member.builder()
+                .userId(member.getUserId())
+                .role(ORDINARY)
+                .joinedAt(member.getJoinedAt())
+                .build());
+    }
+
+    private long adminCount() {
+        return members.stream().filter(member -> member.getRole() == ADMIN).count();
+    }
 }

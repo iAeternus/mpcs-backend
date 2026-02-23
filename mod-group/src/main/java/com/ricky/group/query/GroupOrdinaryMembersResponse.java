@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 
+import java.time.Instant;
 import java.util.List;
 
 @Value
@@ -21,6 +22,7 @@ public class GroupOrdinaryMembersResponse implements Response {
     public static class OrdinaryMember {
         String username;
         String mobileOrEmail;
+        Instant joinedAt;
     }
 
 }

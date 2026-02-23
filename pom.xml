@@ -25,7 +25,6 @@
         <module>mod-app</module>
         <module>mod-user</module>
         <module>mod-community</module>
-        <module>mod-team</module>
         <module>mod-test</module>
         <module>mod-group</module>
         <module>mod-manage</module>

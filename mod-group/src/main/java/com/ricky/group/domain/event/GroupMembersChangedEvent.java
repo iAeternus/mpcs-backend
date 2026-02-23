@@ -18,12 +18,11 @@ import static com.ricky.common.event.DomainEventType.GROUP_MEMBERS_CHANGED;
 public class GroupMembersChangedEvent extends DomainEvent {
 
     String groupId;
-    List<String> userIds; // 变更的用户ID，可能与原memberIds存在重复
+    List<String> userIds; // 变更的用户ID，可能包含重复或不存在的ID
 
     public GroupMembersChangedEvent(String groupId, List<String> userIds, UserContext userContext) {
         super(GROUP_MEMBERS_CHANGED, userContext);
         this.groupId = groupId;
         this.userIds = userIds;
     }
-
 }

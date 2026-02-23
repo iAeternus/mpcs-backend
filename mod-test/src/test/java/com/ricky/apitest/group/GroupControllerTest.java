@@ -178,15 +178,17 @@ public class GroupControllerTest extends BaseApiTest {
 
         String groupId = GroupApi.createGroup(manager.getJwt());
         GroupApi.addGroupMembers(manager.getJwt(), groupId, member1.getUserId(), member2.getUserId());
-        assertTrue(groupRepository.byId(groupId).getMembers().containsAll(List.of(member1.getUserId(), member2.getUserId())));
+        Group group = groupRepository.byId(groupId);
+        assertTrue(group.containsMember(member1.getUserId()));
+        assertTrue(group.containsMember(member2.getUserId()));
 
         // When
         GroupApi.removeGroupMember(manager.getJwt(), groupId, member1.getUserId());
 
         // Then
-        Group group = groupRepository.byId(groupId);
-        assertTrue(group.containsMember(member2.getUserId()));
-        assertFalse(group.containsMember(member1.getUserId()));
+        Group dbGroup = groupRepository.byId(groupId);
+        assertTrue(dbGroup.containsMember(member2.getUserId()));
+        assertFalse(dbGroup.containsMember(member1.getUserId()));
     }
 
     @Test
@@ -233,7 +235,7 @@ public class GroupControllerTest extends BaseApiTest {
 
         Group group = groupRepository.byId(groupId);
         assertTrue(group.containsManager(manager.getUserId()));
-        assertEquals(1, group.getManagers().size());
+        assertEquals(1, group.allManagerIds().size());
         assertTrue(group.containsMember(member1.getUserId()));
         assertTrue(group.containsMember(member2.getUserId()));
 
@@ -243,7 +245,7 @@ public class GroupControllerTest extends BaseApiTest {
         // Then
         Group updatedGroup = groupRepository.byId(groupId);
         assertTrue(updatedGroup.containsManager(member1.getUserId()));
-        assertEquals(2, updatedGroup.getManagers().size());
+        assertEquals(2, updatedGroup.allManagerIds().size());
 
         GroupMembersChangedEvent evt = latestEventFor(groupId, GROUP_MEMBERS_CHANGED, GroupMembersChangedEvent.class);
         assertEquals(groupId, evt.getGroupId());

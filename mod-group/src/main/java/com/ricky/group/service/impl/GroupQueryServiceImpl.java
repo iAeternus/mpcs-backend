@@ -10,6 +10,8 @@ import com.ricky.folder.domain.FolderRepository;
 import com.ricky.group.domain.CachedGroup;
 import com.ricky.group.domain.Group;
 import com.ricky.group.domain.GroupRepository;
+import com.ricky.group.domain.Member;
+import com.ricky.group.domain.MemberRole;
 import com.ricky.group.query.*;
 import com.ricky.group.service.GroupQueryService;
 import com.ricky.user.domain.User;
@@ -17,13 +19,17 @@ import com.ricky.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
+import static com.ricky.group.domain.MemberRole.ORDINARY;
+import static java.util.stream.Collectors.toMap;
 import static com.ricky.common.constants.ConfigConstants.GROUP_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.GROUP_ID_PREFIX;
 import static com.ricky.common.utils.MongoCriteriaUtils.regexSearch;
@@ -68,20 +74,26 @@ public class GroupQueryServiceImpl implements GroupQueryService {
         rateLimiter.applyFor("Group:FetchGroupMembers", 50);
 
         CachedGroup group = groupRepository.cachedById(groupId);
-        Set<String> managerIds = group.getManagers();
-        Set<String> memberIds = group.getMembers();
-
-        Set<String> ordinaryMemberIds = memberIds.stream()
-                .filter(memberId -> !managerIds.contains(memberId)) // 过滤出普通成员
+        List<Member> members = group.getMembers() == null ? List.of() : group.getMembers();
+        Set<String> ordinaryMemberIds = members.stream()
+                .filter(member -> member.getRole() == ORDINARY)
+                .map(Member::getUserId)
                 .collect(toImmutableSet());
 
+        Map<String, Member> memberById = members.stream()
+                .filter(member -> member.getRole() == ORDINARY)
+                .collect(toMap(Member::getUserId, member -> member, (left, right) -> left));
         List<User> users = userRepository.byIds(ordinaryMemberIds);
 
         List<GroupOrdinaryMembersResponse.OrdinaryMember> ordinaryMembers = users.stream()
-                .map(user -> GroupOrdinaryMembersResponse.OrdinaryMember.builder()
-                        .username(user.getUsername())
-                        .mobileOrEmail(user.getMobileOrEmail())
-                        .build())
+                .map(user -> {
+                    Member member = memberById.get(user.getId());
+                    return GroupOrdinaryMembersResponse.OrdinaryMember.builder()
+                            .username(user.getUsername())
+                            .mobileOrEmail(user.getMobileOrEmail())
+                            .joinedAt(member == null ? null : member.getJoinedAt())
+                            .build();
+                })
                 .collect(toImmutableList());
 
         return GroupOrdinaryMembersResponse.builder()
@@ -94,14 +106,25 @@ public class GroupQueryServiceImpl implements GroupQueryService {
         rateLimiter.applyFor("Group:FetchGroupManagers", 50);
 
         CachedGroup group = groupRepository.cachedById(groupId);
-        Set<String> managerIds = group.getManagers();
+        List<Member> members = group.getMembers() == null ? List.of() : group.getMembers();
+        Set<String> managerIds = members.stream()
+                .filter(member -> member.getRole() == MemberRole.ADMIN)
+                .map(Member::getUserId)
+                .collect(toImmutableSet());
 
+        Map<String, Member> managerById = members.stream()
+                .filter(member -> member.getRole() == MemberRole.ADMIN)
+                .collect(toMap(Member::getUserId, member -> member, (left, right) -> left));
         List<User> managers = userRepository.byIds(managerIds);
         List<GroupManagersResponse.Manager> groupManagers = managers.stream()
-                .map(user -> GroupManagersResponse.Manager.builder()
-                        .username(user.getUsername())
-                        .mobileOrEmail(user.getMobileOrEmail())
-                        .build())
+                .map(user -> {
+                    Member member = managerById.get(user.getId());
+                    return GroupManagersResponse.Manager.builder()
+                            .username(user.getUsername())
+                            .mobileOrEmail(user.getMobileOrEmail())
+                            .joinedAt(member == null ? null : member.getJoinedAt())
+                            .build();
+                })
                 .collect(toImmutableList());
 
         return GroupManagersResponse.builder()
@@ -115,7 +138,8 @@ public class GroupQueryServiceImpl implements GroupQueryService {
 
         return MongoPageQuery.of(Group.class, GROUP_COLLECTION)
                 .pageQuery(pageQuery)
-                .where(c -> c.and("managers").is(userContext.getUid())) // my managed
+                .where(c -> c.and("members").elemMatch(Criteria.where("userId").is(userContext.getUid())
+                        .and("role").is(MemberRole.ADMIN))) // 我管理的
                 .search((search, c, q) -> {
                     if (isId(search, GROUP_ID_PREFIX)) {
                         return c.and("_id").is(search);
@@ -146,7 +170,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
 
         return MongoPageQuery.of(Group.class, GROUP_COLLECTION)
                 .pageQuery(pageQuery)
-                .where(c -> c.and("members").is(userContext.getUid())) // my joined
+                .where(c -> c.and("members").elemMatch(Criteria.where("userId").is(userContext.getUid()))) // 我加入的
                 .search((search, c, q) -> {
                     if (isId(search, GROUP_ID_PREFIX)) {
                         return c.and("_id").is(search);
