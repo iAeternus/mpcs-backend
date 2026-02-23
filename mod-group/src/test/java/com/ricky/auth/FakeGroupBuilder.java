@@ -18,6 +18,7 @@ public class FakeGroupBuilder {
     private InheritancePolicy policy = InheritancePolicy.FULL;
 
     private final Set<String> members = new HashSet<>();
+    private final Set<String> managers = new HashSet<>();
     private final Map<String, Set<Permission>> grants = new HashMap<>();
 
     private FakeGroupBuilder(String id) {
@@ -58,6 +59,12 @@ public class FakeGroupBuilder {
         return this;
     }
 
+    public FakeGroupBuilder manager(String userId) {
+        members.add(userId);
+        managers.add(userId);
+        return this;
+    }
+
     public FakeGroupBuilder permission(String folderId, Permission... permissions) {
         grants.put(folderId, Set.of(permissions));
         return this;
@@ -71,6 +78,9 @@ public class FakeGroupBuilder {
 
         when(g.containsMember(any()))
                 .thenAnswer(inv -> members.contains(inv.getArgument(0)));
+        when(g.containsManager(any()))
+                .thenAnswer(inv -> managers.contains(inv.getArgument(0)));
+        when(g.getGrants()).thenReturn(grants);
 
         when(g.appliesTo(any()))
                 .thenReturn(true);

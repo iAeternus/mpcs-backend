@@ -40,9 +40,9 @@ public class FolderFactory {
         }
     }
 
-    // 根文件夹父节点为null，文件夹名为username
-    public Folder createRoot(String customId, UserContext userContext) {
-        return create(customId, null, userContext.getUsername(), userContext); // TODO 文件夹名为username or customId?
+    // 根文件夹父节点为null
+    public Folder createRoot(String customId, String rootName, UserContext userContext) {
+        return create(customId, null, rootName, userContext);
     }
 
 }

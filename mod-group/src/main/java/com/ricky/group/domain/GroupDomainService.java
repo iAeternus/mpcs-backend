@@ -72,13 +72,28 @@ public class GroupDomainService {
         return groupRepository.byIds(user.getGroupIds()).stream()
                 .filter(Group::isActive)
                 .filter(group -> group.containsMember(userId))
-                .filter(group -> group.appliesTo(folderId))
-                .flatMap(group -> group.permissionsOf(ancestors).stream())
+                .flatMap(group -> resolveGroupPermissions(group, userId, folderId, ancestors).stream())
                 .collect(toImmutableSet());
     }
 
     private boolean notTeamSpace(String customId) {
         return SpaceType.fromCustomId(customId) != TEAM;
+    }
+
+    private Set<Permission> resolveGroupPermissions(Group group, String userId, String folderId, List<String> ancestors) {
+        if (group.containsManager(userId)) {
+            return Permission.all();
+        }
+
+        if (isEmpty(group.getGrants())) {
+            return Set.of(Permission.READ);
+        }
+
+        if (!group.appliesTo(folderId)) {
+            return Set.of();
+        }
+
+        return group.permissionsOf(ancestors);
     }
 
     public void rename(Group group, String newName, UserContext userContext) {

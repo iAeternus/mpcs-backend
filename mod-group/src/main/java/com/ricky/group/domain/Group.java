@@ -27,6 +27,7 @@ import static com.ricky.group.domain.MemberRole.ORDINARY;
 
 /**
  * 权限组，描述用户集合对资源集合的权限集合，用来映射真实团队组织结构。
+ * TODO 优化为更细粒度的权限控制，例如对不同Member有不同的权限
  */
 @Getter
 @TypeAlias("group")
@@ -39,7 +40,7 @@ public class Group extends AggregateRoot {
     private List<Member> members; // 成员列表（含角色）
     private String customId; // 文件夹层次结构自定义ID
     private Map<String, Set<Permission>> grants; // 资源ID -> 权限集合
-    private InheritancePolicy inheritancePolicy; // 继承策略
+    private InheritancePolicy inheritancePolicy; // 继承策略 TODO 修改继承策略接口
 
     public Group(String name, UserContext userContext) {
         super(newGroupId(), userContext);

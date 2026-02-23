@@ -113,5 +113,4 @@ public class MpcsSystemInitializer implements ApplicationListener<ApplicationRea
         indexOperations.createIndex(uniqueIndex);
     }
 
-
 }

@@ -5,6 +5,7 @@ import com.ricky.file.domain.File;
 import com.ricky.fileextra.domain.FileExtra;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderHierarchy;
+import com.ricky.group.domain.CachedGroup;
 import com.ricky.group.domain.UserCachedGroups;
 import com.ricky.publicfile.domain.PublicFile;
 import com.ricky.upload.domain.UploadSession;
@@ -41,17 +42,19 @@ public class CacheConfiguration {
 
     @Bean
     public RedisCacheManagerBuilderCustomizer redisBuilderCustomizer(ObjectMapper objectMapper) {
-        objectMapper.activateDefaultTyping(objectMapper.getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
-        GenericJackson2JsonRedisSerializer defaultSerializer = new GenericJackson2JsonRedisSerializer(objectMapper);
+        ObjectMapper cacheObjectMapper = objectMapper.copy();
+        cacheObjectMapper.activateDefaultTyping(cacheObjectMapper.getPolymorphicTypeValidator(), NON_FINAL, PROPERTY);
+        GenericJackson2JsonRedisSerializer defaultSerializer = new GenericJackson2JsonRedisSerializer(cacheObjectMapper);
 
-        var userCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, User.class);
-        var fileCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, File.class);
-        var uploadSessionCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UploadSession.class);
-        var folderCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, Folder.class);
-        var folderHierarchyCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, FolderHierarchy.class);
-        var fileExtraCacheSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, FileExtra.class);
-        var userCachedGroupSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, UserCachedGroups.class);
-        var publicFileSerializer = new Jackson2JsonRedisSerializer<>(objectMapper, PublicFile.class);
+        var userCacheSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, User.class);
+        var fileCacheSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, File.class);
+        var uploadSessionCacheSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, UploadSession.class);
+        var folderCacheSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, Folder.class);
+        var folderHierarchyCacheSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, FolderHierarchy.class);
+        var fileExtraCacheSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, FileExtra.class);
+        var userCachedGroupSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, UserCachedGroups.class);
+        var cachedGroupSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, CachedGroup.class);
+        var publicFileSerializer = new Jackson2JsonRedisSerializer<>(cacheObjectMapper, PublicFile.class);
 
         return builder -> builder.cacheDefaults(defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
@@ -84,6 +87,10 @@ public class CacheConfiguration {
                 .withCacheConfiguration(USER_GROUPS_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)
                         .serializeValuesWith(fromSerializer(userCachedGroupSerializer))
+                        .entryTtl(ofDays(7)))
+                .withCacheConfiguration(GROUPS_CACHE, defaultCacheConfig()
+                        .prefixCacheNameWith(CACHE_PREFIX)
+                        .serializeValuesWith(fromSerializer(cachedGroupSerializer))
                         .entryTtl(ofDays(7)))
                 .withCacheConfiguration(PUBLIC_FILE_CACHE, defaultCacheConfig()
                         .prefixCacheNameWith(CACHE_PREFIX)

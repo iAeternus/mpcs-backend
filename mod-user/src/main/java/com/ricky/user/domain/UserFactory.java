@@ -16,7 +16,7 @@ public class UserFactory {
 
     public CreateUserResult create(String mobile, String email, String password, UserContext userContext) {
         User user = new User(mobile, email, password, userContext);
-        Folder root = folderFactory.createRoot(personalCustomId(user.getId()), userContext);
+        Folder root = folderFactory.createRoot(personalCustomId(user.getId()), userContext.getUsername(), userContext);
         user.setCustomId(root.getCustomId());
         return CreateUserResult.builder()
                 .user(user)

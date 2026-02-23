@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 import static com.ricky.common.exception.MyException.accessDeniedException;
 import static java.util.Objects.requireNonNull;
 
+// 说明：这里只做“组管理权限”校验（是否为该组管理员），不等同于资源权限系统（文件/授权）。
+// 若未来统一权限体系，应抽取统一的角色/权限评估入口，避免管理权限与资源权限逻辑分散。
 @Component
 @RequiredArgsConstructor
 public class ManagePermissionChecker {

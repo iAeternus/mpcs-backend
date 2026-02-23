@@ -3,6 +3,7 @@ package com.ricky.apitest.user;
 import com.ricky.apitest.BaseApiTest;
 import com.ricky.apitest.verification.VerificationCodeApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
+import com.ricky.folder.domain.Folder;
 import com.ricky.user.command.RegisterCommand;
 import com.ricky.user.command.RegisterResponse;
 import com.ricky.user.command.UploadAvatarResponse;
@@ -46,6 +47,8 @@ public class UserControllerTest extends BaseApiTest {
 
         String customId = personalCustomId(user.getId());
         assertTrue(folderRepository.existsRoot(customId));
+        Folder root = folderRepository.getRoot(customId);
+        assertEquals(username, root.getFolderName());
     }
 
     @Test

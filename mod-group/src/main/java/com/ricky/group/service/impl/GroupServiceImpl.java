@@ -37,7 +37,6 @@ public class GroupServiceImpl implements GroupService {
     private final UserRepository userRepository;
     private final FolderRepository folderRepository;
 
-    // TODO 谁有权限创建组还没有实现
     @Override
     @Transactional
     public String createGroup(CreateGroupCommand command, UserContext userContext) {
@@ -46,7 +45,7 @@ public class GroupServiceImpl implements GroupService {
         Group group = groupFactory.create(command.getName(), userContext);
         group.addManager(userContext.getUid(), userContext); // 创建者自动设为管理员
 
-        Folder root = folderFactory.createRoot(group.getCustomId(), userContext);
+        Folder root = folderFactory.createRoot(group.getCustomId(), group.getName(), userContext);
 
         User user = userRepository.byId(userContext.getUid());
         user.addGroup(group.getId(), userContext);

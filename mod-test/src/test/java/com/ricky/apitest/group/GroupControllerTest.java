@@ -27,6 +27,7 @@ import static com.ricky.common.event.DomainEventType.GROUP_MEMBERS_CHANGED;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static com.ricky.common.permission.Permission.READ;
 import static com.ricky.common.permission.Permission.WRITE;
+import static com.ricky.common.utils.ValidationUtils.isNotBlank;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class GroupControllerTest extends BaseApiTest {
@@ -51,6 +52,8 @@ public class GroupControllerTest extends BaseApiTest {
         assertTrue(user.containsGroup(groupId));
 
         assertTrue(folderRepository.existsRoot(group.getCustomId()));
+        Folder root = folderRepository.getRoot(group.getCustomId());
+        assertEquals(groupName, root.getFolderName());
     }
 
     @Test
@@ -549,6 +552,7 @@ public class GroupControllerTest extends BaseApiTest {
 
         // Then
         assertEquals(2, pagedList.size());
+        assertTrue(pagedList.getData().stream().allMatch(item -> isNotBlank(item.getGroupId())));
     }
 
     @Test
@@ -574,6 +578,7 @@ public class GroupControllerTest extends BaseApiTest {
 
         // Then
         assertEquals(3, pagedList.size());
+        assertTrue(pagedList.getData().stream().allMatch(item -> isNotBlank(item.getGroupId())));
     }
 
 }

@@ -1,5 +1,6 @@
 package com.ricky.auth;
 
+import com.ricky.common.permission.Permission;
 import org.junit.jupiter.api.Test;
 
 import static com.ricky.auth.AuthScenario.FolderPath.path;
@@ -116,6 +117,32 @@ public class GroupDomainServiceTest {
                 .givenHierarchy("c1", path("f1"))
                 .whenResolve("u1", "c1", "f1")
                 .thenEmpty();
+    }
+
+    @Test
+    void admin_should_have_all_permissions_when_no_grants() {
+        scenario()
+                .givenUser("u1", "g1")
+                .givenGroup(
+                        group("g1")
+                                .manager("u1")
+                )
+                .givenHierarchy("c1", path("f1"))
+                .whenResolve("u1", "c1", "f1")
+                .thenPermissionsAre(Permission.all().toArray(new Permission[0]));
+    }
+
+    @Test
+    void member_should_have_read_permission_when_no_grants() {
+        scenario()
+                .givenUser("u1", "g1")
+                .givenGroup(
+                        group("g1")
+                                .member("u1")
+                )
+                .givenHierarchy("c1", path("f1"))
+                .whenResolve("u1", "c1", "f1")
+                .thenPermissionsAre(READ);
     }
 
 }
