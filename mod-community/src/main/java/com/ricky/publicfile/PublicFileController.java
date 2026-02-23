@@ -13,6 +13,7 @@ import com.ricky.publicfile.query.PublicFilePageQuery;
 import com.ricky.publicfile.query.PublicFileResponse;
 import com.ricky.publicfile.service.PublicFileQueryService;
 import com.ricky.publicfile.service.PublicFileService;
+import com.ricky.user.domain.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -79,6 +80,13 @@ public class PublicFileController {
     @Operation(summary = "获取发布物点赞数")
     public LikeCountResponse fetchLikeCount(@PathVariable @NotBlank @Id(POST_ID_PREFIX) String postId) {
         return publicFileQueryService.fetchLikeCount(postId);
+    }
+
+    @PostMapping("/page/my")
+    @Operation(summary = "分页获取我发布的文件")
+    public PagedList<PublicFileResponse> pageMy(@RequestBody @Valid PublicFilePageQuery query,
+                                                @AuthenticationPrincipal UserContext userContext) {
+        return publicFileQueryService.pageMy(query, userContext);
     }
 
 }

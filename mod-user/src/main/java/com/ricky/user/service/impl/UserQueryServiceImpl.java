@@ -45,4 +45,19 @@ public class UserQueryServiceImpl implements UserQueryService {
                 .customId(user.getCustomId())
                 .build();
     }
+
+    @Override
+    public UserInfoResponse fetchUserInfo(String userId) {
+        rateLimiter.applyFor("User:FetchUserInfo", 50);
+
+        User user = userRepository.cachedById(userId);
+        return UserInfoResponse.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .mobile(user.getMobile())
+                .role(user.getRole())
+                .customId(user.getCustomId())
+                .build();
+    }
 }

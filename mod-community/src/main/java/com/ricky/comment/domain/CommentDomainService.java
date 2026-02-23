@@ -1,8 +1,8 @@
 package com.ricky.comment.domain;
 
 import com.ricky.common.domain.hierarchy.HierarchyDomainService;
-import com.ricky.common.domain.hierarchy.HierarchyNode;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.exception.MyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +20,12 @@ public class CommentDomainService extends HierarchyDomainService<Comment, Commen
 
     public void deleteComment(String postId, String commentId, UserContext userContext) {
         String path = repository.byIdOptional(postId, commentId)
-                .map(HierarchyNode::getPath)
+                .map(comment -> {
+                    if (!userContext.getUid().equals(comment.getUserId())) {
+                        throw MyException.accessDeniedException("只能删除自己发布的评论。");
+                    }
+                    return comment.getPath();
+                })
                 .orElse("");
 
         List<Comment> subtree = repository.getSubtree(postId, path);

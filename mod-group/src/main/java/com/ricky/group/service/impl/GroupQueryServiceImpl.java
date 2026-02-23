@@ -38,6 +38,7 @@ import static com.ricky.common.validation.id.IdValidator.isId;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.data.domain.Sort.by;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 @Service
 @RequiredArgsConstructor
@@ -138,7 +139,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
 
         return MongoPageQuery.of(Group.class, GROUP_COLLECTION)
                 .pageQuery(pageQuery)
-                .where(c -> c.and("members").elemMatch(Criteria.where("userId").is(userContext.getUid())
+                .where(c -> c.and("members").elemMatch(where("userId").is(userContext.getUid())
                         .and("role").is(MemberRole.ADMIN))) // 我管理的
                 .search((search, c, q) -> {
                     if (isId(search, GROUP_ID_PREFIX)) {
@@ -170,7 +171,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
 
         return MongoPageQuery.of(Group.class, GROUP_COLLECTION)
                 .pageQuery(pageQuery)
-                .where(c -> c.and("members").elemMatch(Criteria.where("userId").is(userContext.getUid()))) // 我加入的
+                .where(c -> c.and("members").elemMatch(where("userId").is(userContext.getUid()))) // 我加入的
                 .search((search, c, q) -> {
                     if (isId(search, GROUP_ID_PREFIX)) {
                         return c.and("_id").is(search);

@@ -18,6 +18,7 @@ import java.io.IOException;
 
 import static com.ricky.apitest.RandomTestFixture.rCommentContent;
 import static com.ricky.common.event.DomainEventType.FILE_PUBLISHED;
+import static com.ricky.common.exception.ErrorCodeEnum.ACCESS_DENIED;
 import static com.ricky.common.exception.ErrorCodeEnum.PUBLIC_FILE_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -101,6 +102,25 @@ public class CommentControllerTest extends BaseApiTest {
     }
 
     @Test
+    void should_fail_to_delete_comment_if_not_owner() throws IOException {
+        // Given
+        TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
+        LoginResponse owner = ctx.getManager();
+        LoginResponse another = setupApi.registerWithLogin();
+
+        String postId = PublicFileApi.post(owner.getJwt(), ctx.getFileId()).getPostId();
+        awaitLatestEventConsumed(postId, FILE_PUBLISHED, FilePublishedEvent.class);
+
+        String commentId = CommentApi.createComment(owner.getJwt(), postId).getCommentId();
+
+        // When & Then
+        assertError(() -> CommentApi.deleteCommentRaw(another.getJwt(), DeleteCommentCommand.builder()
+                .postId(postId)
+                .commentId(commentId)
+                .build()), ACCESS_DENIED);
+    }
+
+    @Test
     void should_fetch_comment_detail() throws IOException {
         // Given
         TestFileContext ctx = setupApi.registerWithFile("testdata/plain-text-file.txt");
@@ -109,12 +129,14 @@ public class CommentControllerTest extends BaseApiTest {
         String postId = PublicFileApi.post(manager.getJwt(), ctx.getFileId()).getPostId();
         awaitLatestEventConsumed(postId, FILE_PUBLISHED, FilePublishedEvent.class);
 
-        String commentId1 = CommentApi.createComment(manager.getJwt(), postId).getCommentId();
+        String commentId = CommentApi.createComment(manager.getJwt(), postId).getCommentId();
 
         // When
-        CommentResponse response = CommentApi.fetchDetail(manager.getJwt(), commentId1);
+        CommentResponse response = CommentApi.fetchDetail(manager.getJwt(), commentId);
 
         // Then
+        assertEquals(commentId, response.getCommentId());
+        assertNull(response.getParentId());
         assertEquals(postId, response.getPostId());
     }
 

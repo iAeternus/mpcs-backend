@@ -30,6 +30,8 @@ public class PublicFileServiceImpl implements PublicFileService {
     public PostResponse post(PostCommand command, UserContext userContext) {
         rateLimiter.applyFor("PublicFile:Post", 10);
 
+        // TODO 需检测发布物是否已存在
+
         File file = fileRepository.cachedById(command.getFileId());
         PublicFile publicFile = new PublicFile(file, userContext);
         publicFileRepository.save(publicFile);

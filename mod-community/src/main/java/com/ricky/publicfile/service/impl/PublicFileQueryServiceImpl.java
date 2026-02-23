@@ -1,8 +1,10 @@
 package com.ricky.publicfile.service.impl;
 
+import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.page.MongoPageQuery;
 import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.page.SortRegistry;
+import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.publicfile.domain.PublicFile;
 import com.ricky.publicfile.domain.PublicFileRepository;
@@ -48,7 +50,7 @@ public class PublicFileQueryServiceImpl implements PublicFileQueryService {
                         .register("title", "title")
                         .register("likeCount", "likeCount")
                         .register("commentCount", "commentCount"))
-                .project("originalFileId", "publisher", "title", "description",
+                .project("_id", "originalFileId", "publisher", "title", "description",
                         "likeCount", "commentCount", "createdAt")
                 .fetchAs(PublicFileResponse.class, mongoTemplate);
     }
@@ -71,5 +73,31 @@ public class PublicFileQueryServiceImpl implements PublicFileQueryService {
         return LikeCountResponse.builder()
                 .likeCount(publicFile.getLikeCount())
                 .build();
+    }
+
+    @Override
+    public PagedList<PublicFileResponse> pageMy(PublicFilePageQuery pageQuery, UserContext userContext) {
+        rateLimiter.applyFor("PublicFile:Page", 5);
+
+        return MongoPageQuery.of(PublicFile.class, PUBLIC_FILE_COLLECTION)
+                .pageQuery(pageQuery)
+                .where(c -> c.and(AggregateRoot.Fields.createdBy).is(userContext.getUid()))
+                .search((search, c, q) -> {
+                    if (isId(search, FILE_ID_PREFIX)) {
+                        return c.and("originalFileId").is(search);
+                    }
+                    if (isId(search, USER_ID_PREFIX)) {
+                        return c.and("publisher").is(search);
+                    }
+                    return c.orOperator(Criteria.where("title").regex(search));
+                })
+                .sort(SortRegistry.newInstance()
+                        .register("createdAt", "createdAt")
+                        .register("title", "title")
+                        .register("likeCount", "likeCount")
+                        .register("commentCount", "commentCount"))
+                .project("_id", "originalFileId", "publisher", "title", "description",
+                        "likeCount", "commentCount", "createdAt")
+                .fetchAs(PublicFileResponse.class, mongoTemplate);
     }
 }

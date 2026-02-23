@@ -40,6 +40,8 @@ public class CommentQueryServiceImpl implements CommentQueryService {
         Comment comment = commentRepository.cachedById(commentId);
         User user = userRepository.cachedById(comment.getUserId());
         return CommentResponse.builder()
+                .commentId(comment.getId())
+                .parentId(comment.getParentId())
                 .username(user.getUsername())
                 .postId(comment.getCustomId())
                 .content(comment.getContent())
@@ -56,7 +58,7 @@ public class CommentQueryServiceImpl implements CommentQueryService {
                 .where(c -> c.and("customId").is(pageQuery.getPostId())
                         .and("parentId").isNull())
                 .sort(SortRegistry.newInstance().resolve(pageQuery.getSortedBy(), pageQuery.getAscSort()))
-                .project("userId", "customId", "content", "createdAt")
+                .project("_id", "parentId", "userId", "customId", "content", "createdAt")
                 .map(this::toCommentResponse, mongoTemplate);
     }
 
@@ -68,7 +70,7 @@ public class CommentQueryServiceImpl implements CommentQueryService {
                 .pageQuery(pageQuery)
                 .where(c -> c.and("parentId").is(pageQuery.getParentId()))
                 .sort(SortRegistry.newInstance().resolve(pageQuery.getSortedBy(), pageQuery.getAscSort()))
-                .project("userId", "customId", "content", "createdAt")
+                .project("_id", "parentId", "userId", "customId", "content", "createdAt")
                 .map(this::toCommentResponse, mongoTemplate);
     }
 
@@ -82,6 +84,8 @@ public class CommentQueryServiceImpl implements CommentQueryService {
 
         return comments.stream()
                 .map(comment -> CommentResponse.builder()
+                        .commentId(comment.getId())
+                        .parentId(comment.getParentId())
                         .username(userIdToUsernameMap.getOrDefault(comment.getUserId(), "未知用户"))
                         .postId(comment.getCustomId())
                         .content(comment.getContent())
