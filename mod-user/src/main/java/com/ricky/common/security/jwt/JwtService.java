@@ -12,8 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
+
+import static com.ricky.common.constants.ConfigConstants.DEFAULT_CHARSET;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class JwtService {
     private final UserRepository userRepository;
 
     private SecretKey getSecretKey() {
-        return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
+        return Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes(DEFAULT_CHARSET));
     }
 
     public String generateJwt(String userId) {

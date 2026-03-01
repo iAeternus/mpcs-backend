@@ -28,6 +28,7 @@
         <module>mod-test</module>
         <module>mod-group</module>
         <module>mod-manage</module>
+        <module>mod-security</module>
     </modules>
 
     <repositories>

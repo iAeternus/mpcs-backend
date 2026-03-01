@@ -1,5 +1,6 @@
 package com.ricky.common.sensitive.domain.filter.impl;
 
+import com.ricky.common.constants.ConfigConstants;
 import com.ricky.common.sensitive.domain.filter.SensitiveWordFilter;
 
 import java.io.BufferedReader;
@@ -11,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+import static com.ricky.common.constants.ConfigConstants.DEFAULT_CHARSET;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
 
@@ -158,7 +160,7 @@ public final class DFAFilter implements SensitiveWordFilter {
      * @throws IOException IO异常
      */
     private void loadWord(InputStream inputStream) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, DEFAULT_CHARSET))) {
             String line;
             ArrayList<String> list = new ArrayList<>();
             while ((line = reader.readLine()) != null) {

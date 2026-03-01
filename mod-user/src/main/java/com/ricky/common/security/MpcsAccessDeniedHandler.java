@@ -14,8 +14,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import static com.ricky.common.constants.ConfigConstants.DEFAULT_CHARSET;
 import static com.ricky.common.exception.ErrorCodeEnum.ACCESS_DENIED;
-import static org.apache.commons.lang3.CharEncoding.UTF_8;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
 
 @Component
@@ -29,7 +29,7 @@ public class MpcsAccessDeniedHandler implements AccessDeniedHandler {
         SecurityContextHolder.clearContext();
         response.setStatus(403);
         response.setContentType(APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding(UTF_8);
+        response.setCharacterEncoding(DEFAULT_CHARSET.name());
 
         String traceId = tracingService.currentTraceId();
         MyError error = new MyError(ACCESS_DENIED, 403, "Access denied.", request.getRequestURI(), traceId, null);

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 import static com.ricky.common.constants.ConfigConstants.*;
-import static org.apache.commons.lang3.CharEncoding.UTF_8;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.springframework.util.MimeTypeUtils.APPLICATION_JSON_VALUE;
@@ -60,7 +59,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (status == 401 || status == 409) { // 对于401和409异常，直接中断执行并返回
                 response.setStatus(status);
                 response.setContentType(APPLICATION_JSON_VALUE);
-                response.setCharacterEncoding(UTF_8);
+                response.setCharacterEncoding(DEFAULT_CHARSET.name());
                 String traceId = tracingService.currentTraceId();
                 MyError error = new MyError(ex.getCode(),
                         status,
