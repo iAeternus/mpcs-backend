@@ -1,6 +1,7 @@
 package com.ricky.common.security.jwt;
 
 import com.ricky.common.json.JsonCodec;
+import com.ricky.common.logging.AccessLogFilter;
 import com.ricky.common.properties.JwtProperties;
 import com.ricky.common.security.IpJwtCookieUpdater;
 import com.ricky.common.security.MdcFilter;
@@ -57,6 +58,7 @@ public class JwtWebSecurityConfiguration {
                                 ipJwtCookieUpdater,
                                 jwtProperties.getAheadAutoRefresh()),
                         AuthorizationFilter.class)
+                .addFilterBefore(new AccessLogFilter(), ExceptionTranslationFilter.class)
                 .addFilterBefore(new MdcFilter(), ExceptionTranslationFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers
@@ -101,6 +103,7 @@ public class JwtWebSecurityConfiguration {
                                 ipJwtCookieUpdater,
                                 jwtProperties.getAheadAutoRefresh()),
                         AuthorizationFilter.class)
+                .addFilterBefore(new AccessLogFilter(), ExceptionTranslationFilter.class)
                 .addFilterBefore(new MdcFilter(), ExceptionTranslationFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .headers(Customizer.withDefaults())

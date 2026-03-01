@@ -3,7 +3,7 @@ package com.ricky.common.tracing;
 import io.micrometer.tracing.ScopedSpan;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 
@@ -15,10 +15,14 @@ import org.springframework.stereotype.Component;
  * @desc 链路追踪
  */
 @Component
-@RequiredArgsConstructor
 public class TracingService {
 
-    private final Tracer tracer = Tracer.NOOP; // TODO 找不到bean
+    private final Tracer tracer;
+
+    public TracingService(ObjectProvider<Tracer> tracerProvider) {
+        Tracer provided = tracerProvider.getIfAvailable();
+        this.tracer = provided != null ? provided : Tracer.NOOP;
+    }
 
     /**
      * 获取当前线程的追踪ID。
@@ -36,7 +40,7 @@ public class TracingService {
      * 开始一个新的Span，并返回一个ScopedSpan，该ScopedSpan在离开其作用域时会自动结束。
      * 这个方法用于在方法的开始处创建一个新的Span，以追踪方法的执行。
      *
-     * @param name 新的Span的名称，用于在追踪系统中标识这个Span。
+     * @param name 新的Span的名称，用于在追踪系统中标识这个Span
      * @return 一个ScopedSpan实例，它封装了新创建的Span，并在作用域结束时自动结束该Span。
      */
     public ScopedSpan startNewSpan(String name) {

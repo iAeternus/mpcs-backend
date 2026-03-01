@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <!-- 注册彩色日志转换器 -->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
 
     <!-- Spring Properties -->
     <springProperty scope="context" name="LOG_PATH" source="project.folder" defaultValue="log"/>
@@ -8,12 +10,26 @@
 
     <!-- 避免idea格式化破坏日志格式 -->
     <property name="LOG_PATTERN"
-              value="%boldCyan(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %green([%thread]) %highlight([%-5level]) %boldMagenta(%logger{36}):%boldCyan(%method) %yellow([%X{tid}]) [%white(%property{APP_NAME})] %cyan(%msg%n)"/>
+              value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%thread]){green} %clr(%-5level) %clr(%logger{36}){magenta} %clr(%replace(%X{traceId}){'^(.+)$','[$1] '}){yellow}%clr(%replace(%X{spanId}){'^(.+)$','[$1] '}){yellow}%clr([%property{APP_NAME}]){cyan} %msg%n"/>
+
+    <property name="FILE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss, GMT+8} [%thread] %-5level %logger{36} %replace(%X{traceId}){'^(.+)$','[$1] '}%replace(%X{spanId}){'^(.+)$','[$1] '}[%property{APP_NAME}] %msg%n"/>
+
+    <property name="ACCESS_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %replace(%X{traceId}){'^(.+)$','[$1] '}%replace(%X{spanId}){'^(.+)$','[$1] '}%msg%n"/>
 
     <!-- Console Appender with Color Coding -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- Access Log Appender -->
+    <appender name="ACCESS" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${ACCESS_PATTERN}</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
@@ -29,7 +45,7 @@
         </rollingPolicy>
         <encoder>
             <charset>UTF-8</charset>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss, GMT+8} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>${FILE_PATTERN}</pattern>
         </encoder>
     </appender>
 
@@ -39,6 +55,9 @@
     <logger name="com.zaxxer.hikari" level="INFO"/>
     <logger name="io.lettuce.core" level="INFO"/>
     <logger name="org.springframework.data.redis" level="INFO"/>
+    <logger name="ACCESS_LOG" level="INFO" additivity="false">
+        <appender-ref ref="ACCESS"/>
+    </logger>
 
     <!-- AI测试 -->
     <logger name="com.alibaba.cloud.ai.dashscope.api" level="DEBUG"/>
@@ -48,9 +67,23 @@
     <logger name="org.springframework.http.client" level="DEBUG"/>
 
     <!-- Root Logger -->
-    <root level="${LOG_ROOT_LEVEL}">
-        <appender-ref ref="CONSOLE"/>
-        <appender-ref ref="FILE"/>
-    </root>
+    <springProfile name="dev,ci,test">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
+    <springProfile name="!dev &amp; !ci &amp; !test &amp; !prod">
+        <root level="${LOG_ROOT_LEVEL}">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+    </springProfile>
 
 </configuration>
