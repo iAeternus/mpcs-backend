@@ -37,3 +37,4 @@ build/
 
 /data
 **/application-ci.yml
+.env

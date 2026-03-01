@@ -195,7 +195,6 @@ public class UserControllerTest extends BaseApiTest {
         User user = userRepository.byId(manager.getUserId());
         assertNotNull(resp.getAvatarUrl());
         assertEquals(resp.getAvatarUrl(), user.getAvatarUrl());
-        assertTrue(resp.getAvatarUrl().startsWith(manager.getUserId() + "/"));
     }
 
     @Test

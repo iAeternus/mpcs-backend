@@ -6,6 +6,8 @@ server:
 spring:
   application:
     name: mpcs-backend
+  config:
+    import: optional:file:.env[.properties],optional:file:../.env[.properties]
   profiles:
     active: ci
   thymeleaf:

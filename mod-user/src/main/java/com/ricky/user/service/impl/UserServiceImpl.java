@@ -88,12 +88,12 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.byId(userContext.getUid());
         String objectKey = userAvatarStorage.storeAvatar(user.getId(), avatar);
 
-        user.updateAvatarUrl(objectKey, userContext);
+        user.updateAvatarUrl(avatarUrlResolver.toPublicUrl(objectKey), userContext);
         userRepository.save(user);
         log.info("User[{}] avatar uploaded", user.getId());
 
         return UploadAvatarResponse.builder()
-                .avatarUrl(avatarUrlResolver.toPublicUrl(objectKey))
+                .avatarUrl(user.getAvatarUrl())
                 .build();
     }
 }

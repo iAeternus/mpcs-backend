@@ -68,9 +68,11 @@
 
         <!-- OSS -->
         <minio.version>8.6.0</minio.version>
+        <okhttp.version>4.12.0</okhttp.version>
 
         <!-- AI -->
         <spring.ai.version>1.0.0</spring.ai.version>
+        <spring.ai.alibaba.version>1.1.0.0-M5</spring.ai.alibaba.version>
 
         <!-- 文件解析 -->
         <tika.version>3.2.1</tika.version>
@@ -192,12 +194,12 @@
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>okhttp</artifactId>
-                <version>4.12.0</version>
+                <version>${okhttp.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
                 <artifactId>logging-interceptor</artifactId>
-                <version>4.12.0</version>
+                <version>${okhttp.version}</version>
             </dependency>
 
             <!-- AI -->
@@ -207,6 +209,16 @@
                 <version>${spring.ai.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud.ai</groupId>
+                <artifactId>spring-ai-alibaba-agent-framework</artifactId>
+                <version>${spring.ai.alibaba.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba.cloud.ai</groupId>
+                <artifactId>spring-ai-alibaba-starter-dashscope</artifactId>
+                <version>${spring.ai.alibaba.version}</version>
             </dependency>
 
             <!-- 文件解析 -->

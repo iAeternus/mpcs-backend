@@ -1,18 +1,16 @@
 spring:
   elasticsearch:
-    # username: elastic
-    # password: 123456
     uris: http://localhost:9200
     connection-timeout: 1s
   data:
     mongodb:
-      uri: mongodb://admin:123456@localhost:27018/mpcs-dev?authSource=admin
-      database: mpcs-dev
+      uri: ${MPCS_MONGO_URI}
+      database: ${MPCS_MONGO_DB:mpcs-dev}
     redis:
       database: 0
       host: localhost
       port: 6379
-      password: "123456"
+      password: ${MPCS_REDIS_PASSWORD}
       timeout: 3000
       jedis:
         pool:
@@ -25,8 +23,10 @@ spring:
       max-file-size: 300MB
       max-request-size: 500MB
   ai:
+    retry:
+      max-attempts: 3
     dashscope:
-      api-key: ${DASHSCOPE_API_KEY:your-api-key}
+      api-key: ${DASHSCOPE_API_KEY}
       chat:
         options:
           model: qwen-plus
@@ -41,20 +41,16 @@ logging:
   level:
     com.alibaba.cloud.ai.dashscope.api: DEBUG
 
-#cloud:
-#  elasticsearch:
-#    host: ${ES_HOST:192.168.28.132}
-#    port: ${ES_PORT:9200}
-
 mpcs:
   config:
     limit-rate: false
     base-domain-name: mpcs.com  # TODO
     https-enabled: false
     auth: true
+    storage: OSS
   jwt:
     issuer: mpcs-local-issuer
-    secret: ckxGdnjP6bGmQyrGJaW32s8CtxyGVgeK
+    secret: ${MPCS_JWT_SECRET}
     expire: 720
     ahead-auto-refresh: 60
   redis:
@@ -71,3 +67,9 @@ mpcs:
       chunk-size: 1048576  # 1MB
       buffer-size: 1048576  # 1MB
     text-file-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\text-files"
+  sensitive:
+    algorithm: DFA
+  minio:
+    endpoint: http://localhost:9000
+    access-key: ${MPCS_MINIO_ACCESS_KEY}
+    secret-key: ${MPCS_MINIO_SECRET_KEY}
