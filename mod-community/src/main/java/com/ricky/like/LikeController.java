@@ -2,11 +2,14 @@ package com.ricky.like;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.validation.id.Id;
+import com.ricky.like.query.LikeStatusQuery;
+import com.ricky.like.query.LikeStatusesResponse;
 import com.ricky.like.query.LikedCountResponse;
 import com.ricky.like.service.LikeQueryService;
 import com.ricky.like.service.LikeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,6 +47,13 @@ public class LikeController {
     @Operation(summary = "获取发布物被点赞数量")
     public LikedCountResponse fetchLikedCount(@PathVariable @NotBlank @Id(POST_ID_PREFIX) String postId) {
         return likeQueryService.fetchLikedCount(postId);
+    }
+
+    @PostMapping("/status/batch")
+    @Operation(summary = "获取当前用户对发布物的点赞状态")
+    public LikeStatusesResponse fetchLikeStatus(@RequestBody @Valid LikeStatusQuery query,
+                                                @AuthenticationPrincipal UserContext userContext) {
+        return likeQueryService.fetchLikeStatus(query, userContext);
     }
 
 }

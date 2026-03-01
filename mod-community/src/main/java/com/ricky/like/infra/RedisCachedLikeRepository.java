@@ -15,6 +15,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.ricky.common.constants.ConfigConstants.LIKED_COUNT_KEY;
 import static com.ricky.common.constants.ConfigConstants.LIKE_KEY;
@@ -131,5 +134,24 @@ public class RedisCachedLikeRepository implements CachedLikeRepository {
                     .build());
         }
         return likedCounts;
+    }
+
+    @Override
+    public Map<String, Boolean> listLikeStatus(List<String> postIds, String userId) {
+        List<Object> hashKeys = postIds.stream()
+                .map(postId -> RedisKeyUtils.likedKey(userId, postId))
+                .map(key -> (Object) key)
+                .toList();
+
+        List<Object> statuses = stringRedisTemplate.opsForHash().multiGet(LIKE_KEY, hashKeys);
+        if (isEmpty(statuses)) {
+            return Map.of();
+        }
+
+        return IntStream.range(0, Math.min(postIds.size(), statuses.size()))
+                .filter(i -> statuses.get(i) != null)
+                .boxed()
+                .collect(Collectors.toMap(postIds::get,
+                        i -> LikeStatus.LIKE.getCode().equals(Integer.valueOf(String.valueOf(statuses.get(i))))));
     }
 }

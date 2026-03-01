@@ -1,6 +1,11 @@
 package com.ricky.like.domain;
 
+import com.ricky.common.validation.collection.NoNullElement;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.util.List;
+import java.util.Map;
 
 public interface CachedLikeRepository {
 
@@ -33,4 +38,8 @@ public interface CachedLikeRepository {
      */
     List<LikedCount> listAllLikedCount();
 
+    /**
+     * 获取缓存中指定用户对指定发布物集合的点赞状态
+     */
+    Map<String, Boolean> listLikeStatus(List<String> postIds, String userId);
 }
