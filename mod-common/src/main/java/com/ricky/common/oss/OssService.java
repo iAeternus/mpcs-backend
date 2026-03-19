@@ -1,32 +1,27 @@
 package com.ricky.common.oss;
 
 import java.io.InputStream;
+import java.util.List;
 
 public interface OssService {
 
-    /**
-     * Ensure bucket exists.
-     */
     void ensureBucket(String bucket);
 
-    /**
-     * 上传对象
-     */
     void putObject(String bucket, String objectKey, InputStream input, long size, String contentType);
 
-    /**
-     * 获取对象流
-     */
     InputStream getObject(String bucket, String objectKey);
 
-    /**
-     * 删除对象
-     */
     void deleteObject(String bucket, String objectKey);
 
-    /**
-     * 是否存在
-     */
     boolean exists(String bucket, String objectKey);
 
+    String initiateMultipartUpload(String bucket, String objectKey);
+
+    String uploadPart(String bucket, String objectKey, String uploadId, int partNumber, InputStream input, long size);
+
+    void completeMultipartUpload(String bucket, String objectKey, String uploadId, List<PartETag> parts);
+
+    void abortMultipartUpload(String bucket, String objectKey, String uploadId);
+
+    record PartETag(String eTag, int partNumber) {}
 }

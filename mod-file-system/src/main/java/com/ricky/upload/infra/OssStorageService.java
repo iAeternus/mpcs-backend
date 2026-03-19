@@ -12,9 +12,9 @@ import com.ricky.file.domain.storage.StoredFile;
 import com.ricky.upload.domain.StorageService;
 import com.ricky.upload.domain.UploadSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Primary;
-import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,6 +32,7 @@ import static com.ricky.common.constants.ConfigConstants.FILE_BUCKET;
 import static com.ricky.common.exception.ErrorCodeEnum.MERGE_CHUNKS_FAILED;
 import static com.ricky.common.exception.ErrorCodeEnum.OSS_ERROR;
 
+@Slf4j
 @Primary
 @Component
 @RequiredArgsConstructor
@@ -70,19 +71,23 @@ public class OssStorageService implements StorageService {
         String contentType = mimeTypeResolver.resolve(extension);
 
         MessageDigest digest = fileHasherFactory.getFileHasher().newDigest();
+        List<InputStream> streams = new java.util.ArrayList<>(session.getTotalChunks());
 
-        try (InputStream mergedStream = new SequenceInputStream(Collections.enumeration(buildChunkStreams(session, chunkDir, digest)))) {
-            // 一次性流式上传
-            ossService.putObject(
-                    FILE_BUCKET,
-                    objectKey,
-                    mergedStream,
-                    session.getTotalSize(),
-                    contentType
-            );
+        try {
+            for (int i = 0; i < session.getTotalChunks(); i++) {
+                Path chunk = chunkDir.resolve(String.valueOf(i));
+                InputStream in = Files.newInputStream(chunk);
+                streams.add(new DigestInputStream(in, digest));
+            }
+
+            try (InputStream mergedStream = new SequenceInputStream(Collections.enumeration(streams))) {
+                ossService.putObject(FILE_BUCKET, objectKey, mergedStream, session.getTotalSize(), contentType);
+            }
 
             byte[] hashBytes = digest.digest();
-            String hash = String.valueOf(Hex.encode(hashBytes));
+            String hash = bytesToHex(hashBytes);
+
+            log.info("Merged {} chunks to OSS: objectKey={}", session.getTotalChunks(), objectKey);
 
             return StoredFile.builder()
                     .storageId(OssStorageId.withFileBucket(objectKey))
@@ -93,22 +98,16 @@ public class OssStorageService implements StorageService {
             throw new MyException(MERGE_CHUNKS_FAILED, "Merge chunks and upload to OSS failed",
                     "uploadSessionId", session.getId());
         } finally {
-            // 清理分片
             cleanupChunks(session, chunkDir);
         }
     }
 
-    private List<InputStream> buildChunkStreams(UploadSession session, Path chunkDir, MessageDigest digest) throws IOException {
-        List<InputStream> streams = new java.util.ArrayList<>(session.getTotalChunks());
-
-        for (int i = 0; i < session.getTotalChunks(); i++) {
-            Path chunk = chunkDir.resolve(String.valueOf(i));
-
-            InputStream in = Files.newInputStream(chunk);
-            streams.add(new DigestInputStream(in, digest));
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
         }
-
-        return streams;
+        return sb.toString();
     }
 
     private void cleanupChunks(UploadSession session, Path chunkDir) {
@@ -118,7 +117,6 @@ public class OssStorageService implements StorageService {
             } catch (IOException ignored) {
             }
         }
-
         try {
             Files.deleteIfExists(chunkDir);
         } catch (IOException ignored) {
@@ -150,5 +148,11 @@ public class OssStorageService implements StorageService {
 
     private String generateObjectKey(String filename) {
         return UuidGenerator.newShortUuid() + "/" + filename;
+    }
+
+    private static class SequenceInputStream extends java.io.SequenceInputStream {
+        public SequenceInputStream(java.util.Enumeration<? extends InputStream> e) {
+            super(e);
+        }
     }
 }

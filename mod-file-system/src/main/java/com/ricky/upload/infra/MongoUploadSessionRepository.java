@@ -51,11 +51,7 @@ public class MongoUploadSessionRepository extends MongoBaseRepository<UploadSess
                 .set("status", com.ricky.upload.domain.UploadStatus.UPLOADING.name());
 
         var result = mongoTemplate.updateFirst(query, update, UploadSession.class);
-        if (result.getModifiedCount() > 0) {
-            cachedUploadSessionRepository.evictUploadSessionCache(uploadId);
-            return true;
-        }
-        return false;
+        return result.getModifiedCount() > 0;
     }
 
     @Override

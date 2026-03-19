@@ -81,4 +81,24 @@ public class MinioOssService implements OssService {
             return false;
         }
     }
+
+    @Override
+    public String initiateMultipartUpload(String bucket, String objectKey) {
+        throw new UnsupportedOperationException("Multipart upload not implemented");
+    }
+
+    @Override
+    public String uploadPart(String bucket, String objectKey, String uploadId, int partNumber, InputStream input, long size) {
+        throw new UnsupportedOperationException("Multipart upload not implemented");
+    }
+
+    @Override
+    public void completeMultipartUpload(String bucket, String objectKey, String uploadId, java.util.List<PartETag> parts) {
+        throw new UnsupportedOperationException("Multipart upload not implemented");
+    }
+
+    @Override
+    public void abortMultipartUpload(String bucket, String objectKey, String uploadId) {
+        throw new UnsupportedOperationException("Multipart upload not implemented");
+    }
 }

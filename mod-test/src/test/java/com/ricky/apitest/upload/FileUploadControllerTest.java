@@ -89,6 +89,7 @@ class FileUploadControllerTest extends BaseApiTest {
         assertError(() -> FileUploadApi.uploadRaw(manager.getJwt(), originalFile, parentId), FILE_NAME_DUPLICATES);
     }
 
+    // TODO 这个测试失败了
     @Test
     void should_upload_large_file_by_chunks() throws IOException {
         // Given

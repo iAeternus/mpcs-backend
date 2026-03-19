@@ -5,6 +5,7 @@ import com.ricky.common.exception.MyException;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.properties.FileProperties;
 import com.ricky.common.ratelimit.RateLimiter;
+import com.ricky.common.websocket.UploadProgressHandler;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileRepository;
 import com.ricky.file.domain.storage.StorageId;
@@ -17,6 +18,7 @@ import com.ricky.upload.domain.UploadSessionRepository;
 import com.ricky.upload.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
@@ -40,6 +43,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     private final FileUploadDomainService fileUploadDomainService;
     private final FileRepository fileRepository;
     private final UploadSessionRepository uploadSessionRepository;
+    private final Optional<UploadProgressHandler> uploadProgressHandler;
 
     @Override
     @Transactional
@@ -124,7 +128,6 @@ public class FileUploadServiceImpl implements FileUploadService {
     }
 
     @Override
-    @Transactional
     public UploadChunkResponse uploadChunk(String uploadId, Integer chunkIndex, MultipartFile chunk, UserContext userContext) {
         rateLimiter.applyFor("Upload:UploadChunk", 50);
 
@@ -137,6 +140,11 @@ public class FileUploadServiceImpl implements FileUploadService {
         if (!uploadSession.containsUploadedChunk(chunkIndex)) {
             uploadSession.saveChunk(chunkIndex, chunk, fileProperties.getUpload().getChunkDir());
             uploadSessionRepository.addChunkAtomically(uploadId, chunkIndex);
+
+            uploadProgressHandler.ifPresent(handler -> {
+                int uploadedChunks = uploadSession.getUploadedChunks().size();
+                handler.sendProgress(uploadId, uploadedChunks, uploadSession.getTotalChunks());
+            });
         }
 
         log.info("Chunk[{}] upload complete for UploadSession[{}]", chunkIndex, uploadId);
@@ -160,21 +168,12 @@ public class FileUploadServiceImpl implements FileUploadService {
             uploadSession.checkAllChunksUploaded();
 
             Path chunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), uploadSession.getId());
-            StoredFile storedFile = storageService.mergeChunksAndStore(uploadSession, chunkDir);
-            uploadSession.checkHash(storedFile.getHash());
+            mergeChunksAsync(uploadSession, chunkDir, command.getParentId(), userContext);
 
-            File file = fileUploadDomainService.createFileFromStoredFile(
-                    command.getParentId(),
-                    uploadSession.getFilename(),
-                    storedFile,
-                    userContext
-            );
-
-            uploadSession.complete(userContext);
-            uploadSessionRepository.save(uploadSession);
-
-            log.info("File [{}] upload completed via chunks", file.getId());
-            return FileUploadResponse.builder().fileId(file.getId()).build();
+            log.info("Chunk merge started asynchronously for UploadSession[{}]", uploadSession.getId());
+            return FileUploadResponse.builder()
+                    .fileId("MERGING:" + uploadSession.getId())
+                    .build();
         }
 
         if (isBlank(command.getFileName())) {
@@ -205,5 +204,43 @@ public class FileUploadServiceImpl implements FileUploadService {
         );
 
         return FileUploadResponse.builder().fileId(file.getId()).build();
+    }
+
+    // TODO 考虑新增 resolver
+    @Async
+    @Transactional
+    public CompletableFuture<Void> mergeChunksAsync(UploadSession uploadSession, Path chunkDir, String parentId, UserContext userContext) {
+        String uploadId = uploadSession.getId();
+        try {
+            log.info("Starting async merge for UploadSession[{}]", uploadId);
+
+            StoredFile storedFile = storageService.mergeChunksAndStore(uploadSession, chunkDir);
+            uploadSession.checkHash(storedFile.getHash());
+
+            File file = fileUploadDomainService.createFileFromStoredFile(
+                    parentId,
+                    uploadSession.getFilename(),
+                    storedFile,
+                    userContext
+            );
+
+            uploadSession.complete(userContext);
+            uploadSessionRepository.save(uploadSession);
+
+            uploadProgressHandler.ifPresent(handler -> {
+                handler.sendProgress(uploadId, uploadSession.getTotalChunks(), uploadSession.getTotalChunks());
+            });
+
+            log.info("File [{}] upload completed via chunks (async)", file.getId());
+        } catch (Exception e) {
+            log.error("Async merge failed for UploadSession[{}]: {}", uploadId, e.getMessage(), e);
+            uploadProgressHandler.ifPresent(handler -> {
+                try {
+                    handler.sendProgress(uploadId, -1, uploadSession.getTotalChunks());
+                } catch (Exception ignored) {
+                }
+            });
+        }
+        return CompletableFuture.completedFuture(null);
     }
 }

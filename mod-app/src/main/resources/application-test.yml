@@ -64,8 +64,8 @@ mpcs:
       algorithm: MD5
     upload:
       chunk-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\chunks"
-      chunk-size: 10485760  # 10MB
-      buffer-size: 10485760  # 10MB
+      chunk-size: 52428800  # 50MB
+      buffer-size: 52428800  # 50MB
     text-file-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\text-files"
   sensitive:
     algorithm: DFA

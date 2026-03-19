@@ -38,8 +38,6 @@ public class UploadSession extends AggregateRoot {
     private int totalChunks;
     private UploadStatus status;
 
-    // 该字段不能加final
-    // MongoDB 文档反序列化需要替换集合字段，final 集合会导致持久化后的 uploadedChunks 丢失
     private Set<Integer> uploadedChunks; // 存储chunkIndex，chunkIndex是0-based
 
     private UploadSession(
