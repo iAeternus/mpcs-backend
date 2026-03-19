@@ -4,7 +4,9 @@ import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.upload.domain.UploadSession;
 import com.ricky.upload.domain.UploadSessionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -19,6 +21,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 public class MongoUploadSessionRepository extends MongoBaseRepository<UploadSession> implements UploadSessionRepository {
 
     private final MongoCachedUploadSessionRepository cachedUploadSessionRepository;
+    private final MongoTemplate mongoTemplate;
 
     @Override
     public Optional<UploadSession> byFileHashAndOwnerIdOptional(String fileHash, String ownerId) {
@@ -34,6 +37,25 @@ public class MongoUploadSessionRepository extends MongoBaseRepository<UploadSess
     public void save(UploadSession uploadSession) {
         super.save(uploadSession);
         cachedUploadSessionRepository.evictUploadSessionCache(uploadSession.getId());
+    }
+
+    @Override
+    public boolean addChunkAtomically(String uploadId, int chunkIndex) {
+        Query query = query(
+                where("_id").is(uploadId)
+                        .and("uploadedChunks").ne(chunkIndex)
+                        .and("status").ne(com.ricky.upload.domain.UploadStatus.COMPLETED.name())
+        );
+        Update update = new Update()
+                .addToSet("uploadedChunks", chunkIndex)
+                .set("status", com.ricky.upload.domain.UploadStatus.UPLOADING.name());
+
+        var result = mongoTemplate.updateFirst(query, update, UploadSession.class);
+        if (result.getModifiedCount() > 0) {
+            cachedUploadSessionRepository.evictUploadSessionCache(uploadId);
+            return true;
+        }
+        return false;
     }
 
     @Override

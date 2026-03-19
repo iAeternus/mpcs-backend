@@ -7,6 +7,8 @@ public interface UploadSessionRepository {
 
     void save(UploadSession session);
 
+    boolean addChunkAtomically(String uploadId, int chunkIndex);
+
     UploadSession cachedById(String uploadId);
 
     UploadSession byId(String uploadId);

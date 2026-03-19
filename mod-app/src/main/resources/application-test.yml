@@ -61,7 +61,7 @@ mpcs:
     webhook-stream: Webhook.LOCAL
   file:
     hash:
-      algorithm: SHA256
+      algorithm: MD5
     upload:
       chunk-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\chunks"
       chunk-size: 10485760  # 10MB

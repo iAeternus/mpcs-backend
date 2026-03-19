@@ -136,7 +136,7 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         if (!uploadSession.containsUploadedChunk(chunkIndex)) {
             uploadSession.saveChunk(chunkIndex, chunk, fileProperties.getUpload().getChunkDir());
-            uploadSessionRepository.save(uploadSession);
+            uploadSessionRepository.addChunkAtomically(uploadId, chunkIndex);
         }
 
         log.info("Chunk[{}] upload complete for UploadSession[{}]", chunkIndex, uploadId);
