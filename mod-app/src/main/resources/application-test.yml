@@ -64,8 +64,8 @@ mpcs:
       algorithm: SHA256
     upload:
       chunk-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\chunks"
-      chunk-size: 1048576  # 1MB
-      buffer-size: 1048576  # 1MB
+      chunk-size: 10485760  # 10MB
+      buffer-size: 10485760  # 10MB
     text-file-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\text-files"
   sensitive:
     algorithm: DFA
