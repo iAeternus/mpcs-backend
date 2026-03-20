@@ -18,15 +18,11 @@ import com.ricky.upload.domain.UploadSessionRepository;
 import com.ricky.upload.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 import static com.ricky.common.exception.ErrorCodeEnum.*;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
@@ -119,6 +115,7 @@ public class FileUploadServiceImpl implements FileUploadService {
                             command.getTotalChunks(),
                             userContext
                     );
+                    session.setOssUploadId(storageService.initMultipartUpload(command.getFileName()));
                     uploadSessionRepository.save(session);
                     return session;
                 });
@@ -138,7 +135,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         }
 
         if (!uploadSession.containsUploadedChunk(chunkIndex)) {
-            uploadSession.saveChunk(chunkIndex, chunk, fileProperties.getUpload().getChunkDir());
+            storageService.uploadPart(uploadSession.getOssUploadId(), chunkIndex + 1, chunk);
             uploadSessionRepository.addChunkAtomically(uploadId, chunkIndex);
 
             uploadProgressHandler.ifPresent(handler -> {
@@ -167,12 +164,27 @@ public class FileUploadServiceImpl implements FileUploadService {
             uploadSession.checkHash(command.getFileHash());
             uploadSession.checkAllChunksUploaded();
 
-            Path chunkDir = Paths.get(fileProperties.getUpload().getChunkDir(), uploadSession.getId());
-            mergeChunksAsync(uploadSession, chunkDir, command.getParentId(), userContext);
+            StoredFile storedFile = storageService.completeMultipartUpload(
+                    uploadSession.getOssUploadId(),
+                    uploadSession.getFilename(),
+                    uploadSession.getTotalSize()
+            );
 
-            log.info("Chunk merge started asynchronously for UploadSession[{}]", uploadSession.getId());
+            uploadSession.checkHash(storedFile.getHash());
+
+            File file = fileUploadDomainService.createFileFromStoredFile(
+                    command.getParentId(),
+                    uploadSession.getFilename(),
+                    storedFile,
+                    userContext
+            );
+
+            uploadSession.complete(userContext);
+            uploadSessionRepository.save(uploadSession);
+
+            log.info("File [{}] upload completed via chunks", file.getId());
             return FileUploadResponse.builder()
-                    .fileId("MERGING:" + uploadSession.getId())
+                    .fileId(file.getId())
                     .build();
         }
 
@@ -204,43 +216,5 @@ public class FileUploadServiceImpl implements FileUploadService {
         );
 
         return FileUploadResponse.builder().fileId(file.getId()).build();
-    }
-
-    // TODO 考虑新增 resolver
-    @Async
-    @Transactional
-    public CompletableFuture<Void> mergeChunksAsync(UploadSession uploadSession, Path chunkDir, String parentId, UserContext userContext) {
-        String uploadId = uploadSession.getId();
-        try {
-            log.info("Starting async merge for UploadSession[{}]", uploadId);
-
-            StoredFile storedFile = storageService.mergeChunksAndStore(uploadSession, chunkDir);
-            uploadSession.checkHash(storedFile.getHash());
-
-            File file = fileUploadDomainService.createFileFromStoredFile(
-                    parentId,
-                    uploadSession.getFilename(),
-                    storedFile,
-                    userContext
-            );
-
-            uploadSession.complete(userContext);
-            uploadSessionRepository.save(uploadSession);
-
-            uploadProgressHandler.ifPresent(handler -> {
-                handler.sendProgress(uploadId, uploadSession.getTotalChunks(), uploadSession.getTotalChunks());
-            });
-
-            log.info("File [{}] upload completed via chunks (async)", file.getId());
-        } catch (Exception e) {
-            log.error("Async merge failed for UploadSession[{}]: {}", uploadId, e.getMessage(), e);
-            uploadProgressHandler.ifPresent(handler -> {
-                try {
-                    handler.sendProgress(uploadId, -1, uploadSession.getTotalChunks());
-                } catch (Exception ignored) {
-                }
-            });
-        }
-        return CompletableFuture.completedFuture(null);
     }
 }

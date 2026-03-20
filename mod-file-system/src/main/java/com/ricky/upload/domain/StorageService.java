@@ -17,6 +17,14 @@ public interface StorageService {
 
     StoredFile mergeChunksAndStore(UploadSession session, Path chunkDir);
 
+    String initMultipartUpload(String filename);
+
+    String uploadPart(String uploadId, int partNumber, MultipartFile chunk);
+
+    StoredFile completeMultipartUpload(String uploadId, String filename, long totalSize);
+
+    void abortMultipartUpload(String uploadId);
+
     InputStream getFileStream(StorageId storageId);
 
     void delete(StorageId storageId);

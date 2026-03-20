@@ -8,6 +8,7 @@ import com.ricky.upload.domain.event.UploadSessionCompletedLocalEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,6 +40,10 @@ public class UploadSession extends AggregateRoot {
     private UploadStatus status;
 
     private Set<Integer> uploadedChunks; // 存储chunkIndex，chunkIndex是0-based
+
+    @Setter
+    private String ossUploadId; // OSS multipart upload ID
+    private String objectKey; // OSS object key
 
     private UploadSession(
             String ownerId,

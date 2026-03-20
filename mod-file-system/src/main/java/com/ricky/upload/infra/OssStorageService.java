@@ -3,6 +3,7 @@ package com.ricky.upload.infra;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.hash.FileHasherFactory;
 import com.ricky.common.oss.OssService;
+import com.ricky.common.oss.OssService.PartETag;
 import com.ricky.common.utils.UuidGenerator;
 import com.ricky.file.domain.FileExtension;
 import com.ricky.file.domain.MimeTypeResolver;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.SequenceInputStream;
@@ -27,6 +29,9 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.ricky.common.constants.ConfigConstants.FILE_BUCKET;
 import static com.ricky.common.exception.ErrorCodeEnum.MERGE_CHUNKS_FAILED;
@@ -42,6 +47,19 @@ public class OssStorageService implements StorageService {
     private final OssService ossService;
     private final FileHasherFactory fileHasherFactory;
     private final MimeTypeResolver mimeTypeResolver;
+    private final Map<String, MultipartUploadContext> multipartContexts = new ConcurrentHashMap<>();
+
+    private static class MultipartUploadContext {
+        final String objectKey;
+        final List<PartETag> parts;
+        final int expectedParts;
+
+        MultipartUploadContext(String objectKey, int expectedParts) {
+            this.objectKey = objectKey;
+            this.expectedParts = expectedParts;
+            this.parts = new java.util.ArrayList<>();
+        }
+    }
 
     @Override
     public StorageId store(MultipartFile multipartFile) {
@@ -120,6 +138,77 @@ public class OssStorageService implements StorageService {
         try {
             Files.deleteIfExists(chunkDir);
         } catch (IOException ignored) {
+        }
+    }
+
+    @Override
+    public String initMultipartUpload(String filename) {
+        String objectKey = generateObjectKey(filename);
+        String uploadId = ossService.initiateMultipartUpload(FILE_BUCKET, objectKey);
+        multipartContexts.put(uploadId, new MultipartUploadContext(objectKey, -1));
+        log.info("Initialized multipart upload: uploadId={}, objectKey={}", uploadId, objectKey);
+        return uploadId;
+    }
+
+    @Override
+    public String uploadPart(String uploadId, int partNumber, MultipartFile chunk) {
+        MultipartUploadContext context = multipartContexts.get(uploadId);
+        if (context == null) {
+            throw new MyException(OSS_ERROR, "Upload session not found", "uploadId", uploadId);
+        }
+
+        try {
+            String etag = ossService.uploadPart(FILE_BUCKET, context.objectKey, uploadId, 
+                    partNumber, chunk.getInputStream(), chunk.getSize());
+            context.parts.add(new PartETag(etag, partNumber));
+            log.debug("Uploaded part: uploadId={}, partNumber={}, etag={}", uploadId, partNumber, etag);
+            return etag;
+        } catch (IOException e) {
+            throw new MyException(OSS_ERROR, "Upload part failed", "uploadId", uploadId, "partNumber", partNumber, "exception", e);
+        }
+    }
+
+    @Override
+    public StoredFile completeMultipartUpload(String uploadId, String filename, long totalSize) {
+        MultipartUploadContext context = multipartContexts.remove(uploadId);
+        if (context == null) {
+            throw new MyException(OSS_ERROR, "Upload session not found", "uploadId", uploadId);
+        }
+
+        context.parts.sort((a, b) -> Integer.compare(a.partNumber(), b.partNumber()));
+        ossService.completeMultipartUpload(FILE_BUCKET, context.objectKey, uploadId, context.parts);
+
+        String hash = calculateHashFromOSS(context.objectKey);
+        log.info("Completed multipart upload: uploadId={}, objectKey={}, hash={}", uploadId, context.objectKey, hash);
+
+        return StoredFile.builder()
+                .storageId(OssStorageId.withFileBucket(context.objectKey))
+                .hash(hash)
+                .size(totalSize)
+                .build();
+    }
+
+    @Override
+    public void abortMultipartUpload(String uploadId) {
+        MultipartUploadContext context = multipartContexts.remove(uploadId);
+        if (context != null) {
+            ossService.abortMultipartUpload(FILE_BUCKET, context.objectKey, uploadId);
+            log.info("Aborted multipart upload: uploadId={}", uploadId);
+        }
+    }
+
+    private String calculateHashFromOSS(String objectKey) {
+        try (InputStream is = ossService.getObject(FILE_BUCKET, objectKey)) {
+            MessageDigest digest = fileHasherFactory.getFileHasher().newDigest();
+            try (DigestInputStream dis = new DigestInputStream(is, digest)) {
+                byte[] buffer = new byte[8192];
+                while (dis.read(buffer) != -1) {
+                    // consume stream
+                }
+            }
+            return bytesToHex(digest.digest());
+        } catch (Exception e) {
+            throw new MyException(OSS_ERROR, "Calculate hash from OSS failed", "objectKey", objectKey, "exception", e);
         }
     }
 

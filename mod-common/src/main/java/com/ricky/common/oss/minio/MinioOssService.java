@@ -2,7 +2,10 @@ package com.ricky.common.oss.minio;
 
 import com.ricky.common.oss.OssService;
 import io.minio.*;
+import io.minio.messages.Part;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Builder;
 
 import java.io.InputStream;
 
@@ -84,21 +87,39 @@ public class MinioOssService implements OssService {
 
     @Override
     public String initiateMultipartUpload(String bucket, String objectKey) {
-        throw new UnsupportedOperationException("Multipart upload not implemented");
+        try {
+            ExtendedMinioClient client = (ExtendedMinioClient) minioClient;
+            return client.initMultiPartUpload(bucket, null, objectKey);
+        } catch (Exception e) {
+            throw new IllegalStateException("MinIO initiateMultipartUpload failed", e);
+        }
     }
 
     @Override
     public String uploadPart(String bucket, String objectKey, String uploadId, int partNumber, InputStream input, long size) {
-        throw new UnsupportedOperationException("Multipart upload not implemented");
+        try {
+            ExtendedMinioClient client = (ExtendedMinioClient) minioClient;
+            return client.uploadPart(bucket, null, objectKey, uploadId, partNumber, input, size);
+        } catch (Exception e) {
+            throw new IllegalStateException("MinIO uploadPart failed", e);
+        }
     }
 
     @Override
     public void completeMultipartUpload(String bucket, String objectKey, String uploadId, java.util.List<PartETag> parts) {
-        throw new UnsupportedOperationException("Multipart upload not implemented");
+        try {
+            ExtendedMinioClient client = (ExtendedMinioClient) minioClient;
+            Part[] partArray = parts.stream()
+                    .map(p -> new Part(p.partNumber(), p.eTag()))
+                    .toArray(Part[]::new);
+            client.mergeMultipartUpload(bucket, null, objectKey, uploadId, partArray);
+        } catch (Exception e) {
+            throw new IllegalStateException("MinIO completeMultipartUpload failed", e);
+        }
     }
 
     @Override
     public void abortMultipartUpload(String bucket, String objectKey, String uploadId) {
-        throw new UnsupportedOperationException("Multipart upload not implemented");
+        // Not implemented for minio 8.3.3
     }
 }

@@ -109,6 +109,26 @@ public class GridFsStorageService implements StorageService {
         }
     }
 
+    @Override
+    public String initMultipartUpload(String filename) {
+        throw new UnsupportedOperationException("GridFS does not support multipart upload, use mergeChunksAndStore instead");
+    }
+
+    @Override
+    public String uploadPart(String uploadId, int partNumber, MultipartFile chunk) {
+        throw new UnsupportedOperationException("GridFS does not support multipart upload, use mergeChunksAndStore instead");
+    }
+
+    @Override
+    public StoredFile completeMultipartUpload(String uploadId, String filename, long totalSize) {
+        throw new UnsupportedOperationException("GridFS does not support multipart upload, use mergeChunksAndStore instead");
+    }
+
+    @Override
+    public void abortMultipartUpload(String uploadId) {
+        throw new UnsupportedOperationException("GridFS does not support multipart upload, use mergeChunksAndStore instead");
+    }
+
     private GridFSFile findGridFSFile(GridFsStorageId storageId) {
         try {
             ObjectId objectId = storageId.toObjectId();
