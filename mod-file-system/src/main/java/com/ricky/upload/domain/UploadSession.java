@@ -37,21 +37,18 @@ public class UploadSession extends AggregateRoot {
     private long totalSize;
     private int chunkSize;
     private int totalChunks;
+    private String ossUploadId; // OSS multipart upload ID
     private UploadStatus status;
-
     private Set<Integer> uploadedChunks; // 存储chunkIndex，chunkIndex是0-based
 
-    @Setter
-    private String ossUploadId; // OSS multipart upload ID
-    private String objectKey; // OSS object key
-
-    private UploadSession(
+    public UploadSession(
             String ownerId,
             String filename,
             String expectedHash,
             long totalSize,
             int chunkSize,
             int totalChunks,
+            String ossUploadId,
             UserContext userContext
     ) {
         super(newUploadSessionId(), userContext);
@@ -63,28 +60,7 @@ public class UploadSession extends AggregateRoot {
         this.totalChunks = totalChunks;
         this.status = UploadStatus.INIT;
         this.uploadedChunks = new HashSet<>();
-    }
-
-    public static UploadSession create(
-            String ownerId,
-            String filename,
-            String expectedHash,
-            long totalSize,
-            int chunkSize,
-            int totalChunks,
-            UserContext userContext
-    ) {
-        return new UploadSession(
-                ownerId, filename, expectedHash,
-                totalSize, chunkSize, totalChunks, userContext
-        );
-    }
-
-    public static UploadSession createSingle(String filename, long totalSize, UserContext userContext) {
-        return new UploadSession(
-                userContext.getUid(), filename, "",
-                totalSize, (int) totalSize, 1, userContext
-        );
+        this.ossUploadId = ossUploadId;
     }
 
     public static String newUploadSessionId() {

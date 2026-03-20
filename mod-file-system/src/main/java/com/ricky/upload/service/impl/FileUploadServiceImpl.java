@@ -3,7 +3,6 @@ package com.ricky.upload.service.impl;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.hash.FileHasherFactory;
-import com.ricky.common.properties.FileProperties;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.common.websocket.UploadProgressHandler;
 import com.ricky.file.domain.File;
@@ -11,10 +10,7 @@ import com.ricky.file.domain.FileRepository;
 import com.ricky.file.domain.storage.StorageId;
 import com.ricky.file.domain.storage.StoredFile;
 import com.ricky.upload.command.*;
-import com.ricky.upload.domain.FileUploadDomainService;
-import com.ricky.upload.domain.StorageService;
-import com.ricky.upload.domain.UploadSession;
-import com.ricky.upload.domain.UploadSessionRepository;
+import com.ricky.upload.domain.*;
 import com.ricky.upload.service.FileUploadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +29,7 @@ import static com.ricky.common.utils.ValidationUtils.isBlank;
 public class FileUploadServiceImpl implements FileUploadService {
 
     private final RateLimiter rateLimiter;
-    private final FileProperties fileProperties;
+    private final UploadSessionFactory uploadSessionFactory;
     private final FileHasherFactory fileHasherFactory;
     private final StorageService storageService;
     private final FileUploadDomainService fileUploadDomainService;
@@ -106,16 +102,16 @@ public class FileUploadServiceImpl implements FileUploadService {
         UploadSession uploadSession = uploadSessionRepository
                 .byFileHashAndOwnerIdOptional(command.getFileHash(), userContext.getUid())
                 .orElseGet(() -> {
-                    UploadSession session = UploadSession.create(
+                    UploadSession session = uploadSessionFactory.create(
                             userContext.getUid(),
                             command.getFileName(),
                             command.getFileHash(),
                             command.getTotalSize(),
                             command.getChunkSize(),
                             command.getTotalChunks(),
+                            storageService.initMultipartUpload(command.getFileName()),
                             userContext
                     );
-                    session.setOssUploadId(storageService.initMultipartUpload(command.getFileName()));
                     uploadSessionRepository.save(session);
                     return session;
                 });
