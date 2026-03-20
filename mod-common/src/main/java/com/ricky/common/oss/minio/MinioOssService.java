@@ -57,6 +57,22 @@ public class MinioOssService implements OssService {
     }
 
     @Override
+    public InputStream getObject(String bucket, String objectKey, long offset, long length) {
+        try {
+            return minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(objectKey)
+                            .offset(offset)
+                            .length(length)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new IllegalStateException("MinIO getObject with range failed", e);
+        }
+    }
+
+    @Override
     public void deleteObject(String bucket, String objectKey) {
         try {
             minioClient.removeObject(

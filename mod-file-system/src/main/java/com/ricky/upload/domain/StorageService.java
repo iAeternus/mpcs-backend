@@ -24,6 +24,8 @@ public interface StorageService {
 
     InputStream getFileStream(StorageId storageId);
 
+    InputStream getFileStream(StorageId storageId, long offset, long length);
+
     void delete(StorageId storageId);
 
     void delete(List<StorageId> storageIds);

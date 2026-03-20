@@ -11,6 +11,8 @@ public interface OssService {
 
     InputStream getObject(String bucket, String objectKey);
 
+    InputStream getObject(String bucket, String objectKey, long offset, long length);
+
     void deleteObject(String bucket, String objectKey);
 
     boolean exists(String bucket, String objectKey);

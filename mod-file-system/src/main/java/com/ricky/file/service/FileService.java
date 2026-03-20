@@ -15,4 +15,6 @@ public interface FileService {
     void moveFile(MoveFileCommand command, UserContext userContext);
 
     DownloadFileResponse download(String fileId, UserContext userContext);
+
+    DownloadFileResponse preview(String fileId, UserContext userContext, long rangeStart, long rangeEnd, long fileSize);
 }

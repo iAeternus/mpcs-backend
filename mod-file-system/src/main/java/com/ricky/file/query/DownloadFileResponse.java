@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
@@ -44,6 +46,16 @@ public class DownloadFileResponse implements Response {
                 .header(CONTENT_DISPOSITION, disposition("inline"))
                 .contentType(MediaType.parseMediaType(contentType))
                 .contentLength(size)
+                .body(resource);
+    }
+
+    /**
+     * 用于预览，支持 Range 请求（206 Partial Content）
+     */
+    public ResponseEntity<Resource> toPreviewResponse(HttpStatus status, HttpHeaders headers) {
+        return ResponseEntity.status(status)
+                .headers(headers)
+                .contentType(MediaType.parseMediaType(contentType))
                 .body(resource);
     }
 

@@ -100,4 +100,26 @@ public class FileServiceImpl implements FileService {
                 .resource(resource)
                 .build();
     }
+
+    @Override
+    public DownloadFileResponse preview(String fileId, UserContext userContext, long rangeStart, long rangeEnd, long fileSize) {
+        rateLimiter.applyFor("File:Preview", 5);
+
+        File file = fileRepository.cachedById(fileId);
+
+        FileExtension extension = FileExtension.fromFilename(file.getFilename());
+        String contentType = mimeTypeResolver.resolve(extension);
+
+        StorageId storageId = file.getStorageId();
+        long length = rangeEnd - rangeStart + 1;
+        InputStream inputStream = storageService.getFileStream(storageId, rangeStart, length);
+        InputStreamResource resource = new InputStreamResource(inputStream);
+
+        return DownloadFileResponse.builder()
+                .filename(file.getFilename())
+                .contentType(contentType)
+                .size(length)
+                .resource(resource)
+                .build();
+    }
 }

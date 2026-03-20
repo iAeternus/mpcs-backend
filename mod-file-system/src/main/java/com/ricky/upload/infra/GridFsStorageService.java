@@ -87,6 +87,24 @@ public class GridFsStorageService implements StorageService {
     }
 
     @Override
+    public InputStream getFileStream(StorageId storageId, long offset, long length) {
+        GridFsStorageId gridFSStorageId = (GridFsStorageId) storageId;
+        InputStream is = gridFSBucket.openDownloadStream(gridFSStorageId.toObjectId());
+        try {
+            if (offset > 0) {
+                long skipped = is.skip(offset);
+                if (skipped != offset) {
+                    throw new IOException("Failed to skip " + offset + " bytes");
+                }
+            }
+        } catch (IOException e) {
+            try { is.close(); } catch (IOException ignored) {}
+            throw new RuntimeException("Failed to skip bytes in GridFS stream", e);
+        }
+        return new BoundedInputStream(is, length);
+    }
+
+    @Override
     public void delete(StorageId storageId) {
         GridFsStorageId gridFSStorageId = (GridFsStorageId) storageId;
         Query query = query(where("_id").is(gridFSStorageId.toObjectId()));
@@ -108,4 +126,42 @@ public class GridFsStorageService implements StorageService {
         return nonNull(findGridFSFile(gridFsStorageId));
     }
 
+    private static class BoundedInputStream extends InputStream {
+        private final InputStream in;
+        private long remaining;
+
+        public BoundedInputStream(InputStream in, long length) {
+            this.in = in;
+            this.remaining = length;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (remaining <= 0) return -1;
+            int b = in.read();
+            if (b != -1) remaining--;
+            return b;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            if (remaining <= 0) return -1;
+            int toRead = (int) Math.min(len, remaining);
+            int n = in.read(b, off, toRead);
+            if (n != -1) remaining -= n;
+            return n;
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            long skipped = in.skip(Math.min(n, remaining));
+            if (skipped > 0) remaining -= skipped;
+            return skipped;
+        }
+
+        @Override
+        public int available() throws IOException {
+            return (int) Math.min(in.available(), remaining);
+        }
+    }
 }

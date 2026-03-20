@@ -129,6 +129,12 @@ public class OssStorageService implements StorageService {
     }
 
     @Override
+    public InputStream getFileStream(StorageId storageId, long offset, long length) {
+        OssStorageId ossStorageId = (OssStorageId) storageId;
+        return ossService.getObject(ossStorageId.getBucket(), ossStorageId.getObjectKey(), offset, length);
+    }
+
+    @Override
     public void delete(StorageId storageId) {
         OssStorageId ossStorageId = (OssStorageId) storageId;
         ossService.deleteObject(ossStorageId.getBucket(), ossStorageId.getObjectKey());
