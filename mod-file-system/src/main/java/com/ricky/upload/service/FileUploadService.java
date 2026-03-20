@@ -14,4 +14,6 @@ public interface FileUploadService {
 
     FileUploadResponse completeUpload(CompleteUploadCommand command, UserContext userContext);
 
+    String computeFileHash(MultipartFile file);
+
 }

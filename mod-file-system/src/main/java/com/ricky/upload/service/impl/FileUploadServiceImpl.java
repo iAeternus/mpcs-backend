@@ -217,4 +217,9 @@ public class FileUploadServiceImpl implements FileUploadService {
 
         return FileUploadResponse.builder().fileId(file.getId()).build();
     }
+
+    @Override
+    public String computeFileHash(MultipartFile file) {
+        return fileHasherFactory.getFileHasher().hash(file);
+    }
 }

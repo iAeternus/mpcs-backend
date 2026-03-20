@@ -68,4 +68,10 @@ public class FileUploadController {
         return fileUploadService.completeUpload(command, userContext);
     }
 
+    @Operation(summary = "计算文件hash")
+    @PostMapping(value = "/compute-hash", consumes = MULTIPART_FORM_DATA_VALUE)
+    public String computeFileHash(@RequestParam("file") @NotNull MultipartFile file) {
+        return fileUploadService.computeFileHash(file);
+    }
+
 }
