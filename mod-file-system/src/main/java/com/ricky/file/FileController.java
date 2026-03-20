@@ -78,9 +78,7 @@ public class FileController {
     @PermissionRequired(value = READ, resource = "#fileId", resourceType = FILE)
     public ResponseEntity<Resource> download(@PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
                                              @AuthenticationPrincipal UserContext userContext) {
-        ResponseEntity<Resource> response = fileService.download(fileId, userContext).toDownloadResponse();
-        response.getHeaders().set(HttpHeaders.ACCEPT_RANGES, "bytes");
-        return response;
+        return fileService.download(fileId, userContext).toDownloadResponse();
     }
 
     @Operation(summary = "预览文件")
@@ -92,15 +90,12 @@ public class FileController {
         if (rangeHeader != null) {
             return handleRangeRequest(fileId, rangeHeader, userContext);
         } else {
-            DownloadFileResponse fileResponse = fileService.download(fileId, userContext);
-            HttpHeaders headers = new HttpHeaders();
-            headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
-            return fileResponse.toPreviewResponse(HttpStatus.OK, headers);
+            return fileService.download(fileId, userContext).toPreviewResponse(); // TODO 合并
         }
     }
 
     private ResponseEntity<Resource> handleRangeRequest(String fileId, String rangeHeader, UserContext userContext) {
-        DownloadFileResponse fileResponse = fileService.download(fileId, userContext);
+        DownloadFileResponse fileResponse = fileService.download(fileId, userContext); // TODO 合并
         long fileSize = fileResponse.getSize();
 
         Pattern rangePattern = Pattern.compile("bytes=(\\d+)-(\\d*)");

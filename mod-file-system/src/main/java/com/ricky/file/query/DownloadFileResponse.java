@@ -31,8 +31,11 @@ public class DownloadFileResponse implements Response {
      * 用于下载（浏览器弹出保存框）
      */
     public ResponseEntity<Resource> toDownloadResponse() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(CONTENT_DISPOSITION, disposition("attachment"));
+        headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
         return ResponseEntity.ok()
-                .header(CONTENT_DISPOSITION, disposition("attachment"))
+                .headers(headers)
                 .contentType(MediaType.parseMediaType(contentType))
                 .contentLength(size)
                 .body(resource);
@@ -42,8 +45,11 @@ public class DownloadFileResponse implements Response {
      * 用于预览（浏览器直接打开，如 PDF / 图片 / 视频）
      */
     public ResponseEntity<Resource> toPreviewResponse() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(CONTENT_DISPOSITION, disposition("inline"));
+        headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
         return ResponseEntity.ok()
-                .header(CONTENT_DISPOSITION, disposition("inline"))
+                .headers(headers)
                 .contentType(MediaType.parseMediaType(contentType))
                 .contentLength(size)
                 .body(resource);
