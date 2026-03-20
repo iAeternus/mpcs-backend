@@ -13,6 +13,8 @@ import java.util.Optional;
 
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static com.ricky.upload.domain.UploadStatus.COMPLETED;
+import static com.ricky.upload.domain.UploadStatus.UPLOADING;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -28,8 +30,8 @@ public class MongoUploadSessionRepository extends MongoBaseRepository<UploadSess
         requireNotBlank(fileHash, "FileHash must not be blank");
         requireNotBlank(ownerId, "OwnerId must not be blank");
 
-        Query query = query(where("fileHash").is(fileHash).and("ownerId").is(ownerId));
-        UploadSession uploadSession = mongoTemplate.findOne(query, UploadSession.class); // TODO imm 这里查找出来的是否唯一？
+        Query query = query(where("expectedHash").is(fileHash).and("ownerId").is(ownerId));
+        UploadSession uploadSession = mongoTemplate.findOne(query, UploadSession.class);
         return isNull(uploadSession) ? Optional.empty() : Optional.of(uploadSession);
     }
 
@@ -44,11 +46,11 @@ public class MongoUploadSessionRepository extends MongoBaseRepository<UploadSess
         Query query = query(
                 where("_id").is(uploadId)
                         .and("uploadedChunks").ne(chunkIndex)
-                        .and("status").ne(com.ricky.upload.domain.UploadStatus.COMPLETED.name())
+                        .and("status").ne(COMPLETED.name())
         );
         Update update = new Update()
                 .addToSet("uploadedChunks", chunkIndex)
-                .set("status", com.ricky.upload.domain.UploadStatus.UPLOADING.name());
+                .set("status", UPLOADING.name());
 
         var result = mongoTemplate.updateFirst(query, update, UploadSession.class);
         return result.getModifiedCount() > 0;

@@ -63,7 +63,6 @@ mpcs:
     hash:
       algorithm: MD5
     upload:
-      chunk-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\chunks"
       chunk-size: 52428800  # 50MB
       buffer-size: 52428800  # 50MB
     text-file-dir: "F:\\Develop\\java\\mpcs\\mpcs-backend\\data\\text-files"

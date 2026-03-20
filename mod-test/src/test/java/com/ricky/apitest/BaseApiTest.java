@@ -26,6 +26,7 @@ import com.ricky.folder.domain.FolderRepository;
 import com.ricky.group.domain.GroupRepository;
 import com.ricky.publicfile.domain.PublicFileRepository;
 import com.ricky.upload.domain.StorageService;
+import com.ricky.upload.domain.UploadSessionRepository;
 import com.ricky.user.domain.UserRepository;
 import com.ricky.verification.domain.VerificationCodeRepository;
 import io.restassured.RestAssured;
@@ -139,6 +140,9 @@ public abstract class BaseApiTest {
 
     @Autowired
     protected CommentRepository commentRepository;
+
+    @Autowired
+    protected UploadSessionRepository uploadSessionRepository;
 
     @LocalServerPort
     protected int port;

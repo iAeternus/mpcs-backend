@@ -1,40 +1,26 @@
 package com.ricky.upload.infra;
 
 import com.mongodb.client.gridfs.GridFSBucket;
-import com.mongodb.client.gridfs.GridFSUploadStream;
 import com.mongodb.client.gridfs.model.GridFSFile;
-import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.ricky.common.exception.MyException;
-import com.ricky.common.hash.FileHasherFactory;
-import com.ricky.common.properties.FileProperties;
 import com.ricky.file.domain.storage.GridFsStorageId;
 import com.ricky.file.domain.storage.StorageId;
 import com.ricky.file.domain.storage.StoredFile;
 import com.ricky.upload.domain.StorageService;
-import com.ricky.upload.domain.UploadSession;
 import lombok.RequiredArgsConstructor;
-import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Primary;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
-import org.springframework.security.crypto.codec.Hex;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
 import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
-import static com.ricky.common.properties.SystemProperties.StorageType.GRID_FS;
-import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.nonNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -44,10 +30,8 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @ConditionalOnProperty(prefix = "mpcs.config", name = "storage", havingValue = "grid_fs")
 public class GridFsStorageService implements StorageService {
 
-    private final FileHasherFactory fileHasherFactory;
     private final GridFsTemplate gridFsTemplate;
     private final GridFSBucket gridFSBucket;
-    private final FileProperties fileProperties;
 
     @Override
     public StorageId store(MultipartFile multipartFile) {
@@ -67,66 +51,23 @@ public class GridFsStorageService implements StorageService {
     }
 
     @Override
-    public StoredFile mergeChunksAndStore(UploadSession session, Path chunkDir) {
-        MessageDigest digest = fileHasherFactory.getFileHasher().newDigest();
-
-        String filename = session.getFilename();
-        GridFSUploadOptions options = new GridFSUploadOptions()
-                .chunkSizeBytes(fileProperties.getUpload().getChunkSize())
-                .metadata(new Document()
-                        .append("ownerId", session.getOwnerId())
-                        .append("filename", filename)
-                        .append("totalSize", session.getTotalSize())
-                );
-
-        try (GridFSUploadStream uploadStream = gridFSBucket.openUploadStream(filename, options)) {
-            long writtenBytes = 0;
-
-            for (int i = 0; i < session.getTotalChunks(); i++) {
-                Path chunk = chunkDir.resolve(String.valueOf(i));
-
-                try (InputStream in = Files.newInputStream(chunk);
-                     DigestInputStream dis = new DigestInputStream(in, digest)) {
-
-                    long bytes = dis.transferTo(uploadStream);
-                    writtenBytes += bytes;
-                }
-
-                Files.deleteIfExists(chunk);
-            }
-
-            GridFsStorageId gridFsStorageId = GridFsStorageId.builder()
-                    .value(uploadStream.getObjectId().toHexString())
-                    .build();
-
-            return StoredFile.builder()
-                    .storageId(gridFsStorageId)
-                    .hash(String.valueOf(Hex.encode(digest.digest())))
-                    .size(writtenBytes)
-                    .build();
-        } catch (IOException e) {
-            throw new MyException(MERGE_CHUNKS_FAILED, "Merge chunks failed", "uploadSessionId", session.getId());
-        }
-    }
-
-    @Override
     public String initMultipartUpload(String filename) {
-        throw new UnsupportedOperationException("GridFS does not support multipart upload, use mergeChunksAndStore instead");
+        throw new UnsupportedOperationException("GridFS does not support multipart upload");
     }
 
     @Override
     public String uploadPart(String uploadId, int partNumber, MultipartFile chunk) {
-        throw new UnsupportedOperationException("GridFS does not support multipart upload, use mergeChunksAndStore instead");
+        throw new UnsupportedOperationException("GridFS does not support multipart upload");
     }
 
     @Override
-    public StoredFile completeMultipartUpload(String uploadId, String filename, long totalSize) {
-        throw new UnsupportedOperationException("GridFS does not support multipart upload, use mergeChunksAndStore instead");
+    public StoredFile completeMultipartUpload(String uploadId, String filename, long totalSize, String expectedHash) {
+        throw new UnsupportedOperationException("GridFS does not support multipart upload");
     }
 
     @Override
     public void abortMultipartUpload(String uploadId) {
-        throw new UnsupportedOperationException("GridFS does not support multipart upload, use mergeChunksAndStore instead");
+        throw new UnsupportedOperationException("GridFS does not support multipart upload");
     }
 
     private GridFSFile findGridFSFile(GridFsStorageId storageId) {

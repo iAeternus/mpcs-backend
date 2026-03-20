@@ -29,11 +29,6 @@ public class FileProperties {
     public static class FileUploadConfig {
 
         /**
-         * 存放分片的路径
-         */
-        private String chunkDir;
-
-        /**
          * 分片大小，单位：byte
          */
         @Min(8192)

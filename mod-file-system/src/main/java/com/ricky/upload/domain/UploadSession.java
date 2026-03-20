@@ -4,19 +4,13 @@ import com.ricky.common.domain.AggregateRoot;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.SnowflakeIdGenerator;
-import com.ricky.upload.domain.event.UploadSessionCompletedLocalEvent;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -83,32 +77,11 @@ public class UploadSession extends AggregateRoot {
         }
 
         this.status = UploadStatus.COMPLETED;
-        raiseLocalEvent(new UploadSessionCompletedLocalEvent(this, getId(), userContext));
         addOpsLog("上传完成", userContext);
     }
 
     public boolean containsUploadedChunk(int chunkIndex) {
         return uploadedChunks.contains(chunkIndex);
-    }
-
-    /**
-     * 将分片保存至磁盘，多次调用会重复保存<br>
-     * 分片命名约定：数字顺序命名（0,1,2...）
-     *
-     * @param chunkIndex 分片Index
-     * @param chunk      分片
-     * @param chunkDir   分片存储路径
-     */
-    public void saveChunk(int chunkIndex, MultipartFile chunk, String chunkDir) {
-        Path path = Paths.get(chunkDir, getId());
-        try {
-            Files.createDirectories(path);
-            Path chunkPath = path.resolve(String.valueOf(chunkIndex));
-            chunk.transferTo(chunkPath.toFile());
-        } catch (IOException ex) {
-            throw new MyException(SAVE_CHUNK_FAILED, "Save chunk failed", "uploadId", getId(), "chunkIndex", chunkIndex);
-        }
-        markChunkUploaded(chunkIndex);
     }
 
     private void markChunkUploaded(int chunkIndex) {

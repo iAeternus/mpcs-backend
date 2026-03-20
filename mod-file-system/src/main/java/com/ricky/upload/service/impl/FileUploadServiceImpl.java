@@ -163,10 +163,9 @@ public class FileUploadServiceImpl implements FileUploadService {
             StoredFile storedFile = storageService.completeMultipartUpload(
                     uploadSession.getOssUploadId(),
                     uploadSession.getFilename(),
-                    uploadSession.getTotalSize()
+                    uploadSession.getTotalSize(),
+                    command.getFileHash()
             );
-
-            uploadSession.checkHash(storedFile.getHash());
 
             File file = fileUploadDomainService.createFileFromStoredFile(
                     command.getParentId(),

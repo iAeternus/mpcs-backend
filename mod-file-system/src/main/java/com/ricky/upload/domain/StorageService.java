@@ -5,7 +5,6 @@ import com.ricky.file.domain.storage.StoredFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -15,13 +14,11 @@ public interface StorageService {
 
     StorageId store(MultipartFile multipartFile);
 
-    StoredFile mergeChunksAndStore(UploadSession session, Path chunkDir);
-
     String initMultipartUpload(String filename);
 
     String uploadPart(String uploadId, int partNumber, MultipartFile chunk);
 
-    StoredFile completeMultipartUpload(String uploadId, String filename, long totalSize);
+    StoredFile completeMultipartUpload(String uploadId, String filename, long totalSize, String expectedHash);
 
     void abortMultipartUpload(String uploadId);
 

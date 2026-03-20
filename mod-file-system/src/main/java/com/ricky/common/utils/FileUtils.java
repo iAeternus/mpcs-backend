@@ -1,18 +1,12 @@
 package com.ricky.common.utils;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.util.Comparator;
 import java.util.HexFormat;
-import java.util.stream.Stream;
 import java.util.zip.CRC32;
 
-@Slf4j
 public class FileUtils {
 
     public static long crc32(InputStream inputStream) throws IOException {
@@ -46,28 +40,4 @@ public class FileUtils {
             throw new RuntimeException(e);
         }
     }
-
-    @Deprecated
-    public static void deleteUploadSessionChunkDir(Path chunkRootDir, String uploadId) {
-        Path sessionDir = chunkRootDir.resolve(uploadId);
-
-        if (!Files.exists(sessionDir)) {
-            return;
-        }
-
-        try (Stream<Path> paths = Files.walk(sessionDir)) {
-            paths.sorted(Comparator.reverseOrder()) // 先删文件，再删目录
-                    .forEach(path -> {
-                        try {
-                            Files.deleteIfExists(path);
-                        } catch (IOException e) {
-                            log.warn("Failed to delete chunk file: {}", path, e);
-                        }
-                    });
-        } catch (IOException e) {
-            log.warn("Failed to delete chunk dir: {}", sessionDir, e);
-        }
-    }
-
-
 }
