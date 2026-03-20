@@ -2,7 +2,6 @@ package com.ricky.common.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.zip.CRC32;

@@ -1,7 +1,6 @@
 package com.ricky.file.service.impl;
 
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.common.es.ElasticSearchService;
 import com.ricky.common.es.FileElasticSearchService;
 import com.ricky.common.es.SearchResult;
 import com.ricky.common.ratelimit.RateLimiter;

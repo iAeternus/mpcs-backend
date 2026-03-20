@@ -1,9 +1,5 @@
 package com.ricky.like.domain;
 
-import com.ricky.common.validation.collection.NoNullElement;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-
 import java.util.List;
 import java.util.Map;
 

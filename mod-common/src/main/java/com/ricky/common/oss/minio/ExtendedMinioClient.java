@@ -16,23 +16,23 @@ public class ExtendedMinioClient extends MinioClient {
     @SneakyThrows
     @Override
     public CreateMultipartUploadResponse createMultipartUpload(String bucketName, String region, String objectName,
-                                                                 Multimap<String, String> headers, Multimap<String, String> extraQueryParams) {
+                                                               Multimap<String, String> headers, Multimap<String, String> extraQueryParams) {
         return super.createMultipartUpload(bucketName, region, objectName, headers, extraQueryParams);
     }
 
     @SneakyThrows
     @Override
     public ObjectWriteResponse completeMultipartUpload(String bucketName, String region, String objectName,
-                                                        String uploadId, Part[] parts,
-                                                        Multimap<String, String> extraHeaders, Multimap<String, String> extraQueryParams) {
+                                                       String uploadId, Part[] parts,
+                                                       Multimap<String, String> extraHeaders, Multimap<String, String> extraQueryParams) {
         return super.completeMultipartUpload(bucketName, region, objectName, uploadId, parts, extraHeaders, extraQueryParams);
     }
 
     @SneakyThrows
     @Override
     public AbortMultipartUploadResponse abortMultipartUpload(String bucketName, String region, String objectName,
-                                                               String uploadId, Multimap<String, String> headers, 
-                                                               Multimap<String, String> extraQueryParams) {
+                                                             String uploadId, Multimap<String, String> headers,
+                                                             Multimap<String, String> extraQueryParams) {
         return super.abortMultipartUpload(bucketName, region, objectName, uploadId, headers, extraQueryParams);
     }
 
@@ -48,7 +48,7 @@ public class ExtendedMinioClient extends MinioClient {
     }
 
     public void mergeMultipartUpload(String bucketName, String region, String objectName,
-                                       String uploadId, Part[] parts) throws Exception {
+                                     String uploadId, Part[] parts) throws Exception {
         super.completeMultipartUpload(bucketName, region, objectName, uploadId, parts, null, null);
     }
 }

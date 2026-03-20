@@ -1,9 +1,9 @@
 package com.ricky.apitest.group;
 
 import com.ricky.apitest.BaseApiTest;
-import com.ricky.common.permission.Permission;
 import com.ricky.common.domain.dto.resp.IdResponse;
 import com.ricky.common.domain.page.PagedList;
+import com.ricky.common.permission.Permission;
 import com.ricky.group.command.*;
 import com.ricky.group.query.*;
 import io.restassured.common.mapper.TypeRef;

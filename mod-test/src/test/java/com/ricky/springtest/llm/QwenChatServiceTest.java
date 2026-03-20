@@ -4,7 +4,6 @@ import com.ricky.MpcsBackendApplication;
 import com.ricky.common.llm.domain.LLMChatRequest;
 import com.ricky.common.llm.domain.LLMChatResponse;
 import com.ricky.common.llm.service.LLMChatService;
-import com.ricky.common.profile.NonCiProfile;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;

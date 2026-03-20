@@ -13,7 +13,6 @@ import com.ricky.publicfile.query.PublicFilePageQuery;
 import com.ricky.publicfile.query.PublicFileResponse;
 import com.ricky.publicfile.service.PublicFileQueryService;
 import com.ricky.publicfile.service.PublicFileService;
-import com.ricky.user.domain.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;

@@ -14,9 +14,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
-import static com.ricky.common.constants.ConfigConstants.USER_ID_PREFIX;
-import static com.ricky.common.constants.ConfigConstants.MAX_URL_LENGTH;
+import static com.ricky.common.constants.ConfigConstants.*;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_ALREADY_LOCKED;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_MOBILE_AND_EMAIL_BOTH_BLANK;
 import static com.ricky.common.utils.ValidationUtils.*;

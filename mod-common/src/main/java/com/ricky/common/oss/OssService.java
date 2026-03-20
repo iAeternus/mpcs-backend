@@ -25,5 +25,6 @@ public interface OssService {
 
     void abortMultipartUpload(String bucket, String objectKey, String uploadId);
 
-    record PartETag(String eTag, int partNumber) {}
+    record PartETag(String eTag, int partNumber) {
+    }
 }

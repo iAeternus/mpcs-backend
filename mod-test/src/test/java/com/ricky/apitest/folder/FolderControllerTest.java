@@ -1,9 +1,7 @@
 package com.ricky.apitest.folder;
 
 import com.ricky.apitest.BaseApiTest;
-import com.ricky.apitest.login.LoginApi;
 import com.ricky.apitest.upload.FileUploadApi;
-import com.ricky.apitest.user.UserApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import com.ricky.file.domain.File;
 import com.ricky.folder.command.*;
@@ -13,7 +11,6 @@ import com.ricky.folder.domain.event.FolderDeletedEvent;
 import com.ricky.folder.domain.event.FolderHierarchyChangedEvent;
 import com.ricky.folder.query.FolderContentResponse;
 import com.ricky.upload.domain.event.FileUploadedLocalEvent;
-import com.ricky.user.query.UserInfoResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
@@ -382,7 +379,7 @@ public class FolderControllerTest extends BaseApiTest {
                 .folderId(folderId1)
                 .newParentId(folderId2)
                 .build());
-        
+
         // Then
         assertEquals(1, resp.getMovedFolderCount());
         assertEquals(1, resp.getMovedFileCount());
@@ -391,7 +388,7 @@ public class FolderControllerTest extends BaseApiTest {
         assertEquals(folderId1, dbFile.getParentId());
 
         Folder dbFolder = folderRepository.byId(folderId1);
-        assertEquals(folderId2,  dbFolder.getParentId());
+        assertEquals(folderId2, dbFolder.getParentId());
     }
 
     @Test

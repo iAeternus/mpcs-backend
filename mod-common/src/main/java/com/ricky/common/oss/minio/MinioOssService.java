@@ -3,9 +3,7 @@ package com.ricky.common.oss.minio;
 import com.ricky.common.oss.OssService;
 import io.minio.*;
 import io.minio.messages.Part;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.Builder;
 
 import java.io.InputStream;
 

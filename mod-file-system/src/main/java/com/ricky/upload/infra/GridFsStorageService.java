@@ -20,7 +20,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
-import static com.ricky.common.exception.ErrorCodeEnum.*;
+import static com.ricky.common.exception.ErrorCodeEnum.STORE_FILE_FAILED;
 import static com.ricky.common.utils.ValidationUtils.nonNull;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
@@ -98,7 +98,10 @@ public class GridFsStorageService implements StorageService {
                 }
             }
         } catch (IOException e) {
-            try { is.close(); } catch (IOException ignored) {}
+            try {
+                is.close();
+            } catch (IOException ignored) {
+            }
             throw new RuntimeException("Failed to skip bytes in GridFS stream", e);
         }
         return new BoundedInputStream(is, length);

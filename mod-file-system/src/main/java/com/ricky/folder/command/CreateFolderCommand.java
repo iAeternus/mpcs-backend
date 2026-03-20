@@ -3,7 +3,6 @@ package com.ricky.folder.command;
 import com.ricky.common.domain.marker.Command;
 import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.id.custom.CustomId;
-import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;

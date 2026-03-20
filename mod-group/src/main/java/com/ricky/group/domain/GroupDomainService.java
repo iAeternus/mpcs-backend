@@ -1,9 +1,9 @@
 package com.ricky.group.domain;
 
 import com.ricky.common.domain.SpaceType;
-import com.ricky.common.permission.Permission;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
+import com.ricky.common.permission.Permission;
 import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserRepository;
@@ -31,7 +31,7 @@ public class GroupDomainService {
      * 是否具备 required 中的所有权限（单资源）
      */
     public boolean hasPermission(String userId, String customId, String folderId, Set<Permission> required) {
-        if(notTeamSpace(customId)) {
+        if (notTeamSpace(customId)) {
             return true;
         }
 
@@ -43,7 +43,7 @@ public class GroupDomainService {
      * 是否在所有资源上都具备 required 中的所有权限
      */
     public boolean hasPermission(String userId, String customId, List<String> folderIds, Set<Permission> required) {
-        if(notTeamSpace(customId)) {
+        if (notTeamSpace(customId)) {
             return true;
         }
 
@@ -55,7 +55,7 @@ public class GroupDomainService {
      * 是否具备某一个权限
      */
     public boolean can(String userId, String customId, String folderId, Permission permission) {
-        if(notTeamSpace(customId)) {
+        if (notTeamSpace(customId)) {
             return true;
         }
 

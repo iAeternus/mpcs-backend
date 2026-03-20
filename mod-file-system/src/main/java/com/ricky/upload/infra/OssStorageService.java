@@ -8,7 +8,6 @@ import com.ricky.file.domain.storage.OssStorageId;
 import com.ricky.file.domain.storage.StorageId;
 import com.ricky.file.domain.storage.StoredFile;
 import com.ricky.upload.domain.StorageService;
-import com.ricky.upload.domain.UploadSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -18,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -84,7 +82,7 @@ public class OssStorageService implements StorageService {
         }
 
         try {
-            String etag = ossService.uploadPart(FILE_BUCKET, context.objectKey, uploadId, 
+            String etag = ossService.uploadPart(FILE_BUCKET, context.objectKey, uploadId,
                     partNumber, chunk.getInputStream(), chunk.getSize());
             context.parts.add(new PartETag(etag, partNumber));
             log.debug("Uploaded part: uploadId={}, partNumber={}, etag={}", uploadId, partNumber, etag);
