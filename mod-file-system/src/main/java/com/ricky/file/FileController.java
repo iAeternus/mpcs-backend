@@ -6,11 +6,7 @@ import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.id.custom.CustomId;
 import com.ricky.file.command.MoveFileCommand;
 import com.ricky.file.command.RenameFileCommand;
-import com.ricky.file.query.FileInfoResponse;
-import com.ricky.file.query.FilePathResponse;
-import com.ricky.file.query.DownloadFileResponse;
-import com.ricky.file.query.SearchPageQuery;
-import com.ricky.file.query.SearchResponse;
+import com.ricky.file.query.*;
 import com.ricky.file.service.FileQueryService;
 import com.ricky.file.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,9 +22,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 import static com.ricky.common.permission.Permission.*;
@@ -85,51 +78,22 @@ public class FileController {
     @GetMapping("/{fileId}/preview")
     @PermissionRequired(value = READ, resource = "#fileId", resourceType = FILE)
     public ResponseEntity<Resource> preview(@PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
-                                           @RequestHeader(value = HttpHeaders.RANGE, required = false) String rangeHeader,
-                                           @AuthenticationPrincipal UserContext userContext) {
-        if (rangeHeader != null) {
-            return handleRangeRequest(fileId, rangeHeader, userContext);
-        } else {
-            return fileService.download(fileId, userContext).toPreviewResponse(); // TODO 合并
-        }
-    }
-
-    private ResponseEntity<Resource> handleRangeRequest(String fileId, String rangeHeader, UserContext userContext) {
-        DownloadFileResponse fileResponse = fileService.download(fileId, userContext); // TODO 合并
+                                            @RequestHeader(value = HttpHeaders.RANGE, required = false) String rangeHeader,
+                                            @AuthenticationPrincipal UserContext userContext) {
+        DownloadFileResponse fileResponse = fileService.download(fileId, userContext);
         long fileSize = fileResponse.getSize();
 
-        Pattern rangePattern = Pattern.compile("bytes=(\\d+)-(\\d*)");
-        Matcher matcher = rangePattern.matcher(rangeHeader);
-
-        if (!matcher.matches()) {
-            return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
-                    .header(HttpHeaders.CONTENT_RANGE, "bytes */" + fileSize)
-                    .build();
+        if (rangeHeader == null) {
+            return fileResponse.toPreviewResponse();
         }
 
-        long rangeStart = Long.parseLong(matcher.group(1));
-        String endStr = matcher.group(2);
-
-        if (rangeStart >= fileSize) {
-            return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
-                    .header(HttpHeaders.CONTENT_RANGE, "bytes */" + fileSize)
-                    .build();
-        }
-
-        long rangeEnd = endStr.isEmpty() ? fileSize - 1 : Long.parseLong(endStr);
-        if (rangeEnd >= fileSize) {
-            rangeEnd = fileSize - 1;
-        }
-
-        DownloadFileResponse rangeResponse = fileService.preview(fileId, userContext, rangeStart, rangeEnd, fileSize);
-
-        String contentRange = "bytes " + rangeStart + "-" + rangeEnd + "/" + fileSize;
-        HttpHeaders headers = new HttpHeaders();
-        headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
-        headers.set(HttpHeaders.CONTENT_RANGE, contentRange);
-        headers.setContentLength(rangeEnd - rangeStart + 1);
-
-        return rangeResponse.toPreviewResponse(HttpStatus.PARTIAL_CONTENT, headers);
+        return DownloadFileResponse.parseRange(rangeHeader, fileSize)
+                .map(rangeInfo -> {
+                    DownloadFileResponse rangeResponse = fileService.preview(fileId, userContext, rangeInfo.rangeStart(), rangeInfo.rangeEnd(), fileSize);
+                    HttpHeaders headers = DownloadFileResponse.buildRangeHeaders(rangeInfo.rangeStart(), rangeInfo.rangeEnd(), fileSize);
+                    return rangeResponse.toPreviewResponse(HttpStatus.PARTIAL_CONTENT, headers);
+                })
+                .orElseGet(() -> DownloadFileResponse.rangeNotSatisfiable(fileSize));
     }
 
     @Operation(summary = "获取文件路径")
