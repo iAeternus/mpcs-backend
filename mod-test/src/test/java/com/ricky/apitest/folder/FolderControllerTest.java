@@ -466,22 +466,4 @@ public class FolderControllerTest extends BaseApiTest {
 //        assertEquals(FALSE, stringRedisTemplate.hasKey(key));
 //    }
 
-    @Test
-    void front_end_data() {
-        String token = LoginApi.loginWithMobileOrEmail("w_ziwei2004@163.com", "Wzw_757723");
-        UserInfoResponse myUserInfo = UserApi.myUserInfo(token);
-
-        Folder root = folderRepository.getRoot(myUserInfo.getCustomId());
-
-//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test4", root.getId());
-//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test5", root.getId());
-//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test6", root.getId());
-//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test7", root.getId());
-//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test8", root.getId());
-//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test9", root.getId());
-//        FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test10", root.getId());
-
-//        String test1Test1Id = FolderApi.createFolderWithParent(token, myUserInfo.getCustomId(), "Test1Test1", test1Id);
-    }
-
 }
