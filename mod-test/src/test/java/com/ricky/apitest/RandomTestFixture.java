@@ -102,4 +102,8 @@ public class RandomTestFixture {
         return rSentence(16) + UuidGenerator.newShortUuid();
     }
 
+    public static String rDocumentId() {
+        return "DOC" + UuidGenerator.newShortUuid();
+    }
+
 }

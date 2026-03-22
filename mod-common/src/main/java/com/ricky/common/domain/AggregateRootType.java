@@ -12,6 +12,7 @@ public enum AggregateRootType {
     PUBLIC_FILE,
     LIKE,
     COMMENT,
+    COLLABORATION,
     ;
 
 }

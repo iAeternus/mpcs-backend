@@ -189,7 +189,6 @@ public abstract class BaseApiTest {
         objectMapper.enable(INDENT_OUTPUT);
         RestAssured.port = port;
         RestAssured.basePath = "/api/v1.0";
-//        RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
         RestAssured.requestSpecification = new RequestSpecBuilder()
                 .setContentType(JSON)
                 .setAccept(JSON)

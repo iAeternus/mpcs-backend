@@ -44,9 +44,8 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
+                        <id>repackage</id>
+                        <phase>none</phase>
                     </execution>
                 </executions>
             </plugin>

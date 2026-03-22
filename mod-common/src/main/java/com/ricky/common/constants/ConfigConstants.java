@@ -49,6 +49,7 @@ public interface ConfigConstants {
 
     String PUBLISHING_DOMAIN_EVENT_COLLECTION = "publishing_domain_event";
     String CONSUMING_DOMAIN_EVENT_COLLECTION = "consuming_domain_event";
+    String COLLABORATION_SESSION_COLLECTION = "collaboration_sessions";
 
     // 数据库ID前缀
     String USER_ID_PREFIX = "USR";
@@ -62,6 +63,7 @@ public interface ConfigConstants {
     String LIKE_ID_PREFIX = "LIK";
     String COMMENT_ID_PREFIX = "CMT";
     String SENSITIVE_WORD_ID_PREFIX = "SST";
+    String COLLAB_SESSION_ID_PREFIX = "CLS";
 
     // Redis
     String USER_CACHE = "USERS";
@@ -76,6 +78,8 @@ public interface ConfigConstants {
     String GROUPS_CACHE = "GROUPS";
     String COMMENT_CACHE = "COMMENTS";
     String SENSITIVE_WORD_CACHE = "SENSITIVE_WORDS";
+    String COLLAB_SESSION_CACHE = "COLLAB_SESSIONS";
+    String COLLAB_HEARTBEAT_KEY = "COLLAB_HEARTBEATS";
 
     String LIKE_KEY = "LIKES";
     String LIKED_COUNT_KEY = "LIKED_COUNTS";
@@ -121,6 +125,10 @@ public interface ConfigConstants {
     int MAX_GROUP_MANAGER_SIZE = 10;
     int MAX_GROUP_FOLDER_SIZE = 1024;
     int MAX_GRANT_PERMISSION_SIZE = 64;
+
+    // Collaboration心跳配置
+    int COLLAB_HEARTBEAT_INTERVAL_SECONDS = 30;
+    int COLLAB_SESSION_TIMEOUT_SECONDS = 120;
 
     // LLM摘要生成
     int BUFFER_SIZE = 8192;
