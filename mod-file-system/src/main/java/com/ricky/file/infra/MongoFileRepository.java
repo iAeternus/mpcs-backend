@@ -22,6 +22,12 @@ public class MongoFileRepository extends MongoBaseRepository<File> implements Fi
     private final MongoCachedFileRepository cachedFileRepository;
 
     @Override
+    public void save(File file) {
+        super.save(file);
+        cachedFileRepository.evictFileCache(file.getId());
+    }
+
+    @Override
     public boolean existsByHash(String hash) {
         requireNotBlank(hash, "File hash must not be blank");
         Query query = query(where("hash").is(hash));

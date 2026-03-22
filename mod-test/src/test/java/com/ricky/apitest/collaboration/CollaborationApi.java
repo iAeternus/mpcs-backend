@@ -43,7 +43,17 @@ public class CollaborationApi {
                 .extract()
                 .as(SessionInfoResponse.class);
     }
-
+    
+    public static SessionInfoResponse getSessionByDocument(String jwt, String documentId) {
+        return givenBearer(jwt)
+                .when()
+                .get(COLLAB + "/sessions/document/{documentId}", documentId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(SessionInfoResponse.class);
+    }
+    
     public static Response getSessionInfoRaw(String jwt, String sessionId) {
         return givenBearer(jwt)
                 .when()

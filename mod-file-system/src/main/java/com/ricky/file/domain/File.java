@@ -95,5 +95,12 @@ public class File extends AggregateRoot {
         this.parentId = newParentId;
         addOpsLog("移动文件到[" + newParentId + "]下", userContext);
     }
-
+    
+    public void updateStorageId(StorageId newStorageId, long newSize, String newHash, UserContext userContext) {
+        this.storageId = newStorageId;
+        this.size = newSize;
+        this.hash = newHash;
+        addOpsLog("协同编辑更新文件内容", userContext);
+    }
+    
 }

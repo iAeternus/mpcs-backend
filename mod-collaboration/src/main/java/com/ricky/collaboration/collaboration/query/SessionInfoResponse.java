@@ -21,6 +21,7 @@ public class SessionInfoResponse {
     private String sessionId;
     private String documentId;
     private String documentTitle;
+    private String parentFolderId;
     private long version;
     private long documentLength;
     private int activeUserCount;

@@ -11,11 +11,13 @@ import com.ricky.collaboration.collaboration.domain.CursorPosition;
 import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
 import com.ricky.collaboration.collaboration.domain.ot.TextOperationType;
 import com.ricky.collaboration.collaboration.exception.OperationInvalidException;
+import com.ricky.collaboration.collaboration.exception.SessionAlreadyExistsException;
 import com.ricky.collaboration.collaboration.query.OperationHistoryResponse;
 import com.ricky.collaboration.collaboration.query.SessionInfoResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.TransactionSystemException;
 
 import java.util.List;
 
@@ -28,17 +30,31 @@ public class CollaborationServiceImpl implements CollaborationService {
     
     @Override
     public SessionInfoResponse createSession(CreateSessionCommand command, UserContext userContext) {
-        CollaborationSession session = domainService.createSession(
-                command.getDocumentId(),
-                command.getDocumentTitle(),
-                userContext
-        );
-        return toSessionInfoResponse(session);
+        try {
+            CollaborationSession session = domainService.createSession(
+                    command.getDocumentId(),
+                    command.getDocumentTitle(),
+                    command.getParentFolderId(),
+                    userContext
+            );
+            return toSessionInfoResponse(session);
+        } catch (SessionAlreadyExistsException e) {
+            return toSessionInfoResponse(domainService.getSessionByDocumentId(command.getDocumentId()));
+        } catch (TransactionSystemException e) {
+            log.warn("Transaction error during session creation for document[{}], fetching existing session", command.getDocumentId());
+            return toSessionInfoResponse(domainService.getSessionByDocumentId(command.getDocumentId()));
+        }
     }
     
     @Override
     public SessionInfoResponse getSessionInfo(String sessionId, UserContext userContext) {
         CollaborationSession session = domainService.getSession(sessionId);
+        return toSessionInfoResponse(session);
+    }
+    
+    @Override
+    public SessionInfoResponse getSessionByDocumentId(String documentId, UserContext userContext) {
+        CollaborationSession session = domainService.getSessionByDocumentId(documentId);
         return toSessionInfoResponse(session);
     }
     
@@ -141,6 +157,7 @@ public class CollaborationServiceImpl implements CollaborationService {
                 .sessionId(session.getId())
                 .documentId(session.getDocumentId())
                 .documentTitle(session.getDocumentTitle())
+                .parentFolderId(session.getParentFolderId())
                 .version(session.getVersion().getVersion())
                 .documentLength(session.getVersion().getDocumentLength())
                 .activeUserCount(session.getActiveUserCount())

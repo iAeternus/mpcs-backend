@@ -7,6 +7,7 @@ import com.ricky.common.validation.id.custom.CustomId;
 import com.ricky.file.command.MoveFileCommand;
 import com.ricky.file.command.RenameFileCommand;
 import com.ricky.file.query.*;
+import com.ricky.file.service.FileCollabService;
 import com.ricky.file.service.FileQueryService;
 import com.ricky.file.service.FileService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,8 +23,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
+import static com.ricky.common.constants.ConfigConstants.FOLDER_ID_PREFIX;
 import static com.ricky.common.permission.Permission.*;
 import static com.ricky.common.permission.ResourceType.FILE;
 
@@ -38,6 +41,7 @@ public class FileController {
 
     private final FileService fileService;
     private final FileQueryService fileQueryService;
+    private final FileCollabService fileCollabService;
 
     @PutMapping("/{fileId}/name")
     @Operation(summary = "重命名文件")
@@ -120,4 +124,27 @@ public class FileController {
         return fileQueryService.search(query, userContext);
     }
 
+    @GetMapping("/{fileId}/collab-content")
+    @Operation(summary = "获取文件内容用于协同编辑")
+    @PermissionRequired(value = WRITE, resource = "#fileId", resourceType = FILE)
+    public ResponseEntity<Resource> getCollabContent(
+            @PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
+            @AuthenticationPrincipal UserContext userContext) {
+        log.info("Collaborative edit: fetching content for file[{}]", fileId);
+        return fileCollabService.getFileContent(fileId, userContext).toDownloadResponse();
+    }
+
+    @PutMapping("/{fileId}/collab-save")
+    @Operation(summary = "保存协同编辑后的文件内容")
+    @PermissionRequired(value = WRITE, resource = "#fileId", resourceType = FILE)
+    public void saveCollabContent(
+            @PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
+            @RequestParam @Id(FOLDER_ID_PREFIX) String parentId,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("filename") String filename,
+            @AuthenticationPrincipal UserContext userContext) {
+        log.info("Collaborative edit: saving content for file[{}]", fileId);
+        fileCollabService.saveFileContent(fileId, parentId, file, filename, userContext);
+    }
+    
 }

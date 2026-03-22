@@ -19,12 +19,12 @@ public class CollaborationDomainService {
     private final CollaborationSessionRepository sessionRepository;
     private final OperationTransformer operationTransformer;
     
-    public CollaborationSession createSession(String documentId, String documentTitle, UserContext userContext) {
+    public CollaborationSession createSession(String documentId, String documentTitle, String parentFolderId, UserContext userContext) {
         if (sessionRepository.existsByDocumentId(documentId)) {
             throw new SessionAlreadyExistsException(documentId);
         }
         
-        CollaborationSession session = new CollaborationSession(documentId, documentTitle, userContext, 24);
+        CollaborationSession session = new CollaborationSession(documentId, documentTitle, parentFolderId, userContext, 24);
         session.raiseSessionCreatedEvent(documentId, documentTitle, userContext);
         sessionRepository.save(session);
         
@@ -51,6 +51,11 @@ public class CollaborationDomainService {
         
         if (session.isExpired()) {
             throw new SessionExpiredException(sessionId);
+        }
+        
+        if (session.isUserInSession(userContext.getUid())) {
+            log.info("User[{}] already in session[{}]", userContext.getUid(), sessionId);
+            return session;
         }
         
         boolean joined = session.join(userContext);

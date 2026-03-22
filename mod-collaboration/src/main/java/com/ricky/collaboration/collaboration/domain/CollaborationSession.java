@@ -34,6 +34,7 @@ public class CollaborationSession extends AggregateRoot {
     
     private String documentId;
     private String documentTitle;
+    private String parentFolderId;
     private SessionVersion version;
     private Set<CollabUser> activeUsers;
     private Map<String, CursorPosition> cursors;
@@ -44,21 +45,24 @@ public class CollaborationSession extends AggregateRoot {
     public CollaborationSession(
             String documentId,
             String documentTitle,
+            String parentFolderId,
             UserContext userContext,
             long ttlHours
     ) {
         super(newSessionId(), userContext);
-        init(documentId, documentTitle, userContext, ttlHours);
+        init(documentId, documentTitle, parentFolderId, userContext, ttlHours);
     }
     
     private void init(
             String documentId,
             String documentTitle,
+            String parentFolderId,
             UserContext userContext,
             long ttlHours
     ) {
         this.documentId = documentId;
         this.documentTitle = documentTitle;
+        this.parentFolderId = parentFolderId;
         this.version = SessionVersion.initial();
         this.activeUsers = new HashSet<>();
         this.cursors = new HashMap<>();

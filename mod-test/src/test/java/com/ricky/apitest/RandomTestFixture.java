@@ -3,10 +3,12 @@ package com.ricky.apitest;
 import com.apifan.common.random.source.AreaSource;
 import com.apifan.common.random.source.OtherSource;
 import com.apifan.common.random.source.PersonInfoSource;
+import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.common.utils.UuidGenerator;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 
+import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class RandomTestFixture {
@@ -103,7 +105,7 @@ public class RandomTestFixture {
     }
 
     public static String rDocumentId() {
-        return "DOC" + UuidGenerator.newShortUuid();
+        return FILE_ID_PREFIX + SnowflakeIdGenerator.newSnowflakeId();
     }
 
 }

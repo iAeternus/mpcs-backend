@@ -7,6 +7,7 @@ import com.ricky.collaboration.collaboration.query.OperationHistoryResponse;
 import com.ricky.collaboration.collaboration.query.SessionInfoResponse;
 import com.ricky.collaboration.collaboration.service.CollaborationService;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.validation.id.Id;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import static com.ricky.common.constants.ConfigConstants.*;
 
 @Slf4j
 @Validated
@@ -39,7 +42,7 @@ public class CollaborationController {
     @GetMapping("/sessions/{sessionId}")
     @Operation(summary = "获取会话信息")
     public SessionInfoResponse getSessionInfo(
-            @PathVariable String sessionId,
+            @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @AuthenticationPrincipal UserContext userContext
     ) {
         return collaborationService.getSessionInfo(sessionId, userContext);
@@ -48,16 +51,16 @@ public class CollaborationController {
     @GetMapping("/sessions/document/{documentId}")
     @Operation(summary = "通过文档ID获取会话")
     public SessionInfoResponse getSessionByDocument(
-            @PathVariable String documentId,
+            @PathVariable @Id(FILE_ID_PREFIX) String documentId,
             @AuthenticationPrincipal UserContext userContext
     ) {
-        return collaborationService.getSessionInfo(documentId, userContext);
+        return collaborationService.getSessionByDocumentId(documentId, userContext);
     }
     
     @PostMapping("/sessions/{sessionId}/join")
     @Operation(summary = "加入协同会话")
     public SessionInfoResponse joinSession(
-            @PathVariable String sessionId,
+            @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @AuthenticationPrincipal UserContext userContext
     ) {
         log.info("User[{}] joining session[{}]", userContext.getUid(), sessionId);
@@ -67,7 +70,7 @@ public class CollaborationController {
     @PostMapping("/sessions/{sessionId}/leave")
     @Operation(summary = "离开协同会话")
     public void leaveSession(
-            @PathVariable String sessionId,
+            @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @AuthenticationPrincipal UserContext userContext
     ) {
         log.info("User[{}] leaving session[{}]", userContext.getUid(), sessionId);
@@ -77,7 +80,7 @@ public class CollaborationController {
     @DeleteMapping("/sessions/{sessionId}")
     @Operation(summary = "删除协同会话")
     public void deleteSession(
-            @PathVariable String sessionId,
+            @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @AuthenticationPrincipal UserContext userContext
     ) {
         log.info("Deleting collaboration session[{}]", sessionId);
@@ -105,7 +108,7 @@ public class CollaborationController {
     @GetMapping("/sessions/{sessionId}/history")
     @Operation(summary = "获取操作历史")
     public OperationHistoryResponse getOperationHistory(
-            @PathVariable String sessionId,
+            @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @RequestParam(defaultValue = "0") long fromVersion,
             @AuthenticationPrincipal UserContext userContext
     ) {

@@ -16,6 +16,8 @@ public interface CollaborationService {
     
     SessionInfoResponse getSessionInfo(String sessionId, UserContext userContext);
     
+    SessionInfoResponse getSessionByDocumentId(String documentId, UserContext userContext);
+    
     SessionInfoResponse joinSession(String sessionId, UserContext userContext);
     
     void leaveSession(String sessionId, UserContext userContext);
