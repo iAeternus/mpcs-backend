@@ -36,5 +36,4 @@ build/
 **/log/**
 
 /data
-**/application-ci.yml
 .env

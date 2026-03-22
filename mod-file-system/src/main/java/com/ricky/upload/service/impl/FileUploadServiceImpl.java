@@ -127,7 +127,7 @@ public class FileUploadServiceImpl implements FileUploadService {
         UploadSession uploadSession = uploadSessionRepository.byId(uploadId);
         uploadSession.checkOwner(userContext.getUid());
         if (uploadSession.isCompleted()) {
-            throw new MyException(UPLOAD_ALREADY_COMPLETED, "Chunk upload has been completed.");
+            throw new MyException(UPLOAD_ALREADY_COMPLETED, "Chunk upload has been completed."); // TODO
         }
 
         if (!uploadSession.containsUploadedChunk(chunkIndex)) {
