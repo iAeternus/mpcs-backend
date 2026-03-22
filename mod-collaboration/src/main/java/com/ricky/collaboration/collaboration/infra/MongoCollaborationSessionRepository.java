@@ -71,4 +71,10 @@ public class MongoCollaborationSessionRepository
         Query query = Query.query(where("expiresAt").lt(Instant.now()));
         mongoTemplate.remove(query, CollaborationSession.class);
     }
+    
+    @Override
+    public boolean existsById(String sessionId) {
+        Query query = Query.query(where("_id").is(sessionId));
+        return mongoTemplate.exists(query, CollaborationSession.class);
+    }
 }

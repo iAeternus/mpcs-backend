@@ -3,7 +3,8 @@ package com.ricky.collaboration.collaboration.domain;
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.collaboration.collaboration.domain.ot.OperationTransformer;
 import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
-import com.ricky.collaboration.collaboration.exception.*;
+import com.ricky.common.exception.ErrorCodeEnum;
+import com.ricky.common.exception.MyException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,20 +22,25 @@ public class CollaborationDomainService {
     
     public CollaborationSession createSession(String documentId, String documentTitle, String parentFolderId, UserContext userContext) {
         if (sessionRepository.existsByDocumentId(documentId)) {
-            throw new SessionAlreadyExistsException(documentId);
+            throw MyException.requestValidationException("documentId", documentId);
         }
         
         CollaborationSession session = new CollaborationSession(documentId, documentTitle, parentFolderId, userContext, 24);
         session.raiseSessionCreatedEvent(documentId, documentTitle, userContext);
-        sessionRepository.save(session);
         
         log.info("Created collaboration session[{}] for document[{}]", session.getId(), documentId);
         return session;
     }
     
+    public void validateSessionExists(String sessionId) {
+        if (!sessionRepository.existsById(sessionId)) {
+            throw new MyException(ErrorCodeEnum.COLLAB_SESSION_NOT_FOUND, "协同会话不存在。", "sessionId", sessionId);
+        }
+    }
+    
     public CollaborationSession getSession(String sessionId) {
         return sessionRepository.findById(sessionId)
-                .orElseThrow(() -> new SessionNotFoundException(sessionId));
+                .orElseThrow(() -> new MyException(ErrorCodeEnum.COLLAB_SESSION_NOT_FOUND, "协同会话不存在。", "sessionId", sessionId));
     }
     
     public Optional<CollaborationSession> getSessionOptional(String sessionId) {
@@ -43,92 +49,69 @@ public class CollaborationDomainService {
     
     public CollaborationSession getSessionByDocumentId(String documentId) {
         return sessionRepository.findByDocumentId(documentId)
-                .orElseThrow(() -> new SessionNotFoundException(documentId));
+                .orElseThrow(() -> new MyException(ErrorCodeEnum.COLLAB_SESSION_NOT_FOUND, "协同会话不存在。", "documentId", documentId));
     }
     
-    public CollaborationSession joinSession(String sessionId, UserContext userContext) {
-        CollaborationSession session = getSession(sessionId);
-        
+    public boolean canJoinSession(CollaborationSession session, String oderId) {
         if (session.isExpired()) {
-            throw new SessionExpiredException(sessionId);
+            throw new MyException(ErrorCodeEnum.COLLAB_SESSION_EXPIRED, "协同会话已过期。", "sessionId", session.getId());
         }
         
-        if (session.isUserInSession(userContext.getUid())) {
-            log.info("User[{}] already in session[{}]", userContext.getUid(), sessionId);
-            return session;
+        if (session.isUserInSession(oderId)) {
+            log.info("User[{}] already in session[{}]", oderId, session.getId());
+            return false;
         }
         
-        boolean joined = session.join(userContext);
-        if (!joined) {
-            throw new SessionFullException();
+        if (session.isFull()) {
+            throw new MyException(ErrorCodeEnum.COLLAB_SESSION_FULL, "协同会话已满。");
         }
         
-        session.raiseUserJoinedEvent(sessionId, userContext.getUid(), userContext.getUsername(), userContext);
-        sessionRepository.save(session);
-        
-        log.info("User[{}] joined session[{}]", userContext.getUid(), sessionId);
-        return session;
+        return true;
     }
     
-    public CollaborationSession leaveSession(String sessionId, UserContext userContext) {
-        CollaborationSession session = getSession(sessionId);
-        
+    public void joinSession(CollaborationSession session, UserContext userContext) {
+        session.join(userContext);
+        session.raiseUserJoinedEvent(session.getId(), userContext.getUid(), userContext.getUsername(), userContext);
+        log.info("User[{}] joined session[{}]", userContext.getUid(), session.getId());
+    }
+    
+    public void leaveSession(CollaborationSession session, UserContext userContext) {
         session.leave(userContext.getUid(), userContext);
-        session.raiseUserLeftEvent(sessionId, userContext.getUid(), userContext);
-        sessionRepository.save(session);
-        
-        if (session.isEmpty()) {
-            deleteSession(sessionId, userContext);
-        }
-        
-        log.info("User[{}] left session[{}]", userContext.getUid(), sessionId);
-        return session;
+        session.raiseUserLeftEvent(session.getId(), userContext.getUid(), userContext);
+        log.info("User[{}] left session[{}]", userContext.getUid(), session.getId());
     }
     
-    public void deleteSession(String sessionId, UserContext userContext) {
-        CollaborationSession session = getSession(sessionId);
+    public void deleteSession(CollaborationSession session, String sessionId, UserContext userContext) {
         session.raiseSessionDeletedEvent(sessionId, userContext);
-        sessionRepository.delete(session);
-        
         log.info("Deleted collaboration session[{}]", sessionId);
     }
     
-    public CollaborationSession submitOperation(String sessionId, TextOperation operation, UserContext userContext) {
-        CollaborationSession session = getSession(sessionId);
-        
-        if (!session.isUserInSession(userContext.getUid())) {
-            throw new UserNotInSessionException(userContext.getUid(), sessionId);
+    public void validateUserInSession(CollaborationSession session, String oderId) {
+        if (!session.isUserInSession(oderId)) {
+            throw new MyException(ErrorCodeEnum.COLLAB_USER_NOT_IN_SESSION, "用户不在协同会话中。", "userId", oderId, "sessionId", session.getId());
         }
-        
-        if (session.isExpired()) {
-            throw new SessionExpiredException(sessionId);
-        }
-        
-        List<TextOperation> serverOps = session.getRecentOperations(100);
-        TextOperation transformedOp = operation;
-        
-        if (!serverOps.isEmpty()) {
-            transformedOp = operationTransformer.transform(operation, serverOps.get(serverOps.size() - 1));
-        }
-        
-        session.addOperation(transformedOp, userContext);
-        sessionRepository.save(session);
-        
-        log.debug("User[{}] submitted operation at session[{}]", userContext.getUid(), sessionId);
-        return session;
     }
     
-    public CollaborationSession updateCursor(String sessionId, String oderId, CursorPosition cursor, UserContext userContext) {
-        CollaborationSession session = getSession(sessionId);
-        
-        if (!session.isUserInSession(oderId)) {
-            throw new UserNotInSessionException(oderId, sessionId);
+    public void validateSessionNotExpired(CollaborationSession session) {
+        if (session.isExpired()) {
+            throw new MyException(ErrorCodeEnum.COLLAB_SESSION_EXPIRED, "协同会话已过期。", "sessionId", session.getId());
         }
-        
+    }
+    
+    public TextOperation transformOperation(TextOperation operation, List<TextOperation> serverOps) {
+        if (serverOps.isEmpty()) {
+            return operation;
+        }
+        return operationTransformer.transform(operation, serverOps.get(serverOps.size() - 1));
+    }
+    
+    public void addOperation(CollaborationSession session, TextOperation operation, UserContext userContext) {
+        session.addOperation(operation, userContext);
+        log.debug("User[{}] submitted operation at session[{}]", userContext.getUid(), session.getId());
+    }
+    
+    public void updateCursor(CollaborationSession session, String oderId, CursorPosition cursor, UserContext userContext) {
         session.updateCursor(oderId, cursor, userContext);
-        sessionRepository.save(session);
-        
-        return session;
     }
     
     public List<CollaborationSession> getUserSessions(String oderId) {

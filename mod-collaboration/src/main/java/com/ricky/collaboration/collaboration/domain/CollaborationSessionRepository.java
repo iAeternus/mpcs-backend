@@ -18,6 +18,8 @@ public interface CollaborationSessionRepository {
     
     List<CollaborationSession> findActiveSessions();
     
+    boolean existsById(String sessionId);
+    
     boolean existsByDocumentId(String documentId);
     
     void deleteExpiredSessions();

@@ -1,5 +1,9 @@
 package com.ricky.collaboration.collaboration.domain.ot;
 
+import com.ricky.collaboration.collaboration.command.SubmitOperationCommand;
+import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.exception.ErrorCodeEnum;
+import com.ricky.common.exception.MyException;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -64,6 +68,41 @@ public class TextOperation {
                 .clientVersion(clientVersion)
                 .timestamp(Instant.now())
                 .build();
+    }
+    
+    public static TextOperation buildOperation(SubmitOperationCommand command, UserContext userContext) {
+        TextOperationType type = command.getType();
+        
+        return switch (type) {
+            case INSERT -> {
+                if (command.getContent() == null || command.getContent().isEmpty()) {
+                    throw MyException.requestValidationException("INSERT操作必须提供content");
+                }
+                yield TextOperation.insert(
+                        userContext.getUid(),
+                        command.getPosition(),
+                        command.getContent(),
+                        command.getClientVersion()
+                );
+            }
+            case DELETE -> {
+                if (command.getLength() == null || command.getLength() <= 0) {
+                    throw MyException.requestValidationException("DELETE操作必须提供有效的length");
+                }
+                yield TextOperation.delete(
+                        userContext.getUid(),
+                        command.getPosition(),
+                        command.getLength(),
+                        command.getClientVersion()
+                );
+            }
+            case RETAIN -> TextOperation.retain(
+                    userContext.getUid(),
+                    command.getPosition(),
+                    command.getLength() != null ? command.getLength() : 0,
+                    command.getClientVersion()
+            );
+        };
     }
     
     public boolean isInsert() {

@@ -1,8 +1,8 @@
 package com.ricky.collaboration.collaboration.query;
 
 import com.ricky.collaboration.collaboration.domain.CollabUser;
+import com.ricky.collaboration.collaboration.domain.CollaborationSession;
 import com.ricky.collaboration.collaboration.domain.CursorPosition;
-import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,4 +30,21 @@ public class SessionInfoResponse {
     private Instant createdAt;
     private Instant expiresAt;
     private boolean expired;
+    
+    public static SessionInfoResponse fromSession(CollaborationSession session) {
+        return SessionInfoResponse.builder()
+                .sessionId(session.getId())
+                .documentId(session.getDocumentId())
+                .documentTitle(session.getDocumentTitle())
+                .parentFolderId(session.getParentFolderId())
+                .version(session.getVersion().getVersion())
+                .documentLength(session.getVersion().getDocumentLength())
+                .activeUserCount(session.getActiveUserCount())
+                .activeUsers(List.copyOf(session.getActiveUsers()))
+                .cursors(session.getCursors())
+                .createdAt(session.getCreatedAt())
+                .expiresAt(session.getExpiresAt())
+                .expired(session.isExpired())
+                .build();
+    }
 }

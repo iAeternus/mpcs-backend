@@ -146,6 +146,10 @@ public class CollaborationSession extends AggregateRoot {
         return activeUsers.isEmpty();
     }
     
+    public boolean isFull() {
+        return activeUsers.size() >= MAX_USERS;
+    }
+    
     public int getActiveUserCount() {
         return activeUsers.size();
     }

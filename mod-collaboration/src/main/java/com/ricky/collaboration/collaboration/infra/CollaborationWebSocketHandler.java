@@ -3,6 +3,7 @@ package com.ricky.collaboration.collaboration.infra;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ricky.collaboration.collaboration.domain.CollaborationDomainService;
 import com.ricky.collaboration.collaboration.domain.CollaborationSession;
+import com.ricky.collaboration.collaboration.domain.CollaborationSessionRepository;
 import com.ricky.collaboration.collaboration.domain.CursorPosition;
 import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
 import com.ricky.collaboration.collaboration.dto.CursorMessage;
@@ -28,6 +29,7 @@ import java.util.Map;
 public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     
     private final CollaborationDomainService domainService;
+    private final CollaborationSessionRepository sessionRepository;
     private final CollaborationSessionManager sessionManager;
     private final ObjectMapper objectMapper;
     
@@ -94,11 +96,18 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
             if ("operation".equals(type)) {
                 OperationMessage opMsg = objectMapper.readValue(payload, OperationMessage.class);
                 TextOperation operation = opMsg.toTextOperation();
-                CollaborationSession updatedSession = domainService.submitOperation(sessionId, operation, userContext);
+                
+                CollaborationSession collabSession = domainService.getSession(sessionId);
+                domainService.validateUserInSession(collabSession, oderId);
+                domainService.validateSessionNotExpired(collabSession);
+                
+                var serverOps = collabSession.getRecentOperations(100);
+                TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
+                domainService.addOperation(collabSession, transformedOp, userContext);
+                sessionRepository.save(collabSession);
                 
                 sessionManager.broadcast(sessionId, OperationMessage.fromTextOperation(sessionId, operation), oderId);
-                
-                sendMessage(session, OperationAckMessage.success(sessionId, updatedSession.getVersion().getVersion()));
+                sendMessage(session, OperationAckMessage.success(sessionId, collabSession.getVersion().getVersion()));
                 return;
             }
             
@@ -111,7 +120,11 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                         cursorMsg.getSelectionStart() != null ? cursorMsg.getSelectionStart() : 0,
                         cursorMsg.getSelectionEnd() != null ? cursorMsg.getSelectionEnd() : 0
                 );
-                domainService.updateCursor(sessionId, oderId, cursor, userContext);
+                
+                CollaborationSession collabSession = domainService.getSession(sessionId);
+                domainService.validateUserInSession(collabSession, oderId);
+                domainService.updateCursor(collabSession, oderId, cursor, userContext);
+                sessionRepository.save(collabSession);
                 
                 CursorMessage broadcastMsg = CursorMessage.of(
                         sessionId, oderId, username, 
@@ -139,8 +152,17 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
             sessionManager.removeSession(sessionId, session);
             
             try {
-                UserContext userContext = UserContext.of(oderId, username, Role.NORMAL_USER);
-                domainService.leaveSession(sessionId, userContext);
+                CollaborationSession collabSession = domainService.getSessionOptional(sessionId).orElse(null);
+                if (collabSession != null) {
+                    UserContext userContext = UserContext.of(oderId, username, Role.NORMAL_USER);
+                    domainService.leaveSession(collabSession, userContext);
+                    sessionRepository.save(collabSession);
+                    
+                    if (collabSession.isEmpty()) {
+                        domainService.deleteSession(collabSession, sessionId, userContext);
+                        sessionRepository.delete(collabSession);
+                    }
+                }
             } catch (Exception e) {
                 log.warn("Error leaving session: {}", e.getMessage());
             }

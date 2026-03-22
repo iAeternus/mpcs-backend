@@ -6,18 +6,15 @@ import com.ricky.collaboration.collaboration.command.SubmitOperationCommand;
 import com.ricky.collaboration.collaboration.command.UpdateCursorCommand;
 import com.ricky.collaboration.collaboration.domain.CollaborationSession;
 import com.ricky.collaboration.collaboration.domain.CollaborationDomainService;
-import com.ricky.collaboration.collaboration.domain.CollabUser;
 import com.ricky.collaboration.collaboration.domain.CursorPosition;
 import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
-import com.ricky.collaboration.collaboration.domain.ot.TextOperationType;
-import com.ricky.collaboration.collaboration.exception.OperationInvalidException;
-import com.ricky.collaboration.collaboration.exception.SessionAlreadyExistsException;
 import com.ricky.collaboration.collaboration.query.OperationHistoryResponse;
 import com.ricky.collaboration.collaboration.query.SessionInfoResponse;
+import com.ricky.collaboration.collaboration.domain.CollaborationSessionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionSystemException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,61 +24,88 @@ import java.util.List;
 public class CollaborationServiceImpl implements CollaborationService {
     
     private final CollaborationDomainService domainService;
+    private final CollaborationSessionRepository sessionRepository;
     
     @Override
+    @Transactional
     public SessionInfoResponse createSession(CreateSessionCommand command, UserContext userContext) {
-        try {
-            CollaborationSession session = domainService.createSession(
-                    command.getDocumentId(),
-                    command.getDocumentTitle(),
-                    command.getParentFolderId(),
-                    userContext
-            );
-            return toSessionInfoResponse(session);
-        } catch (SessionAlreadyExistsException e) {
-            return toSessionInfoResponse(domainService.getSessionByDocumentId(command.getDocumentId()));
-        } catch (TransactionSystemException e) {
-            log.warn("Transaction error during session creation for document[{}], fetching existing session", command.getDocumentId());
-            return toSessionInfoResponse(domainService.getSessionByDocumentId(command.getDocumentId()));
-        }
+        CollaborationSession session = domainService.createSession(
+                command.getDocumentId(),
+                command.getDocumentTitle(),
+                command.getParentFolderId(),
+                userContext
+        );
+        sessionRepository.save(session);
+        return SessionInfoResponse.fromSession(session);
     }
     
     @Override
     public SessionInfoResponse getSessionInfo(String sessionId, UserContext userContext) {
         CollaborationSession session = domainService.getSession(sessionId);
-        return toSessionInfoResponse(session);
+        return SessionInfoResponse.fromSession(session);
     }
     
     @Override
     public SessionInfoResponse getSessionByDocumentId(String documentId, UserContext userContext) {
         CollaborationSession session = domainService.getSessionByDocumentId(documentId);
-        return toSessionInfoResponse(session);
+        return SessionInfoResponse.fromSession(session);
     }
     
     @Override
+    @Transactional
     public SessionInfoResponse joinSession(String sessionId, UserContext userContext) {
-        CollaborationSession session = domainService.joinSession(sessionId, userContext);
-        return toSessionInfoResponse(session);
+        CollaborationSession session = domainService.getSession(sessionId);
+        boolean canJoin = domainService.canJoinSession(session, userContext.getUid());
+        
+        if (canJoin) {
+            domainService.joinSession(session, userContext);
+            sessionRepository.save(session);
+        }
+        
+        return SessionInfoResponse.fromSession(session);
     }
     
     @Override
+    @Transactional
     public void leaveSession(String sessionId, UserContext userContext) {
-        domainService.leaveSession(sessionId, userContext);
+        CollaborationSession session = domainService.getSession(sessionId);
+        domainService.leaveSession(session, userContext);
+        sessionRepository.save(session);
+        
+        if (session.isEmpty()) {
+            domainService.deleteSession(session, sessionId, userContext);
+            sessionRepository.delete(session);
+        }
     }
     
     @Override
+    @Transactional
     public void deleteSession(String sessionId, UserContext userContext) {
-        domainService.deleteSession(sessionId, userContext);
+        CollaborationSession session = domainService.getSession(sessionId);
+        domainService.deleteSession(session, sessionId, userContext);
+        sessionRepository.delete(session);
     }
     
     @Override
+    @Transactional
     public SessionInfoResponse submitOperation(SubmitOperationCommand command, UserContext userContext) {
-        TextOperation operation = buildOperation(command, userContext);
-        CollaborationSession session = domainService.submitOperation(command.getSessionId(), operation, userContext);
-        return toSessionInfoResponse(session);
+        TextOperation operation = TextOperation.buildOperation(command, userContext);
+        
+        CollaborationSession session = domainService.getSession(command.getSessionId());
+        domainService.validateUserInSession(session, userContext.getUid());
+        domainService.validateSessionNotExpired(session);
+        
+        List<TextOperation> serverOps = session.getRecentOperations(100);
+        TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
+        
+        domainService.addOperation(session, transformedOp, userContext);
+        sessionRepository.save(session);
+        
+        return SessionInfoResponse.fromSession(session);
     }
     
     @Override
+    @Transactional
     public SessionInfoResponse updateCursor(UpdateCursorCommand command, UserContext userContext) {
         CursorPosition cursor = CursorPosition.of(
                 userContext.getUid(),
@@ -90,13 +114,14 @@ public class CollaborationServiceImpl implements CollaborationService {
                 command.getSelectionStart() != null ? command.getSelectionStart() : command.getPosition(),
                 command.getSelectionEnd() != null ? command.getSelectionEnd() : command.getPosition()
         );
-        CollaborationSession session = domainService.updateCursor(
-                command.getSessionId(),
-                userContext.getUid(),
-                cursor,
-                userContext
-        );
-        return toSessionInfoResponse(session);
+        
+        CollaborationSession session = domainService.getSession(command.getSessionId());
+        domainService.validateUserInSession(session, userContext.getUid());
+        
+        domainService.updateCursor(session, userContext.getUid(), cursor, userContext);
+        sessionRepository.save(session);
+        
+        return SessionInfoResponse.fromSession(session);
     }
     
     @Override
@@ -113,59 +138,18 @@ public class CollaborationServiceImpl implements CollaborationService {
     }
     
     @Override
+    @Transactional
     public CollaborationSession submitOperationInternal(String sessionId, TextOperation operation, UserContext userContext) {
-        return domainService.submitOperation(sessionId, operation, userContext);
-    }
-    
-    private TextOperation buildOperation(SubmitOperationCommand command, UserContext userContext) {
-        TextOperationType type = command.getType();
+        CollaborationSession session = domainService.getSession(sessionId);
+        domainService.validateUserInSession(session, userContext.getUid());
+        domainService.validateSessionNotExpired(session);
         
-        return switch (type) {
-            case INSERT -> {
-                if (command.getContent() == null || command.getContent().isEmpty()) {
-                    throw new OperationInvalidException("INSERT操作必须提供content");
-                }
-                yield TextOperation.insert(
-                        userContext.getUid(),
-                        command.getPosition(),
-                        command.getContent(),
-                        command.getClientVersion()
-                );
-            }
-            case DELETE -> {
-                if (command.getLength() == null || command.getLength() <= 0) {
-                    throw new OperationInvalidException("DELETE操作必须提供有效的length");
-                }
-                yield TextOperation.delete(
-                        userContext.getUid(),
-                        command.getPosition(),
-                        command.getLength(),
-                        command.getClientVersion()
-                );
-            }
-            case RETAIN -> TextOperation.retain(
-                    userContext.getUid(),
-                    command.getPosition(),
-                    command.getLength() != null ? command.getLength() : 0,
-                    command.getClientVersion()
-            );
-        };
-    }
-    
-    private SessionInfoResponse toSessionInfoResponse(CollaborationSession session) {
-        return SessionInfoResponse.builder()
-                .sessionId(session.getId())
-                .documentId(session.getDocumentId())
-                .documentTitle(session.getDocumentTitle())
-                .parentFolderId(session.getParentFolderId())
-                .version(session.getVersion().getVersion())
-                .documentLength(session.getVersion().getDocumentLength())
-                .activeUserCount(session.getActiveUserCount())
-                .activeUsers(List.copyOf(session.getActiveUsers()))
-                .cursors(session.getCursors())
-                .createdAt(session.getCreatedAt())
-                .expiresAt(session.getExpiresAt())
-                .expired(session.isExpired())
-                .build();
+        List<TextOperation> serverOps = session.getRecentOperations(100);
+        TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
+        
+        domainService.addOperation(session, transformedOp, userContext);
+        sessionRepository.save(session);
+        
+        return session;
     }
 }
