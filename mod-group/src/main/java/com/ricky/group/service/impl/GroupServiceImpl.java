@@ -102,6 +102,12 @@ public class GroupServiceImpl implements GroupService {
         group.addManagers(command.getManagerIds(), userContext);
         groupRepository.save(group);
 
+        for (String managerId : command.getManagerIds()) {
+            User manager = userRepository.byId(managerId);
+            manager.addGroup(groupId, userContext);
+            userRepository.save(manager);
+        }
+
         log.info("Added managers{} to group[{}].", command.getManagerIds(), groupId);
     }
 
@@ -127,6 +133,10 @@ public class GroupServiceImpl implements GroupService {
         managePermissionChecker.checkCanManageGroup(group, userContext);
         group.addManager(memberId, userContext);
         groupRepository.save(group);
+
+        User member = userRepository.byId(memberId);
+        member.addGroup(groupId, userContext);
+        userRepository.save(member);
 
         log.info("Added manager[{}] to group[{}].", memberId, groupId);
     }

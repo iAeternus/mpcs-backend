@@ -269,6 +269,58 @@ public class GroupControllerTest extends BaseApiTest {
         Group group = groupRepository.byId(groupId);
         assertTrue(group.containsManager(member.getUserId()));
         assertTrue(group.containsMember(member.getUserId()));
+
+        User user = userRepository.byId(member.getUserId());
+        assertTrue(user.containsGroup(groupId));
+    }
+
+    @Test
+    void newly_added_manager_should_be_able_to_manage_group() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse newManager = setupApi.registerWithLogin();
+
+        String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupManager(manager.getJwt(), groupId, newManager.getUserId());
+
+        Group group = groupRepository.byId(groupId);
+        assertTrue(group.containsManager(newManager.getUserId()));
+
+        User user = userRepository.byId(newManager.getUserId());
+        assertTrue(user.containsGroup(groupId));
+
+        // When & Then - 新管理员应该能够执行管理操作
+        GroupApi.renameGroup(newManager.getJwt(), groupId, rGroupName());
+    }
+
+    @Test
+    void batch_add_managers_should_also_update_user_group_ids() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member1 = setupApi.registerWithLogin();
+        LoginResponse member2 = setupApi.registerWithLogin();
+
+        String groupId = GroupApi.createGroup(manager.getJwt());
+
+        // When
+        GroupApi.addGroupManagers(manager.getJwt(), groupId, AddGroupManagersCommand.builder()
+                .managerIds(List.of(member1.getUserId(), member2.getUserId()))
+                .build());
+
+        // Then
+        User user1 = userRepository.byId(member1.getUserId());
+        assertTrue(user1.containsGroup(groupId));
+
+        User user2 = userRepository.byId(member2.getUserId());
+        assertTrue(user2.containsGroup(groupId));
+
+        Group group = groupRepository.byId(groupId);
+        assertTrue(group.containsManager(member1.getUserId()));
+        assertTrue(group.containsManager(member2.getUserId()));
+
+        // 验证新管理员能够执行管理操作
+        GroupApi.renameGroup(member1.getJwt(), groupId, rGroupName());
+        GroupApi.renameGroup(member2.getJwt(), groupId, rGroupName());
     }
 
     @Test
