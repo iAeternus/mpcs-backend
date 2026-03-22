@@ -39,11 +39,16 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+        log.info("WebSocket afterConnectionEstablished, uri={}", session.getUri());
+        
         String sessionId = extractSessionId(session);
         String oderId = extractUserId(session);
         String username = extractUsername(session);
         
+        log.info("WebSocket: sessionId='{}', oderId='{}', username='{}'", sessionId, oderId, username);
+        
         if (sessionId == null || oderId == null) {
+            log.error("WebSocket: missing sessionId or oderId");
             session.close(CloseStatus.BAD_DATA);
             return;
         }
@@ -56,6 +61,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                 .orElse(null);
         
         if (collabSession == null) {
+            log.error("WebSocket: session not found: {}", sessionId);
             sendMessage(session, OperationAckMessage.failure(sessionId, 0, "Session not found"));
             session.close(CloseStatus.GOING_AWAY);
             return;
@@ -71,7 +77,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
         );
         sendMessage(session, stateMessage);
         
-        log.info("WebSocket connected: session[{}], user[{}]", sessionId, oderId);
+        log.info("WebSocket connected successfully: session[{}], user[{}]", sessionId, oderId);
     }
     
     @Override
@@ -181,7 +187,12 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
         String uri = session.getUri() != null ? session.getUri().toString() : "";
         int idx = uri.lastIndexOf("/ws/collaboration/");
         if (idx > 0) {
-            return uri.substring(idx + "/ws/collaboration/".length());
+            String sessionId = uri.substring(idx + "/ws/collaboration/".length());
+            int queryIdx = sessionId.indexOf('?');
+            if (queryIdx > 0) {
+                sessionId = sessionId.substring(0, queryIdx);
+            }
+            return sessionId;
         }
         return null;
     }
