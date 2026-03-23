@@ -15,15 +15,15 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SessionStateMessage {
-    
+
     private String type;
     private String sessionId;
     private long version;
     private List<CollabUser> activeUsers;
     private Map<String, CursorPosition> cursors;
-    
-    public static SessionStateMessage of(String sessionId, long version, 
-                                          List<CollabUser> users, Map<String, CursorPosition> cursors) {
+
+    public static SessionStateMessage of(String sessionId, long version,
+                                         List<CollabUser> users, Map<String, CursorPosition> cursors) {
         return SessionStateMessage.builder()
                 .type("session_state")
                 .sessionId(sessionId)

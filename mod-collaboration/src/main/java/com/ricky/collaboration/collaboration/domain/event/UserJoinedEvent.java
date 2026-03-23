@@ -11,11 +11,11 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 public class UserJoinedEvent extends DomainEvent {
-    
+
     private String sessionId;
     private String oderId;
     private String username;
-    
+
     public UserJoinedEvent(String sessionId, String oderId, String username, UserContext userContext) {
         super(COLLAB_USER_JOINED, userContext);
         this.sessionId = sessionId;

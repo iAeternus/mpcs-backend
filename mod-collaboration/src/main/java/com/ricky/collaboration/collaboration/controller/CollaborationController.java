@@ -17,7 +17,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import static com.ricky.common.constants.ConfigConstants.*;
+import static com.ricky.common.constants.ConfigConstants.COLLAB_SESSION_ID_PREFIX;
+import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 
 @Slf4j
 @Validated
@@ -26,9 +27,9 @@ import static com.ricky.common.constants.ConfigConstants.*;
 @RequiredArgsConstructor
 @RequestMapping("/collaboration")
 public class CollaborationController {
-    
+
     private final CollaborationService collaborationService;
-    
+
     @PostMapping("/sessions")
     @Operation(summary = "创建协同会话")
     public SessionInfoResponse createSession(
@@ -38,7 +39,7 @@ public class CollaborationController {
         log.info("Creating collaboration session for document[{}]", command.getDocumentId());
         return collaborationService.createSession(command, userContext);
     }
-    
+
     @GetMapping("/sessions/{sessionId}")
     @Operation(summary = "获取会话信息")
     public SessionInfoResponse getSessionInfo(
@@ -47,7 +48,7 @@ public class CollaborationController {
     ) {
         return collaborationService.getSessionInfo(sessionId, userContext);
     }
-    
+
     @GetMapping("/sessions/document/{documentId}")
     @Operation(summary = "通过文档ID获取会话")
     public SessionInfoResponse getSessionByDocument(
@@ -56,7 +57,7 @@ public class CollaborationController {
     ) {
         return collaborationService.getSessionByDocumentId(documentId, userContext);
     }
-    
+
     @PostMapping("/sessions/{sessionId}/join")
     @Operation(summary = "加入协同会话")
     public SessionInfoResponse joinSession(
@@ -66,7 +67,7 @@ public class CollaborationController {
         log.info("User[{}] joining session[{}]", userContext.getUid(), sessionId);
         return collaborationService.joinSession(sessionId, userContext);
     }
-    
+
     @PostMapping("/sessions/{sessionId}/leave")
     @Operation(summary = "离开协同会话")
     public void leaveSession(
@@ -76,7 +77,7 @@ public class CollaborationController {
         log.info("User[{}] leaving session[{}]", userContext.getUid(), sessionId);
         collaborationService.leaveSession(sessionId, userContext);
     }
-    
+
     @DeleteMapping("/sessions/{sessionId}")
     @Operation(summary = "删除协同会话")
     public void deleteSession(
@@ -86,7 +87,7 @@ public class CollaborationController {
         log.info("Deleting collaboration session[{}]", sessionId);
         collaborationService.deleteSession(sessionId, userContext);
     }
-    
+
     @PostMapping("/operations")
     @Operation(summary = "提交操作")
     public SessionInfoResponse submitOperation(
@@ -95,7 +96,7 @@ public class CollaborationController {
     ) {
         return collaborationService.submitOperation(command, userContext);
     }
-    
+
     @PostMapping("/cursors")
     @Operation(summary = "更新光标位置")
     public SessionInfoResponse updateCursor(
@@ -104,7 +105,7 @@ public class CollaborationController {
     ) {
         return collaborationService.updateCursor(command, userContext);
     }
-    
+
     @GetMapping("/sessions/{sessionId}/history")
     @Operation(summary = "获取操作历史")
     public OperationHistoryResponse getOperationHistory(
@@ -114,7 +115,7 @@ public class CollaborationController {
     ) {
         return collaborationService.getOperationHistory(sessionId, fromVersion, userContext);
     }
-    
+
     @GetMapping("/ws-test")
     @Operation(summary = "WebSocket配置测试")
     public String wsTest() {

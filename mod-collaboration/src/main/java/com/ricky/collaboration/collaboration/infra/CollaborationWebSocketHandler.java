@@ -13,8 +13,11 @@ import com.ricky.collaboration.collaboration.dto.SessionStateMessage;
 import com.ricky.common.domain.user.Role;
 import com.ricky.common.domain.user.UserContext;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -28,16 +31,16 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class CollaborationWebSocketHandler extends TextWebSocketHandler {
-    
+
     private final CollaborationDomainService domainService;
     private final CollaborationSessionRepository sessionRepository;
     private final CollaborationSessionManager sessionManager;
     private final ObjectMapper objectMapper;
-    
+
     private static final String SESSION_ID_ATTR = "sessionId";
     private static final String USER_ID_ATTR = "userId";
     private static final String USERNAME_ATTR = "username";
-    
+
     @PostConstruct
     public void init() {
         log.info("CollaborationWebSocketHandler initialized successfully");
@@ -46,32 +49,32 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
         log.info("  - sessionManager: {}", sessionManager != null ? "OK" : "NULL");
         log.info("  - objectMapper: {}", objectMapper != null ? "OK" : "NULL");
     }
-    
+
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    public void afterConnectionEstablished(WebSocketSession session) {
         log.info("WebSocket afterConnectionEstablished, uri={}, id={}", session.getUri(), session.getId());
-        
+
         try {
             String sessionId = extractSessionId(session);
             String oderId = extractUserId(session);
             String username = extractUsername(session);
-            
+
             log.info("WebSocket: sessionId='{}', oderId='{}', username='{}'", sessionId, oderId, username);
-            
+
             if (sessionId == null || oderId == null) {
                 log.error("WebSocket: missing sessionId or oderId");
                 session.close(CloseStatus.BAD_DATA.withReason("Missing sessionId or oderId"));
                 return;
             }
-            
+
             session.getAttributes().put(SESSION_ID_ATTR, sessionId);
             session.getAttributes().put(USER_ID_ATTR, oderId);
             session.getAttributes().put(USERNAME_ATTR, username);
-            
+
             log.debug("Looking up collaboration session: {}", sessionId);
             CollaborationSession collabSession = domainService.getSessionOptional(sessionId)
                     .orElse(null);
-            
+
             if (collabSession == null) {
                 log.error("WebSocket: session not found: {}", sessionId);
                 try {
@@ -82,10 +85,10 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                 session.close(CloseStatus.GOING_AWAY.withReason("Session not found"));
                 return;
             }
-            
+
             log.debug("Session found, adding to session manager");
             sessionManager.addSession(sessionId, session);
-            
+
             SessionStateMessage stateMessage = SessionStateMessage.of(
                     sessionId,
                     collabSession.getVersion().getVersion(),
@@ -93,7 +96,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                     collabSession.getCursors()
             );
             sendMessage(session, stateMessage);
-            
+
             log.info("WebSocket connected successfully: session[{}], user[{}]", sessionId, oderId);
         } catch (Exception e) {
             log.error("Error in afterConnectionEstablished: {}", e.getMessage(), e);
@@ -104,44 +107,44 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
             }
         }
     }
-    
+
     @Override
-    protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    protected void handleTextMessage(WebSocketSession session, @NotNull TextMessage message) {
         String sessionId = (String) session.getAttributes().get(SESSION_ID_ATTR);
         String oderId = (String) session.getAttributes().get(USER_ID_ATTR);
         String username = (String) session.getAttributes().get(USERNAME_ATTR);
         UserContext userContext = UserContext.of(oderId, username, Role.NORMAL_USER);
-        
+
         try {
             String payload = message.getPayload();
-            
+
             if ("ping".equals(payload) || payload.startsWith("{\"type\":\"ping\"")) {
                 sessionManager.updateHeartbeat(sessionId, oderId);
                 sendMessage(session, Map.of("type", "pong"));
                 return;
             }
-            
+
             BaseMessage baseMsg = objectMapper.readValue(payload, BaseMessage.class);
             String type = baseMsg.getType();
-            
+
             if ("operation".equals(type)) {
                 OperationMessage opMsg = objectMapper.readValue(payload, OperationMessage.class);
                 TextOperation operation = opMsg.toTextOperation();
-                
+
                 CollaborationSession collabSession = domainService.getSession(sessionId);
                 domainService.validateUserInSession(collabSession, oderId);
                 domainService.validateSessionNotExpired(collabSession);
-                
+
                 var serverOps = collabSession.getRecentOperations(100);
                 TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
                 domainService.addOperation(collabSession, transformedOp, userContext);
                 sessionRepository.save(collabSession);
-                
+
                 sessionManager.broadcast(sessionId, OperationMessage.fromTextOperation(sessionId, operation), oderId);
                 sendMessage(session, OperationAckMessage.success(sessionId, collabSession.getVersion().getVersion()));
                 return;
             }
-            
+
             if ("cursor".equals(type)) {
                 CursorMessage cursorMsg = objectMapper.readValue(payload, CursorMessage.class);
                 CursorPosition cursor = CursorPosition.of(
@@ -151,14 +154,14 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                         cursorMsg.getSelectionStart() != null ? cursorMsg.getSelectionStart() : 0,
                         cursorMsg.getSelectionEnd() != null ? cursorMsg.getSelectionEnd() : 0
                 );
-                
+
                 CollaborationSession collabSession = domainService.getSession(sessionId);
                 domainService.validateUserInSession(collabSession, oderId);
                 domainService.updateCursor(collabSession, oderId, cursor, userContext);
                 sessionRepository.save(collabSession);
-                
+
                 CursorMessage broadcastMsg = CursorMessage.of(
-                        sessionId, oderId, username, 
+                        sessionId, oderId, username,
                         cursorMsg.getPosition() != null ? cursorMsg.getPosition() : 0,
                         cursorMsg.getSelectionStart() != null ? cursorMsg.getSelectionStart() : 0,
                         cursorMsg.getSelectionEnd() != null ? cursorMsg.getSelectionEnd() : 0
@@ -166,29 +169,29 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                 sessionManager.broadcast(sessionId, broadcastMsg, oderId);
                 return;
             }
-            
+
         } catch (Exception e) {
             log.error("Error handling message: {}", e.getMessage(), e);
             sendMessage(session, OperationAckMessage.failure(sessionId, 0, e.getMessage()));
         }
     }
-    
+
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    public void afterConnectionClosed(WebSocketSession session, @NotNull CloseStatus status) {
         String sessionId = (String) session.getAttributes().get(SESSION_ID_ATTR);
         String oderId = (String) session.getAttributes().get(USER_ID_ATTR);
         String username = (String) session.getAttributes().get(USERNAME_ATTR);
-        
+
         if (sessionId != null && oderId != null) {
             sessionManager.removeSession(sessionId, session);
-            
+
             try {
                 CollaborationSession collabSession = domainService.getSessionOptional(sessionId).orElse(null);
                 if (collabSession != null) {
                     UserContext userContext = UserContext.of(oderId, username, Role.NORMAL_USER);
                     domainService.leaveSession(collabSession, userContext);
                     sessionRepository.save(collabSession);
-                    
+
                     if (collabSession.isEmpty()) {
                         domainService.deleteSession(collabSession, sessionId, userContext);
                         sessionRepository.delete(collabSession);
@@ -197,17 +200,17 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
             } catch (Exception e) {
                 log.warn("Error leaving session: {}", e.getMessage());
             }
-            
+
             log.info("WebSocket closed: session[{}], user[{}], status[{}]", sessionId, oderId, status);
         }
     }
-    
+
     @Override
-    public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+    public void handleTransportError(WebSocketSession session, @NotNull Throwable exception) throws Exception {
         log.error("WebSocket transport error: {}", exception.getMessage(), exception);
         session.close(CloseStatus.SERVER_ERROR);
     }
-    
+
     private String extractSessionId(WebSocketSession session) {
         String uri = session.getUri() != null ? session.getUri().toString() : "";
         int idx = uri.lastIndexOf("/ws/collaboration/");
@@ -221,7 +224,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
         }
         return null;
     }
-    
+
     private String extractUserId(WebSocketSession session) {
         String query = session.getUri() != null ? session.getUri().getQuery() : "";
         for (String param : query.split("&")) {
@@ -231,7 +234,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
         }
         return null;
     }
-    
+
     private String extractUsername(WebSocketSession session) {
         String query = session.getUri() != null ? session.getUri().getQuery() : "";
         for (String param : query.split("&")) {
@@ -241,7 +244,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
         }
         return "Unknown";
     }
-    
+
     private void sendMessage(WebSocketSession session, Object message) {
         try {
             String json = objectMapper.writeValueAsString(message);
@@ -250,16 +253,10 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
             log.error("Failed to send message: {}", e.getMessage());
         }
     }
-    
+
+    @Setter
+    @Getter
     public static class BaseMessage {
         private String type;
-        
-        public String getType() {
-            return type;
-        }
-        
-        public void setType(String type) {
-            this.type = type;
-        }
     }
 }

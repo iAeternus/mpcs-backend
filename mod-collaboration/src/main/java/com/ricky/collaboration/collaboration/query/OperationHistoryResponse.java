@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OperationHistoryResponse {
-    
+
     private String sessionId;
     private long fromVersion;
     private long toVersion;

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CursorMessage {
-    
+
     private String type;
     private String sessionId;
     private String oderId;
@@ -18,7 +18,7 @@ public class CursorMessage {
     private Integer position;
     private Integer selectionStart;
     private Integer selectionEnd;
-    
+
     public static CursorMessage of(String sessionId, String oderId, String username, int position) {
         return CursorMessage.builder()
                 .type("cursor")
@@ -30,8 +30,8 @@ public class CursorMessage {
                 .selectionEnd(position)
                 .build();
     }
-    
-    public static CursorMessage of(String sessionId, String oderId, String username, 
+
+    public static CursorMessage of(String sessionId, String oderId, String username,
                                    int position, int selectionStart, int selectionEnd) {
         return CursorMessage.builder()
                 .type("cursor")

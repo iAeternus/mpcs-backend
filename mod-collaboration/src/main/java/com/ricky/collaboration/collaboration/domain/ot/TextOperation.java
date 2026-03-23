@@ -2,13 +2,8 @@ package com.ricky.collaboration.collaboration.domain.ot;
 
 import com.ricky.collaboration.collaboration.command.SubmitOperationCommand;
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.common.exception.ErrorCodeEnum;
 import com.ricky.common.exception.MyException;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -21,7 +16,7 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor(access = PRIVATE)
 @NoArgsConstructor(force = true)
 public class TextOperation {
-    
+
     private String id;
     private TextOperationType type;
     private int position;
@@ -30,7 +25,7 @@ public class TextOperation {
     private String userId;
     private long clientVersion;
     private Instant timestamp;
-    
+
     public static TextOperation insert(String userId, int position, String content, long clientVersion) {
         return TextOperation.builder()
                 .id(UUID.randomUUID().toString())
@@ -43,7 +38,7 @@ public class TextOperation {
                 .timestamp(Instant.now())
                 .build();
     }
-    
+
     public static TextOperation delete(String userId, int position, int length, long clientVersion) {
         return TextOperation.builder()
                 .id(UUID.randomUUID().toString())
@@ -56,7 +51,7 @@ public class TextOperation {
                 .timestamp(Instant.now())
                 .build();
     }
-    
+
     public static TextOperation retain(String userId, int position, int length, long clientVersion) {
         return TextOperation.builder()
                 .id(UUID.randomUUID().toString())
@@ -69,10 +64,10 @@ public class TextOperation {
                 .timestamp(Instant.now())
                 .build();
     }
-    
+
     public static TextOperation buildOperation(SubmitOperationCommand command, UserContext userContext) {
         TextOperationType type = command.getType();
-        
+
         return switch (type) {
             case INSERT -> {
                 if (command.getContent() == null || command.getContent().isEmpty()) {
@@ -104,15 +99,15 @@ public class TextOperation {
             );
         };
     }
-    
+
     public boolean isInsert() {
         return type == TextOperationType.INSERT;
     }
-    
+
     public boolean isDelete() {
         return type == TextOperationType.DELETE;
     }
-    
+
     public boolean isRetain() {
         return type == TextOperationType.RETAIN;
     }

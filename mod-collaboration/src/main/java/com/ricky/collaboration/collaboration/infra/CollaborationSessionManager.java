@@ -26,18 +26,18 @@ public class CollaborationSessionManager {
     private final Map<String, Set<WebSocketSession>> sessionConnections = new ConcurrentHashMap<>();
     private final Map<String, Map<String, Instant>> heartbeats = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-    
+
     private static final long HEARTBEAT_INTERVAL_SECONDS = 30;
     private static final long SESSION_TIMEOUT_SECONDS = 120;
-    
+
     public void addSession(String sessionId, WebSocketSession session) {
         sessionConnections.computeIfAbsent(sessionId, k -> ConcurrentHashMap.newKeySet()).add(session);
         heartbeats.computeIfAbsent(sessionId, k -> new ConcurrentHashMap<>())
                 .put(extractUserId(session), Instant.now());
-        log.debug("Added session connection: session[{}], connections[{}]", 
+        log.debug("Added session connection: session[{}], connections[{}]",
                 sessionId, sessionConnections.get(sessionId).size());
     }
-    
+
     public void removeSession(String sessionId, WebSocketSession session) {
         Set<WebSocketSession> sessions = sessionConnections.get(sessionId);
         if (sessions != null) {
@@ -46,7 +46,7 @@ public class CollaborationSessionManager {
                 sessionConnections.remove(sessionId);
             }
         }
-        
+
         Map<String, Instant> hb = heartbeats.get(sessionId);
         if (hb != null) {
             hb.remove(extractUserId(session));
@@ -54,17 +54,17 @@ public class CollaborationSessionManager {
                 heartbeats.remove(sessionId);
             }
         }
-        
-        log.debug("Removed session connection: session[{}], remaining[{}]", 
+
+        log.debug("Removed session connection: session[{}], remaining[{}]",
                 sessionId, sessions != null ? sessions.size() : 0);
     }
-    
+
     public void broadcast(String sessionId, Object message, String excludeUserId) {
         Set<WebSocketSession> sessions = sessionConnections.get(sessionId);
         if (sessions == null || sessions.isEmpty()) {
             return;
         }
-        
+
         String json;
         try {
             json = jsonCodec.writeValueAsString(message);
@@ -72,15 +72,15 @@ public class CollaborationSessionManager {
             log.error("Failed to serialize message: {}", e.getMessage());
             return;
         }
-        
+
         TextMessage textMessage = new TextMessage(json);
-        
+
         for (WebSocketSession session : sessions) {
             String userId = extractUserId(session);
             if (userId != null && userId.equals(excludeUserId)) {
                 continue;
             }
-            
+
             if (session.isOpen()) {
                 try {
                     session.sendMessage(textMessage);
@@ -90,32 +90,32 @@ public class CollaborationSessionManager {
             }
         }
     }
-    
+
     public void updateHeartbeat(String sessionId, String oderId) {
         Map<String, Instant> hb = heartbeats.get(sessionId);
         if (hb != null) {
             hb.put(oderId, Instant.now());
         }
     }
-    
+
     public Set<WebSocketSession> getSessions(String sessionId) {
         return sessionConnections.getOrDefault(sessionId, Set.of());
     }
-    
+
     public int getConnectionCount(String sessionId) {
         Set<WebSocketSession> sessions = sessionConnections.get(sessionId);
         return sessions != null ? sessions.size() : 0;
     }
-    
+
     private String extractUserId(WebSocketSession session) {
         Object userId = session.getAttributes().get("userId");
         return userId != null ? userId.toString() : null;
     }
-    
+
     public void startHeartbeatChecker() {
         scheduler.scheduleAtFixedRate(() -> {
             Instant timeout = Instant.now().minusSeconds(SESSION_TIMEOUT_SECONDS);
-            
+
             heartbeats.forEach((sessionId, userHeartbeats) -> {
                 userHeartbeats.entrySet().removeIf(entry -> {
                     if (entry.getValue().isBefore(timeout)) {
@@ -127,7 +127,7 @@ public class CollaborationSessionManager {
             });
         }, HEARTBEAT_INTERVAL_SECONDS, HEARTBEAT_INTERVAL_SECONDS, TimeUnit.SECONDS);
     }
-    
+
     public void shutdown() {
         scheduler.shutdown();
     }

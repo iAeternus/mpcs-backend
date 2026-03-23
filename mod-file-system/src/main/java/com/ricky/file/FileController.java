@@ -146,5 +146,5 @@ public class FileController {
         log.info("Collaborative edit: saving content for file[{}]", fileId);
         fileCollabService.saveFileContent(fileId, parentId, file, filename, userContext);
     }
-    
+
 }

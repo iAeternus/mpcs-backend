@@ -1,7 +1,5 @@
 package com.ricky.collaboration.collaboration.domain.ot;
 
-import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
-import com.ricky.collaboration.collaboration.domain.ot.TextOperationType;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -9,39 +7,39 @@ import java.util.List;
 
 @Component
 public class OperationTransformer {
-    
+
     public TextOperation transform(TextOperation clientOp, TextOperation serverOp) {
         if (serverOp == null) {
             return clientOp;
         }
-        
+
         TextOperationType clientType = clientOp.getType();
         TextOperationType serverType = serverOp.getType();
-        
+
         if (clientType == TextOperationType.INSERT && serverType == TextOperationType.INSERT) {
             return transformInsertInsert(clientOp, serverOp);
         }
-        
+
         if (clientType == TextOperationType.INSERT && serverType == TextOperationType.DELETE) {
             return transformInsertDelete(clientOp, serverOp);
         }
-        
+
         if (clientType == TextOperationType.DELETE && serverType == TextOperationType.INSERT) {
             return transformDeleteInsert(clientOp, serverOp);
         }
-        
+
         if (clientType == TextOperationType.DELETE && serverType == TextOperationType.DELETE) {
             return transformDeleteDelete(clientOp, serverOp);
         }
-        
+
         return clientOp;
     }
-    
+
     private TextOperation transformInsertInsert(TextOperation clientOp, TextOperation serverOp) {
         int clientPos = clientOp.getPosition();
         int serverPos = serverOp.getPosition();
         int serverLen = serverOp.getContent() != null ? serverOp.getContent().length() : 0;
-        
+
         if (clientPos < serverPos) {
             return clientOp;
         } else if (clientPos > serverPos) {
@@ -64,12 +62,12 @@ public class OperationTransformer {
             }
         }
     }
-    
+
     private TextOperation transformInsertDelete(TextOperation clientOp, TextOperation serverOp) {
         int clientPos = clientOp.getPosition();
         int serverPos = serverOp.getPosition();
         int serverLen = serverOp.getLength();
-        
+
         if (clientPos <= serverPos) {
             return clientOp;
         } else if (clientPos >= serverPos + serverLen) {
@@ -88,13 +86,13 @@ public class OperationTransformer {
             );
         }
     }
-    
+
     private TextOperation transformDeleteInsert(TextOperation clientOp, TextOperation serverOp) {
         int clientPos = clientOp.getPosition();
         int clientLen = clientOp.getLength();
         int serverPos = serverOp.getPosition();
         int serverLen = serverOp.getContent() != null ? serverOp.getContent().length() : 0;
-        
+
         if (clientPos >= serverPos) {
             return TextOperation.delete(
                     clientOp.getUserId(),
@@ -113,13 +111,13 @@ public class OperationTransformer {
             );
         }
     }
-    
+
     private TextOperation transformDeleteDelete(TextOperation clientOp, TextOperation serverOp) {
         int clientPos = clientOp.getPosition();
         int clientLen = clientOp.getLength();
         int serverPos = serverOp.getPosition();
         int serverLen = serverOp.getLength();
-        
+
         if (clientPos >= serverPos + serverLen) {
             return TextOperation.delete(
                     clientOp.getUserId(),
@@ -161,10 +159,10 @@ public class OperationTransformer {
             );
         }
     }
-    
+
     public List<TextOperation> transformBatch(List<TextOperation> clientOps, List<TextOperation> serverOps) {
         List<TextOperation> result = new ArrayList<>(clientOps);
-        
+
         for (TextOperation serverOp : serverOps) {
             List<TextOperation> transformed = new ArrayList<>();
             for (TextOperation clientOp : result) {
@@ -175,7 +173,7 @@ public class OperationTransformer {
             }
             result = transformed;
         }
-        
+
         return result;
     }
 }

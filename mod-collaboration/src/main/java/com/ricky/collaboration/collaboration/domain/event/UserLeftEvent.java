@@ -11,10 +11,10 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 public class UserLeftEvent extends DomainEvent {
-    
+
     private String sessionId;
     private String oderId;
-    
+
     public UserLeftEvent(String sessionId, String oderId, UserContext userContext) {
         super(COLLAB_USER_LEFT, userContext);
         this.sessionId = sessionId;

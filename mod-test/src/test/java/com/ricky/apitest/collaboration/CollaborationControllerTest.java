@@ -1,18 +1,15 @@
 package com.ricky.apitest.collaboration;
 
 import com.ricky.apitest.BaseApiTest;
-import com.ricky.apitest.SetupApi;
 import com.ricky.collaboration.collaboration.command.CreateSessionCommand;
 import com.ricky.collaboration.collaboration.command.SubmitOperationCommand;
 import com.ricky.collaboration.collaboration.command.UpdateCursorCommand;
 import com.ricky.collaboration.collaboration.domain.CollaborationSession;
-import com.ricky.collaboration.collaboration.domain.CollaborationSessionRepository;
 import com.ricky.collaboration.collaboration.domain.ot.TextOperationType;
 import com.ricky.collaboration.collaboration.infra.CollaborationSessionManager;
 import com.ricky.collaboration.collaboration.query.OperationHistoryResponse;
 import com.ricky.collaboration.collaboration.query.SessionInfoResponse;
 import com.ricky.common.domain.dto.resp.LoginResponse;
-import com.ricky.common.exception.ErrorCodeEnum;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import static com.ricky.apitest.RandomTestFixture.rDocumentId;
-import static com.ricky.common.exception.ErrorCodeEnum.*;
+import static com.ricky.common.exception.ErrorCodeEnum.COLLAB_SESSION_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CollaborationControllerTest extends BaseApiTest {

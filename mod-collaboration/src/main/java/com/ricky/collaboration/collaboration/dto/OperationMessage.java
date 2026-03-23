@@ -15,20 +15,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OperationMessage {
-    
+
     private String type;
     private String sessionId;
     private String oderId;
-    
+
     @JsonProperty("operation")
     private OperationData operation;
-    
+
     private TextOperationType operationType;
     private Integer position;
     private String content;
     private Integer length;
     private Long clientVersion;
-    
+
     @Data
     @Builder
     @NoArgsConstructor
@@ -36,10 +36,10 @@ public class OperationMessage {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class OperationData {
         private String id;
-        
+
         @JsonProperty("type")
         private TextOperationType operationType;
-        
+
         private Integer position;
         private String content;
         private Integer length;
@@ -47,7 +47,7 @@ public class OperationMessage {
         private Long clientVersion;
         private String timestamp;
     }
-    
+
     public TextOperation toTextOperation() {
         TextOperationType opType;
         Integer pos;
@@ -55,7 +55,7 @@ public class OperationMessage {
         Integer len;
         String userId;
         Long version;
-        
+
         if (operation != null) {
             opType = operation.getOperationType();
             pos = operation.getPosition();
@@ -71,16 +71,16 @@ public class OperationMessage {
             userId = this.oderId;
             version = this.clientVersion;
         }
-        
+
         if (opType == null) {
             throw new IllegalArgumentException("operationType is required");
         }
         if (pos == null) {
             throw new IllegalArgumentException("position is required");
         }
-        
+
         long finalVersion = version != null ? version : 0L;
-        
+
         if (opType == TextOperationType.INSERT) {
             return TextOperation.insert(userId, pos, contentVal, finalVersion);
         } else if (opType == TextOperationType.DELETE) {
@@ -89,7 +89,7 @@ public class OperationMessage {
             return TextOperation.retain(userId, pos, len != null ? len : 0, finalVersion);
         }
     }
-    
+
     public static OperationMessage fromTextOperation(String sessionId, TextOperation op) {
         return OperationMessage.builder()
                 .type("operation")

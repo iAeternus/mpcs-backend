@@ -17,7 +17,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SessionInfoResponse {
-    
+
     private String sessionId;
     private String documentId;
     private String documentTitle;
@@ -30,7 +30,7 @@ public class SessionInfoResponse {
     private Instant createdAt;
     private Instant expiresAt;
     private boolean expired;
-    
+
     public static SessionInfoResponse fromSession(CollaborationSession session) {
         return SessionInfoResponse.builder()
                 .sessionId(session.getId())

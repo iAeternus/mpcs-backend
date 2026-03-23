@@ -17,30 +17,30 @@ import java.util.Map;
 @EnableWebSocket
 @RequiredArgsConstructor
 public class CollaborationWebSocketConfig implements WebSocketConfigurer {
-    
+
     private final CollaborationWebSocketHandler webSocketHandler;
-    
+
     @PostConstruct
     public void init() {
         log.info("CollaborationWebSocketConfig initialized");
         log.info("webSocketHandler class: {}", webSocketHandler.getClass().getName());
     }
-    
+
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         log.info(">>> registerWebSocketHandlers called");
         log.info(">>> Registry info: {}", registry);
-        
+
         registry.addHandler(webSocketHandler, "/ws/collaboration/**")
                 .addInterceptors(new CollaborationHandshakeInterceptor())
                 .setAllowedOrigins("*");
-        
+
         log.info(">>> WebSocket handler registered at /ws/collaboration/**");
     }
-    
+
     @Slf4j
     static class CollaborationHandshakeInterceptor implements HandshakeInterceptor {
-        
+
         @Override
         public boolean beforeHandshake(
                 org.springframework.http.server.ServerHttpRequest request,

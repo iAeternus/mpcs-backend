@@ -1,11 +1,6 @@
 package com.ricky.collaboration.collaboration.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.data.mongodb.core.mapping.Field;
+import lombok.*;
 
 import java.time.Instant;
 
@@ -17,14 +12,14 @@ import static lombok.AccessLevel.PRIVATE;
 @AllArgsConstructor(access = PRIVATE)
 @NoArgsConstructor(force = true)
 public class CollabUser {
-    
+
     private String oderId;
     private String username;
     private String avatarUrl;
     private Instant joinedAt;
     private Instant lastActiveAt;
     private boolean online;
-    
+
     public static CollabUser create(String userId, String username) {
         Instant now = Instant.now();
         return CollabUser.builder()
@@ -36,7 +31,7 @@ public class CollabUser {
                 .online(true)
                 .build();
     }
-    
+
     public CollabUser withOnline(boolean isOnline) {
         return CollabUser.builder()
                 .oderId(oderId)
@@ -47,7 +42,7 @@ public class CollabUser {
                 .online(isOnline)
                 .build();
     }
-    
+
     public CollabUser updateActivity() {
         return CollabUser.builder()
                 .oderId(oderId)
@@ -58,7 +53,7 @@ public class CollabUser {
                 .online(online)
                 .build();
     }
-    
+
     public CollabUser withAvatar(String url) {
         return CollabUser.builder()
                 .oderId(oderId)

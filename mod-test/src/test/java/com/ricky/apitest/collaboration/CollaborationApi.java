@@ -3,14 +3,11 @@ package com.ricky.apitest.collaboration;
 import com.ricky.collaboration.collaboration.command.CreateSessionCommand;
 import com.ricky.collaboration.collaboration.command.SubmitOperationCommand;
 import com.ricky.collaboration.collaboration.command.UpdateCursorCommand;
-import com.ricky.collaboration.collaboration.domain.ot.TextOperationType;
 import com.ricky.collaboration.collaboration.query.OperationHistoryResponse;
 import com.ricky.collaboration.collaboration.query.SessionInfoResponse;
-import com.ricky.common.domain.dto.resp.LoginResponse;
 import io.restassured.response.Response;
 
 import static com.ricky.apitest.BaseApiTest.givenBearer;
-import static io.restassured.http.ContentType.JSON;
 
 public class CollaborationApi {
 
@@ -43,7 +40,7 @@ public class CollaborationApi {
                 .extract()
                 .as(SessionInfoResponse.class);
     }
-    
+
     public static SessionInfoResponse getSessionByDocument(String jwt, String documentId) {
         return givenBearer(jwt)
                 .when()
@@ -53,7 +50,7 @@ public class CollaborationApi {
                 .extract()
                 .as(SessionInfoResponse.class);
     }
-    
+
     public static Response getSessionInfoRaw(String jwt, String sessionId) {
         return givenBearer(jwt)
                 .when()
