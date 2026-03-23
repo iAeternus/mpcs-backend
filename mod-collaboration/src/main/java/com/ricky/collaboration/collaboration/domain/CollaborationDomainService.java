@@ -21,8 +21,10 @@ public class CollaborationDomainService {
     private final OperationTransformer operationTransformer;
 
     public CollaborationSession createSession(String documentId, String documentTitle, String parentFolderId, UserContext userContext) {
-        if (sessionRepository.existsByDocumentId(documentId)) {
-            throw MyException.requestValidationException("documentId", documentId);
+        Optional<CollaborationSession> existingSession = sessionRepository.findByDocumentId(documentId);
+        if (existingSession.isPresent()) {
+            log.info("Session already exists for document[{}], returning existing session[{}]", documentId, existingSession.get().getId());
+            return existingSession.get();
         }
 
         CollaborationSession session = new CollaborationSession(documentId, documentTitle, parentFolderId, userContext, 24);
