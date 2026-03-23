@@ -129,6 +129,9 @@ public class CollaborationServiceImpl implements CollaborationService {
         CollaborationSession session = domainService.getSession(sessionId);
         List<TextOperation> operations = session.getOperationsSince(fromVersion);
         
+        log.info("getOperationHistory: sessionId={}, fromVersion={}, operationsCount={}, operations={}", 
+                sessionId, fromVersion, operations.size(), operations);
+        
         return OperationHistoryResponse.builder()
                 .sessionId(sessionId)
                 .fromVersion(fromVersion)

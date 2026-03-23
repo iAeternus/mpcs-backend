@@ -114,4 +114,10 @@ public class CollaborationController {
     ) {
         return collaborationService.getOperationHistory(sessionId, fromVersion, userContext);
     }
+    
+    @GetMapping("/ws-test")
+    @Operation(summary = "WebSocket配置测试")
+    public String wsTest() {
+        return "WebSocket endpoint: /ws/collaboration/{sessionId}";
+    }
 }

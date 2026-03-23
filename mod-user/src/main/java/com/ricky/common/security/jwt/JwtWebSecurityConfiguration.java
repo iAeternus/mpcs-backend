@@ -94,7 +94,9 @@ public class JwtWebSecurityConfiguration {
                         .requestMatchers(POST, "/verification-codes/for-find-back-password").permitAll()
                         .requestMatchers("/about",
                                 "/favicon.ico",
-                                "/error").permitAll()
+                                "/error",
+                                "/ws/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated())
                 .authenticationManager(authenticationManager)
                 .exceptionHandling(it -> it.accessDeniedHandler(accessDeniedHandler).authenticationEntryPoint(authenticationEntryPoint))

@@ -12,6 +12,7 @@ import com.ricky.collaboration.collaboration.dto.OperationMessage;
 import com.ricky.collaboration.collaboration.dto.SessionStateMessage;
 import com.ricky.common.domain.user.Role;
 import com.ricky.common.domain.user.UserContext;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -37,47 +38,71 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     private static final String USER_ID_ATTR = "userId";
     private static final String USERNAME_ATTR = "username";
     
+    @PostConstruct
+    public void init() {
+        log.info("CollaborationWebSocketHandler initialized successfully");
+        log.info("  - domainService: {}", domainService != null ? "OK" : "NULL");
+        log.info("  - sessionRepository: {}", sessionRepository != null ? "OK" : "NULL");
+        log.info("  - sessionManager: {}", sessionManager != null ? "OK" : "NULL");
+        log.info("  - objectMapper: {}", objectMapper != null ? "OK" : "NULL");
+    }
+    
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        log.info("WebSocket afterConnectionEstablished, uri={}", session.getUri());
+        log.info("WebSocket afterConnectionEstablished, uri={}, id={}", session.getUri(), session.getId());
         
-        String sessionId = extractSessionId(session);
-        String oderId = extractUserId(session);
-        String username = extractUsername(session);
-        
-        log.info("WebSocket: sessionId='{}', oderId='{}', username='{}'", sessionId, oderId, username);
-        
-        if (sessionId == null || oderId == null) {
-            log.error("WebSocket: missing sessionId or oderId");
-            session.close(CloseStatus.BAD_DATA);
-            return;
+        try {
+            String sessionId = extractSessionId(session);
+            String oderId = extractUserId(session);
+            String username = extractUsername(session);
+            
+            log.info("WebSocket: sessionId='{}', oderId='{}', username='{}'", sessionId, oderId, username);
+            
+            if (sessionId == null || oderId == null) {
+                log.error("WebSocket: missing sessionId or oderId");
+                session.close(CloseStatus.BAD_DATA.withReason("Missing sessionId or oderId"));
+                return;
+            }
+            
+            session.getAttributes().put(SESSION_ID_ATTR, sessionId);
+            session.getAttributes().put(USER_ID_ATTR, oderId);
+            session.getAttributes().put(USERNAME_ATTR, username);
+            
+            log.debug("Looking up collaboration session: {}", sessionId);
+            CollaborationSession collabSession = domainService.getSessionOptional(sessionId)
+                    .orElse(null);
+            
+            if (collabSession == null) {
+                log.error("WebSocket: session not found: {}", sessionId);
+                try {
+                    sendMessage(session, OperationAckMessage.failure(sessionId, 0, "Session not found"));
+                } catch (Exception e) {
+                    log.error("Failed to send session not found message", e);
+                }
+                session.close(CloseStatus.GOING_AWAY.withReason("Session not found"));
+                return;
+            }
+            
+            log.debug("Session found, adding to session manager");
+            sessionManager.addSession(sessionId, session);
+            
+            SessionStateMessage stateMessage = SessionStateMessage.of(
+                    sessionId,
+                    collabSession.getVersion().getVersion(),
+                    collabSession.getActiveUsers().stream().toList(),
+                    collabSession.getCursors()
+            );
+            sendMessage(session, stateMessage);
+            
+            log.info("WebSocket connected successfully: session[{}], user[{}]", sessionId, oderId);
+        } catch (Exception e) {
+            log.error("Error in afterConnectionEstablished: {}", e.getMessage(), e);
+            try {
+                session.close(CloseStatus.SERVER_ERROR.withReason("Internal error: " + e.getMessage()));
+            } catch (Exception closeError) {
+                log.error("Failed to close session after error", closeError);
+            }
         }
-        
-        session.getAttributes().put(SESSION_ID_ATTR, sessionId);
-        session.getAttributes().put(USER_ID_ATTR, oderId);
-        session.getAttributes().put(USERNAME_ATTR, username);
-        
-        CollaborationSession collabSession = domainService.getSessionOptional(sessionId)
-                .orElse(null);
-        
-        if (collabSession == null) {
-            log.error("WebSocket: session not found: {}", sessionId);
-            sendMessage(session, OperationAckMessage.failure(sessionId, 0, "Session not found"));
-            session.close(CloseStatus.GOING_AWAY);
-            return;
-        }
-        
-        sessionManager.addSession(sessionId, session);
-        
-        SessionStateMessage stateMessage = SessionStateMessage.of(
-                sessionId,
-                collabSession.getVersion().getVersion(),
-                collabSession.getActiveUsers().stream().toList(),
-                collabSession.getCursors()
-        );
-        sendMessage(session, stateMessage);
-        
-        log.info("WebSocket connected successfully: session[{}], user[{}]", sessionId, oderId);
     }
     
     @Override

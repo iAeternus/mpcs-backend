@@ -2,6 +2,13 @@ server:
   port: 8082
   servlet:
     context-path: /api/v1.0
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+  websocket:
+    handshake:
+      timeout: 5000
 
 spring:
   application:
@@ -17,10 +24,18 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
 
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
 logging:
   pattern:
     level: "%5p [${spring.application.name},%X{traceId:-},%X{spanId:-}]"
   level:
+    root: INFO
+    com.ricky.collaboration: DEBUG
     org:
-      ansj: DEBUG  # TODO 这里配置不了日志级别
+      ansj: DEBUG
       com.alibaba.cloud.ai.dashscope: DEBUG

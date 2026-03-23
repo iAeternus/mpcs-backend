@@ -143,6 +143,12 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-webflux</artifactId>
                 <version>${spring.boot.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>io.projectreactor.netty</groupId>
+                        <artifactId>reactor-netty</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -424,7 +430,7 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                     <configuration>
-                        <mainClass>com.ricky.mpcs.Application</mainClass>
+                        <mainClass>com.ricky.MpcsBackendApplication</mainClass>
                     </configuration>
                 </plugin>
 

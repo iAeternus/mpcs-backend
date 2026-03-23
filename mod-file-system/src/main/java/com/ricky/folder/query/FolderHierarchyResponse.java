@@ -2,6 +2,7 @@ package com.ricky.folder.query;
 
 import com.ricky.common.domain.idtree.IdTree;
 import com.ricky.common.domain.marker.Response;
+import com.ricky.file.domain.FileCategory;
 import com.ricky.file.domain.FileStatus;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,7 @@ public class FolderHierarchyResponse implements Response {
         String filename;
         Long size;
         FileStatus status;
+        FileCategory category;
     }
 
 }

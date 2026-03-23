@@ -76,6 +76,7 @@ public class FolderQueryServiceImpl implements FolderQueryService {
                                         .filename(file.getFilename())
                                         .size(file.getSize())
                                         .status(file.getStatus())
+                                        .category(file.getCategory())
                                         .build())
                                 .collect(toImmutableList())
                 ));
