@@ -5,6 +5,7 @@ import com.ricky.collaboration.collaboration.command.CreateSessionCommand;
 import com.ricky.collaboration.collaboration.command.SubmitOperationCommand;
 import com.ricky.collaboration.collaboration.command.UpdateCursorCommand;
 import com.ricky.collaboration.collaboration.domain.CollaborationSession;
+import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
 import com.ricky.collaboration.collaboration.domain.ot.TextOperationType;
 import com.ricky.collaboration.collaboration.infra.CollaborationSessionManager;
 import com.ricky.collaboration.collaboration.query.OperationHistoryResponse;
@@ -369,6 +370,86 @@ public class CollaborationControllerTest extends BaseApiTest {
 
             assertEquals(2, historyResponse.getOperations().size());
             assertEquals(2, historyResponse.getToVersion());
+        }
+    }
+
+    @Nested
+    @DisplayName("Operation history tests")
+    class OperationHistoryTests {
+
+        @Test
+        void should_reconstruct_document_from_operations() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Test Document")
+                    .build();
+
+            SessionInfoResponse createResponse = CollaborationApi.createSession(manager.getJwt(), command);
+            String sessionId = createResponse.getSessionId();
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(0)
+                    .content("Hello")
+                    .clientVersion(0L)
+                    .build());
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(5)
+                    .content(" World")
+                    .clientVersion(1L)
+                    .build());
+
+            OperationHistoryResponse history = CollaborationApi.getOperationHistory(manager.getJwt(), sessionId, 0);
+
+            StringBuilder document = new StringBuilder();
+            for (TextOperation op : history.getOperations()) {
+                if (op.isInsert() && op.getContent() != null) {
+                    int pos = Math.min(op.getPosition(), document.length());
+                    document.insert(pos, op.getContent());
+                } else if (op.isDelete()) {
+                    int start = Math.min(op.getPosition(), document.length());
+                    int end = Math.min(start + op.getLength(), document.length());
+                    document.delete(start, end);
+                }
+            }
+
+            assertEquals("HelloWorld", document.toString());
+        }
+
+        @Test
+        void should_maintain_correct_document_length_after_duplicate_session() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Test Document")
+                    .build();
+
+            SessionInfoResponse firstResponse = CollaborationApi.createSession(manager.getJwt(), command);
+            String sessionId = firstResponse.getSessionId();
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(0)
+                    .content("aaaa")
+                    .clientVersion(0L)
+                    .build());
+
+            SessionInfoResponse afterEdit = CollaborationApi.getSessionByDocument(manager.getJwt(), documentId);
+            assertEquals(4, afterEdit.getDocumentLength());
+
+            SessionInfoResponse secondResponse = CollaborationApi.getSessionByDocument(manager.getJwt(), documentId);
+            assertEquals(firstResponse.getSessionId(), secondResponse.getSessionId());
+            assertEquals(afterEdit.getDocumentLength(), secondResponse.getDocumentLength());
         }
     }
 }

@@ -1,14 +1,14 @@
 package com.ricky.collaboration.collaboration.domain;
 
+import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
 import lombok.*;
 
 import static lombok.AccessLevel.PRIVATE;
 
 @Getter
-@Builder
 @EqualsAndHashCode
-@AllArgsConstructor(access = PRIVATE)
-@NoArgsConstructor(force = true)
+@AllArgsConstructor
+@NoArgsConstructor
 public class SessionVersion {
 
     private long version;
@@ -35,7 +35,18 @@ public class SessionVersion {
     }
 
     public SessionVersion next() {
-        return increment().withLength(documentLength);
+        return increment();
+    }
+
+    public SessionVersion applyOperation(TextOperation operation) {
+        long newLength = documentLength;
+        if (operation.isInsert()) {
+            newLength += operation.getLength();
+        } else if (operation.isDelete()) {
+            newLength -= operation.getLength();
+        }
+        SessionVersion result = new SessionVersion(version + 1, Math.max(0, newLength));
+        return result;
     }
 
     public boolean isAheadOf(long clientVersion) {

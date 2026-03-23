@@ -120,7 +120,7 @@ public class CollaborationSession extends AggregateRoot {
     }
 
     public void addOperation(TextOperation operation, UserContext userContext) {
-        this.version = version.next();
+        this.version = version.applyOperation(operation);
         this.operationHistory.add(operation);
         this.lastActivityAt = Instant.now();
         addOpsLog("用户[" + operation.getUserId() + "]提交操作[" + operation.getType() + "@" + operation.getPosition() + "]", userContext);

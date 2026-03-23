@@ -69,4 +69,9 @@ public class MongoGroupRepository extends MongoBaseRepository<Group> implements 
     public CachedGroup cachedById(String groupId) {
         return cachedGroupRepository.cachedById(groupId);
     }
+
+    @Override
+    public CachedGroup cachedByCustomId(String customId) {
+        return cachedGroupRepository.cachedByCustomId(customId);
+    }
 }

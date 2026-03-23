@@ -14,4 +14,8 @@ public interface GroupQueryService {
     PagedList<GroupResponse> pageMyGroupsAsForManager(MyGroupsAsForManagerPageQuery pageQuery, UserContext userContext);
 
     PagedList<GroupResponse> pageMyGroupsAsForMember(MyGroupsAsForMemberPageQuery query, UserContext userContext);
+
+    FolderPermissionResponse fetchAdminPermission(String customId, String folderId);
+
+    FolderPermissionResponse fetchMemberPermission(String customId, String folderId);
 }

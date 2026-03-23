@@ -160,7 +160,7 @@ public class GroupServiceImpl implements GroupService {
         rateLimiter.applyFor("Group:DeleteGroup", 10);
 
         Group group = groupRepository.byId(groupId);
-        managePermissionChecker.checkCanManageGroup(group, userContext);
+        managePermissionChecker.checkCanManageGroup(group, userContext, false);
 
         User user = userRepository.byId(userContext.getUid());
         groupDomainService.checkDeleteGroups(user, Set.of(groupId));
@@ -180,7 +180,7 @@ public class GroupServiceImpl implements GroupService {
         rateLimiter.applyFor("Group:ActivateGroup", 10);
 
         Group group = groupRepository.byId(groupId);
-        managePermissionChecker.checkCanManageGroup(group, userContext);
+        managePermissionChecker.checkCanManageGroup(group, userContext, false);
         group.activate(userContext);
         groupRepository.save(group);
 
@@ -193,7 +193,7 @@ public class GroupServiceImpl implements GroupService {
         rateLimiter.applyFor("Group:DeactivateGroup", 10);
 
         Group group = groupRepository.byId(groupId);
-        managePermissionChecker.checkCanManageGroup(group, userContext);
+        managePermissionChecker.checkCanManageGroup(group, userContext, false);
 
         User user = userRepository.cachedById(userContext.getUid());
         groupDomainService.checkDeactivateGroups(user, Set.of(groupId));

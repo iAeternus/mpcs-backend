@@ -160,4 +160,18 @@ public class GroupController {
         return groupQueryService.pageMyGroupsAsForMember(query, userContext);
     }
 
+    @GetMapping("/permission/admin")
+    @Operation(summary = "获取管理员对当前文件夹的权限")
+    public FolderPermissionResponse fetchAdminPermission(@RequestParam @NotBlank String customId,
+                                                         @RequestParam @NotBlank String folderId) {
+        return groupQueryService.fetchAdminPermission(customId, folderId);
+    }
+
+    @GetMapping("/permission/member")
+    @Operation(summary = "获取普通成员对当前文件夹的权限")
+    public FolderPermissionResponse fetchMemberPermission(@RequestParam @NotBlank String customId,
+                                                          @RequestParam @NotBlank String folderId) {
+        return groupQueryService.fetchMemberPermission(customId, folderId);
+    }
+
 }

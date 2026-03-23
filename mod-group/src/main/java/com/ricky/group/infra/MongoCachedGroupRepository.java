@@ -65,4 +65,13 @@ public class MongoCachedGroupRepository extends MongoBaseRepository<Group> {
 
         log.debug("Evicted groups cache for groupId[{}].", groupId);
     }
+
+    @Cacheable(value = GROUPS_CACHE, key = "'customId:' + #customId")
+    public CachedGroup cachedByCustomId(String customId) {
+        requireNotBlank(customId, "Custom ID must not be blank.");
+
+        Query query = query(where("customId").is(customId));
+        query.fields().include("name", "active", "members", "grants", "inheritancePolicy", "customId");
+        return mongoTemplate.findOne(query, CachedGroup.class, GROUP_COLLECTION);
+    }
 }

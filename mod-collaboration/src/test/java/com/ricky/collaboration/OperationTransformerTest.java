@@ -43,7 +43,7 @@ class OperationTransformerTest {
 
             TextOperation result = transformer.transform(clientOp, serverOp);
 
-            assertEquals(15, result.getPosition());
+            assertEquals(10, result.getPosition());
             assertEquals("Hello", result.getContent());
         }
 
@@ -377,6 +377,28 @@ class OperationTransformerTest {
 
             assertNotNull(result);
             assertEquals(TextOperationType.INSERT, result.getType());
+        }
+
+        @Test
+        void should_transform_delete_then_insert_scenario() {
+            TextOperation serverOp = TextOperation.insert("user2", 0, "nauaaall", 1);
+            TextOperation clientOp = TextOperation.delete("user1", 0, 4, 0);
+
+            TextOperation result = transformer.transform(clientOp, serverOp);
+
+            assertEquals(8, result.getPosition());
+            assertEquals(4, result.getLength());
+        }
+
+        @Test
+        void should_transform_insert_in_middle_of_delete() {
+            TextOperation serverOp = TextOperation.insert("user2", 5, "XXX", 1);
+            TextOperation clientOp = TextOperation.delete("user1", 0, 10, 0);
+
+            TextOperation result = transformer.transform(clientOp, serverOp);
+
+            assertEquals(0, result.getPosition());
+            assertEquals(13, result.getLength());
         }
     }
 }

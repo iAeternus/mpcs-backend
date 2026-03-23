@@ -18,18 +18,30 @@ public class ManagePermissionChecker {
     private final UserRepository userRepository;
 
     public boolean canManageGroup(Group group, UserContext userContext) {
+        return canManageGroup(group, userContext, true);
+    }
+
+    public boolean canManageGroup(Group group, UserContext userContext, boolean checkActive) {
         requireNonNull(group, "Group must not be null.");
         requireNonNull(userContext, "UserContext must not be null.");
+
+        if (checkActive && !group.isActive()) {
+            return false;
+        }
 
         User user = userRepository.cachedById(userContext.getUid());
         return user.containsGroup(group.getId()) && group.containsManager(userContext.getUid());
     }
 
     public void checkCanManageGroup(Group group, UserContext userContext) {
+        checkCanManageGroup(group, userContext, true);
+    }
+
+    public void checkCanManageGroup(Group group, UserContext userContext, boolean checkActive) {
         requireNonNull(group, "Group must not be null.");
         requireNonNull(userContext, "UserContext must not be null.");
 
-        if (!canManageGroup(group, userContext)) {
+        if (!canManageGroup(group, userContext, checkActive)) {
             throw accessDeniedException();
         }
     }
