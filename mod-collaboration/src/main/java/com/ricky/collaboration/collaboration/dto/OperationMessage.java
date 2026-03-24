@@ -21,6 +21,7 @@ public class OperationMessage {
     private String type;
     private String sessionId;
     private String oderId;
+    private Long serverVersion;
 
     @JsonProperty("operation")
     private OperationData operation;
@@ -95,11 +96,12 @@ public class OperationMessage {
         }
     }
 
-    public static OperationMessage fromTextOperation(String sessionId, TextOperation op) {
+    public static OperationMessage fromTextOperation(String sessionId, TextOperation op, long serverVersion) {
         return OperationMessage.builder()
                 .type("operation")
                 .sessionId(sessionId)
                 .oderId(op.getUserId())
+                .serverVersion(serverVersion)
                 .operationType(op.getType())
                 .position(op.getPosition())
                 .content(op.getContent())

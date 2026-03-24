@@ -362,7 +362,7 @@ public class CollaborationControllerTest extends BaseApiTest {
                     .sessionId(sessionId)
                     .type(TextOperationType.INSERT)
                     .position(5)
-                    .content(" World")
+                    .content("World")
                     .clientVersion(1L)
                     .build());
 
@@ -370,6 +370,83 @@ public class CollaborationControllerTest extends BaseApiTest {
 
             assertEquals(2, historyResponse.getOperations().size());
             assertEquals(2, historyResponse.getToVersion());
+            assertEquals(5, historyResponse.getOperations().get(1).getPosition());
+        }
+
+        @Test
+        void should_transform_only_against_concurrent_operations() {
+            LoginResponse manager = setupApi.registerWithLogin();
+
+            String documentId = rDocumentId();
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Test Document")
+                    .build();
+
+            SessionInfoResponse createResponse = CollaborationApi.createSession(manager.getJwt(), command);
+            String sessionId = createResponse.getSessionId();
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(0)
+                    .content("Hello")
+                    .clientVersion(0L)
+                    .build());
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(5)
+                    .content("!")
+                    .clientVersion(1L)
+                    .build());
+
+            OperationHistoryResponse historyResponse = CollaborationApi.getOperationHistory(manager.getJwt(), sessionId, 0);
+
+            assertEquals(2, historyResponse.getOperations().size());
+            assertEquals(0, historyResponse.getOperations().get(0).getPosition());
+            assertEquals(5, historyResponse.getOperations().get(1).getPosition());
+            assertEquals("Hello!", replay(historyResponse));
+        }
+
+        @Test
+        void should_transform_concurrent_inserts_from_same_base_version() {
+            LoginResponse user1 = setupApi.registerWithLogin();
+            LoginResponse user2 = setupApi.registerWithLogin();
+
+            String documentId = rDocumentId();
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Concurrent Document")
+                    .build();
+
+            SessionInfoResponse createResponse = CollaborationApi.createSession(user1.getJwt(), command);
+            String sessionId = createResponse.getSessionId();
+            CollaborationApi.joinSession(user2.getJwt(), sessionId);
+
+            CollaborationApi.submitOperation(user1.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(0)
+                    .content("A")
+                    .clientVersion(0L)
+                    .build());
+
+            CollaborationApi.submitOperation(user2.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(0)
+                    .content("B")
+                    .clientVersion(0L)
+                    .build());
+
+            OperationHistoryResponse historyResponse = CollaborationApi.getOperationHistory(user1.getJwt(), sessionId, 0);
+
+            assertEquals(2, historyResponse.getOperations().size());
+            assertEquals(0, historyResponse.getOperations().get(0).getPosition());
+            assertEquals(1, historyResponse.getOperations().get(1).getPosition());
+            assertEquals(expectedConcurrentOrder(user1.getUserId(), user2.getUserId()), replay(historyResponse));
         }
     }
 
@@ -402,7 +479,7 @@ public class CollaborationControllerTest extends BaseApiTest {
                     .sessionId(sessionId)
                     .type(TextOperationType.INSERT)
                     .position(5)
-                    .content(" World")
+                    .content("World")
                     .clientVersion(1L)
                     .build());
 
@@ -740,5 +817,21 @@ public class CollaborationControllerTest extends BaseApiTest {
             assertEquals(3L, s1Final.getVersion());
             assertEquals(3L, s2Final.getVersion());
         }
+    }
+
+    private String replay(OperationHistoryResponse historyResponse) {
+        StringBuilder document = new StringBuilder();
+        for (TextOperation op : historyResponse.getOperations()) {
+            if (op.isInsert() && op.getContent() != null) {
+                document.insert(op.getPosition(), op.getContent());
+            } else if (op.isDelete() && op.getLength() > 0) {
+                document.delete(op.getPosition(), op.getPosition() + op.getLength());
+            }
+        }
+        return document.toString();
+    }
+
+    private String expectedConcurrentOrder(String user1Id, String user2Id) {
+        return user1Id.compareTo(user2Id) < 0 ? "AB" : "BA";
     }
 }

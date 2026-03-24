@@ -104,7 +104,11 @@ public class CollaborationDomainService {
         if (serverOps.isEmpty()) {
             return operation;
         }
-        return operationTransformer.transform(operation, serverOps.get(serverOps.size() - 1));
+        TextOperation result = operation;
+        for (TextOperation serverOp : serverOps) {
+            result = operationTransformer.transform(result, serverOp);
+        }
+        return result;
     }
 
     public void addOperation(CollaborationSession session, TextOperation operation, UserContext userContext) {

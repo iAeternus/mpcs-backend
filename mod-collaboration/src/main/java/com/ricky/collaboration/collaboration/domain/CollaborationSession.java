@@ -171,9 +171,8 @@ public class CollaborationSession extends AggregateRoot {
         if (fromVersion >= version.getVersion()) {
             return Collections.emptyList();
         }
-        return operationHistory.stream()
-                .filter(op -> op.getClientVersion() >= fromVersion)
-                .toList();
+        int startIndex = (int) fromVersion;
+        return new ArrayList<>(operationHistory.subList(startIndex, operationHistory.size()));
     }
 
     public void raiseSessionCreatedEvent(String documentId, String documentTitle, UserContext userContext) {

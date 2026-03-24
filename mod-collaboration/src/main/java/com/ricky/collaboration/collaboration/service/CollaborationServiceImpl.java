@@ -90,7 +90,7 @@ public class CollaborationServiceImpl implements CollaborationService {
         domainService.validateUserInSession(session, userContext.getUid());
         domainService.validateSessionNotExpired(session);
 
-        List<TextOperation> serverOps = session.getRecentOperations(100);
+        List<TextOperation> serverOps = session.getOperationsSince(operation.getClientVersion());
         TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
 
         domainService.addOperation(session, transformedOp, userContext);
@@ -142,7 +142,7 @@ public class CollaborationServiceImpl implements CollaborationService {
         domainService.validateUserInSession(session, userContext.getUid());
         domainService.validateSessionNotExpired(session);
 
-        List<TextOperation> serverOps = session.getRecentOperations(100);
+        List<TextOperation> serverOps = session.getOperationsSince(operation.getClientVersion());
         TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
 
         domainService.addOperation(session, transformedOp, userContext);

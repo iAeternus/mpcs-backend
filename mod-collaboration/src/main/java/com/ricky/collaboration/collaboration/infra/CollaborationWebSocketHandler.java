@@ -136,12 +136,20 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                 domainService.validateUserInSession(collabSession, oderId);
                 domainService.validateSessionNotExpired(collabSession);
 
-                var serverOps = collabSession.getRecentOperations(100);
+                var serverOps = collabSession.getOperationsSince(operation.getClientVersion());
                 TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
                 domainService.addOperation(collabSession, transformedOp, userContext);
                 sessionRepository.save(collabSession);
 
-                sessionManager.broadcast(sessionId, OperationMessage.fromTextOperation(sessionId, operation), oderId);
+                sessionManager.broadcast(
+                        sessionId,
+                        OperationMessage.fromTextOperation(
+                                sessionId,
+                                transformedOp,
+                                collabSession.getVersion().getVersion()
+                        ),
+                        oderId
+                );
                 sendMessage(session, OperationAckMessage.success(sessionId, collabSession.getVersion().getVersion()));
                 return;
             }
@@ -153,20 +161,23 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                 domainService.validateUserInSession(collabSession, oderId);
                 domainService.validateSessionNotExpired(collabSession);
 
-                var serverOps = collabSession.getRecentOperations(100);
-
                 if (opMsg.getOperations() != null) {
                     for (OperationMessage.OperationData opData : opMsg.getOperations()) {
                         TextOperation operation = convertOperationData(opData, oderId);
+                        var serverOps = collabSession.getOperationsSince(operation.getClientVersion());
                         TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
                         domainService.addOperation(collabSession, transformedOp, userContext);
+                        sessionManager.broadcast(
+                                sessionId,
+                                OperationMessage.fromTextOperation(
+                                        sessionId,
+                                        transformedOp,
+                                        collabSession.getVersion().getVersion()
+                                ),
+                                oderId
+                        );
                     }
                     sessionRepository.save(collabSession);
-
-                    for (OperationMessage.OperationData opData : opMsg.getOperations()) {
-                        TextOperation operation = convertOperationData(opData, oderId);
-                        sessionManager.broadcast(sessionId, OperationMessage.fromTextOperation(sessionId, operation), oderId);
-                    }
                     sendMessage(session, OperationAckMessage.success(sessionId, collabSession.getVersion().getVersion()));
                 }
                 return;
