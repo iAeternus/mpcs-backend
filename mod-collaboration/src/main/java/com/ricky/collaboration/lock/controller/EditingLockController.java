@@ -18,7 +18,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import static com.ricky.common.constants.ConfigConstants.COLLAB_SESSION_ID_PREFIX;
-import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 
 @Validated
 @RestController

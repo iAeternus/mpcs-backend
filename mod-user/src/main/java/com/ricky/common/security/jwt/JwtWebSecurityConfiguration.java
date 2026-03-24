@@ -15,6 +15,7 @@ import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
@@ -63,7 +64,7 @@ public class JwtWebSecurityConfiguration {
                 .addFilterBefore(new MdcFilter(), ExceptionTranslationFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .headers(headers -> headers
-                        .frameOptions(frameOptions -> frameOptions.disable())
+                        .frameOptions(HeadersConfigurer.FrameOptionsConfig::disable)
                         .contentSecurityPolicy(csp -> csp.policyDirectives(
                                 "frame-ancestors " + previewFrameAncestors
                         )))

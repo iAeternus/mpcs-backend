@@ -1,9 +1,10 @@
 package com.ricky.collaboration.collaboration.domain;
 
 import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
-import lombok.*;
-
-import static lombok.AccessLevel.PRIVATE;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @EqualsAndHashCode

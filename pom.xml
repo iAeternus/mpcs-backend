@@ -28,7 +28,6 @@
         <module>mod-test</module>
         <module>mod-group</module>
         <module>mod-manage</module>
-        <module>mod-security</module>
         <module>mod-collaboration</module>
     </modules>
 

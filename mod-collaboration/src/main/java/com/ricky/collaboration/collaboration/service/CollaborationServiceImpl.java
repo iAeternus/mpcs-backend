@@ -162,14 +162,14 @@ public class CollaborationServiceImpl implements CollaborationService {
     @Transactional
     public SessionInfoResponse updateBaseVersion(String sessionId, long baseVersion, UserContext userContext) {
         log.info("updateBaseVersion called: sessionId={}, baseVersion={}, userId={}", sessionId, baseVersion, userContext.getUid());
-        
+
         CollaborationSession session = domainService.getSession(sessionId);
         domainService.validateUserInSession(session, userContext.getUid());
         domainService.validateSessionNotExpired(session);
 
-        log.info("Session found, user in session. Current baseVersion={}, new baseVersion={}", 
+        log.info("Session found, user in session. Current baseVersion={}, new baseVersion={}",
                 session.getBaseVersion(), baseVersion);
-        
+
         session.updateBaseVersion(baseVersion, userContext);
         sessionRepository.save(session);
 
