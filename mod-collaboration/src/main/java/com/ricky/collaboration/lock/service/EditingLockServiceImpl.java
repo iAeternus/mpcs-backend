@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +36,6 @@ public class EditingLockServiceImpl implements EditingLockService {
     }
 
     @Override
-    @Transactional
     public EditingLockResponse acquireLock(AcquireEditingLockCommand command, UserContext userContext) {
         return withWriteRetry(() -> {
             EditingLockSet lockSet = domainService.getOrCreate(command.getSessionId(), command.getDocumentId(), userContext);
@@ -54,7 +52,6 @@ public class EditingLockServiceImpl implements EditingLockService {
     }
 
     @Override
-    @Transactional
     public void releaseLock(String sessionId, String lockId, UserContext userContext) {
         withWriteRetry(() -> {
             repository.findBySessionId(sessionId).ifPresent(lockSet -> {
@@ -66,7 +63,6 @@ public class EditingLockServiceImpl implements EditingLockService {
     }
 
     @Override
-    @Transactional
     public EditingLockResponse renewLock(RenewEditingLockCommand command, UserContext userContext) {
         return withWriteRetry(() -> {
             EditingLockSet lockSet = repository.findBySessionId(command.getSessionId())
@@ -85,7 +81,6 @@ public class EditingLockServiceImpl implements EditingLockService {
     }
 
     @Override
-    @Transactional
     public void rebaseLocks(String sessionId, String documentId, TextOperation operation, String ownerUserId, UserContext userContext) {
         withWriteRetry(() -> {
             EditingLockSet lockSet = repository.findBySessionId(sessionId)
