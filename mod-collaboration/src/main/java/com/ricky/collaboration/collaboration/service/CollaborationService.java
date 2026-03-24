@@ -30,4 +30,6 @@ public interface CollaborationService {
     OperationHistoryResponse getOperationHistory(String sessionId, long fromVersion, UserContext userContext);
 
     CollaborationSession submitOperationInternal(String sessionId, TextOperation operation, UserContext userContext);
+
+    SessionInfoResponse updateBaseVersion(String sessionId, long baseVersion, UserContext userContext);
 }

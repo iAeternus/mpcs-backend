@@ -116,6 +116,17 @@ public class CollaborationController {
         return collaborationService.getOperationHistory(sessionId, fromVersion, userContext);
     }
 
+    @PutMapping("/sessions/{sessionId}/base-version")
+    @Operation(summary = "更新基准版本")
+    public SessionInfoResponse updateBaseVersion(
+            @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
+            @RequestParam(defaultValue = "0") long baseVersion,
+            @AuthenticationPrincipal UserContext userContext
+    ) {
+        log.info("Updating baseVersion to {} for session[{}]", baseVersion, sessionId);
+        return collaborationService.updateBaseVersion(sessionId, baseVersion, userContext);
+    }
+
     @GetMapping("/ws-test")
     @Operation(summary = "WebSocket配置测试")
     public String wsTest() {

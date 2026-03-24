@@ -452,4 +452,293 @@ public class CollaborationControllerTest extends BaseApiTest {
             assertEquals(afterEdit.getDocumentLength(), secondResponse.getDocumentLength());
         }
     }
+
+    @Nested
+    @DisplayName("Base version tests")
+    class BaseVersionTests {
+
+        @Test
+        void should_return_default_base_version_on_session_creation() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Test Document")
+                    .build();
+
+            SessionInfoResponse response = CollaborationApi.createSession(manager.getJwt(), command);
+
+            assertNotNull(response);
+            assertEquals(0L, response.getBaseVersion());
+        }
+
+        @Test
+        void should_update_base_version() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Test Document")
+                    .build();
+
+            SessionInfoResponse createResponse = CollaborationApi.createSession(manager.getJwt(), command);
+            String sessionId = createResponse.getSessionId();
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(0)
+                    .content("Hello")
+                    .clientVersion(0L)
+                    .build());
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(5)
+                    .content(" World")
+                    .clientVersion(1L)
+                    .build());
+
+            SessionInfoResponse afterOps = CollaborationApi.getSessionInfo(manager.getJwt(), sessionId);
+            assertEquals(2L, afterOps.getVersion());
+
+            SessionInfoResponse updateResponse = CollaborationApi.updateBaseVersion(manager.getJwt(), sessionId, 2L);
+
+            assertEquals(2L, updateResponse.getBaseVersion());
+            assertEquals(2L, updateResponse.getVersion());
+        }
+
+        @Test
+        void should_only_allow_increasing_base_version() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Test Document")
+                    .build();
+
+            SessionInfoResponse createResponse = CollaborationApi.createSession(manager.getJwt(), command);
+            String sessionId = createResponse.getSessionId();
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(0)
+                    .content("Hello")
+                    .clientVersion(0L)
+                    .build());
+
+            SessionInfoResponse afterOps = CollaborationApi.getSessionInfo(manager.getJwt(), sessionId);
+            assertEquals(1L, afterOps.getVersion());
+
+            CollaborationApi.updateBaseVersion(manager.getJwt(), sessionId, 1L);
+            SessionInfoResponse afterFirstUpdate = CollaborationApi.getSessionInfo(manager.getJwt(), sessionId);
+            assertEquals(1L, afterFirstUpdate.getBaseVersion());
+
+            CollaborationApi.updateBaseVersion(manager.getJwt(), sessionId, 0L);
+            SessionInfoResponse afterSecondUpdate = CollaborationApi.getSessionInfo(manager.getJwt(), sessionId);
+            assertEquals(1L, afterSecondUpdate.getBaseVersion());
+        }
+
+        @Test
+        void should_filter_operations_by_base_version() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Test Document")
+                    .build();
+
+            SessionInfoResponse createResponse = CollaborationApi.createSession(manager.getJwt(), command);
+            String sessionId = createResponse.getSessionId();
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(0)
+                    .content("First")
+                    .clientVersion(0L)
+                    .build());
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(5)
+                    .content(" Second")
+                    .clientVersion(1L)
+                    .build());
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(12)
+                    .content(" Third")
+                    .clientVersion(2L)
+                    .build());
+
+            CollaborationApi.updateBaseVersion(manager.getJwt(), sessionId, 2L);
+
+            OperationHistoryResponse historyFrom0 = CollaborationApi.getOperationHistory(manager.getJwt(), sessionId, 0);
+            assertEquals(3, historyFrom0.getOperations().size());
+
+            OperationHistoryResponse historyFrom1 = CollaborationApi.getOperationHistory(manager.getJwt(), sessionId, 1);
+            assertEquals(2, historyFrom1.getOperations().size());
+
+            OperationHistoryResponse historyFrom2 = CollaborationApi.getOperationHistory(manager.getJwt(), sessionId, 2);
+            assertEquals(1, historyFrom2.getOperations().size());
+        }
+
+        @Test
+        void should_update_base_version_after_save_scenario() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Test Document")
+                    .build();
+
+            SessionInfoResponse createResponse = CollaborationApi.createSession(manager.getJwt(), command);
+            String sessionId = createResponse.getSessionId();
+
+            for (int i = 0; i < 10; i++) {
+                CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                        .sessionId(sessionId)
+                        .type(TextOperationType.INSERT)
+                        .position(i)
+                        .content(String.valueOf(i))
+                        .clientVersion((long) i)
+                        .build());
+            }
+
+            SessionInfoResponse afterEdits = CollaborationApi.getSessionInfo(manager.getJwt(), sessionId);
+            assertEquals(10L, afterEdits.getVersion());
+            assertEquals(0L, afterEdits.getBaseVersion());
+
+            CollaborationApi.updateBaseVersion(manager.getJwt(), sessionId, 10L);
+
+            SessionInfoResponse afterSave = CollaborationApi.getSessionInfo(manager.getJwt(), sessionId);
+            assertEquals(10L, afterSave.getBaseVersion());
+            assertEquals(10L, afterSave.getVersion());
+
+            CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                    .sessionId(sessionId)
+                    .type(TextOperationType.INSERT)
+                    .position(10)
+                    .content("NEW")
+                    .clientVersion(10L)
+                    .build());
+
+            SessionInfoResponse afterNewEdit = CollaborationApi.getSessionInfo(manager.getJwt(), sessionId);
+            assertEquals(11L, afterNewEdit.getVersion());
+            assertEquals(10L, afterNewEdit.getBaseVersion());
+
+            OperationHistoryResponse history = CollaborationApi.getOperationHistory(manager.getJwt(), sessionId, 10);
+            assertEquals(1, history.getOperations().size());
+            assertEquals("NEW", history.getOperations().get(0).getContent());
+        }
+
+        @Test
+        void should_handle_concurrent_operations_without_conflict() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            CreateSessionCommand command = CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Concurrent Test Document")
+                    .build();
+
+            SessionInfoResponse createResponse = CollaborationApi.createSession(manager.getJwt(), command);
+            String sessionId = createResponse.getSessionId();
+
+            for (int i = 0; i < 5; i++) {
+                CollaborationApi.submitOperation(manager.getJwt(), SubmitOperationCommand.builder()
+                        .sessionId(sessionId)
+                        .type(TextOperationType.INSERT)
+                        .position(i)
+                        .content(String.valueOf(i))
+                        .clientVersion((long) i)
+                        .build());
+            }
+
+            SessionInfoResponse afterOps = CollaborationApi.getSessionInfo(manager.getJwt(), sessionId);
+            assertEquals(5L, afterOps.getVersion());
+            assertEquals(0L, afterOps.getBaseVersion());
+
+            CollaborationApi.updateBaseVersion(manager.getJwt(), sessionId, 5L);
+
+            SessionInfoResponse afterBaseVersionUpdate = CollaborationApi.getSessionInfo(manager.getJwt(), sessionId);
+            assertEquals(5L, afterBaseVersionUpdate.getBaseVersion());
+            assertEquals(5L, afterBaseVersionUpdate.getVersion());
+
+            OperationHistoryResponse historyFrom0 = CollaborationApi.getOperationHistory(manager.getJwt(), sessionId, 0);
+            OperationHistoryResponse historyFrom5 = CollaborationApi.getOperationHistory(manager.getJwt(), sessionId, 5);
+
+            assertEquals(5, historyFrom0.getOperations().size());
+            assertEquals(0, historyFrom5.getOperations().size());
+        }
+
+        @Test
+        void should_maintain_separate_sessions_for_different_files() {
+            LoginResponse user1 = setupApi.registerWithLogin();
+            LoginResponse user2 = setupApi.registerWithLogin();
+
+            String documentId1 = rDocumentId();
+            String documentId2 = rDocumentId();
+
+            CreateSessionCommand command1 = CreateSessionCommand.builder()
+                    .documentId(documentId1)
+                    .documentTitle("File 1")
+                    .build();
+            CreateSessionCommand command2 = CreateSessionCommand.builder()
+                    .documentId(documentId2)
+                    .documentTitle("File 2")
+                    .build();
+
+            SessionInfoResponse session1 = CollaborationApi.createSession(user1.getJwt(), command1);
+            SessionInfoResponse session2 = CollaborationApi.createSession(user2.getJwt(), command2);
+
+            assertNotEquals(session1.getSessionId(), session2.getSessionId());
+
+            for (int i = 0; i < 3; i++) {
+                CollaborationApi.submitOperation(user1.getJwt(), SubmitOperationCommand.builder()
+                        .sessionId(session1.getSessionId())
+                        .type(TextOperationType.INSERT)
+                        .position(i)
+                        .content("A")
+                        .clientVersion((long) i)
+                        .build());
+
+                CollaborationApi.submitOperation(user2.getJwt(), SubmitOperationCommand.builder()
+                        .sessionId(session2.getSessionId())
+                        .type(TextOperationType.INSERT)
+                        .position(i)
+                        .content("B")
+                        .clientVersion((long) i)
+                        .build());
+            }
+
+            SessionInfoResponse s1After = CollaborationApi.getSessionInfo(user1.getJwt(), session1.getSessionId());
+            SessionInfoResponse s2After = CollaborationApi.getSessionInfo(user2.getJwt(), session2.getSessionId());
+
+            assertEquals(3L, s1After.getVersion());
+            assertEquals(3L, s2After.getVersion());
+
+            CollaborationApi.updateBaseVersion(user1.getJwt(), session1.getSessionId(), 3L);
+            CollaborationApi.updateBaseVersion(user2.getJwt(), session2.getSessionId(), 3L);
+
+            SessionInfoResponse s1Final = CollaborationApi.getSessionInfo(user1.getJwt(), session1.getSessionId());
+            SessionInfoResponse s2Final = CollaborationApi.getSessionInfo(user2.getJwt(), session2.getSessionId());
+
+            assertEquals(3L, s1Final.getBaseVersion());
+            assertEquals(3L, s2Final.getBaseVersion());
+            assertEquals(3L, s1Final.getVersion());
+            assertEquals(3L, s2Final.getVersion());
+        }
+    }
 }

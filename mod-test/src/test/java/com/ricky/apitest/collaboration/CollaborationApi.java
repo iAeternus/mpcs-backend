@@ -133,4 +133,15 @@ public class CollaborationApi {
                 .extract()
                 .as(OperationHistoryResponse.class);
     }
+
+    public static SessionInfoResponse updateBaseVersion(String jwt, String sessionId, long baseVersion) {
+        return givenBearer(jwt)
+                .param("baseVersion", baseVersion)
+                .when()
+                .put(COLLAB + "/sessions/{sessionId}/base-version", sessionId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(SessionInfoResponse.class);
+    }
 }

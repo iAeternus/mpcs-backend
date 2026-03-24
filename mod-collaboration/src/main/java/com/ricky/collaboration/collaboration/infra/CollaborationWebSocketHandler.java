@@ -6,6 +6,7 @@ import com.ricky.collaboration.collaboration.domain.CollaborationSession;
 import com.ricky.collaboration.collaboration.domain.CollaborationSessionRepository;
 import com.ricky.collaboration.collaboration.domain.CursorPosition;
 import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
+import com.ricky.collaboration.collaboration.domain.ot.TextOperationType;
 import com.ricky.collaboration.collaboration.dto.CursorMessage;
 import com.ricky.collaboration.collaboration.dto.OperationAckMessage;
 import com.ricky.collaboration.collaboration.dto.OperationMessage;
@@ -145,6 +146,32 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                 return;
             }
 
+            if ("operation_batch".equals(type)) {
+                OperationMessage opMsg = objectMapper.readValue(payload, OperationMessage.class);
+
+                CollaborationSession collabSession = domainService.getSession(sessionId);
+                domainService.validateUserInSession(collabSession, oderId);
+                domainService.validateSessionNotExpired(collabSession);
+
+                var serverOps = collabSession.getRecentOperations(100);
+
+                if (opMsg.getOperations() != null) {
+                    for (OperationMessage.OperationData opData : opMsg.getOperations()) {
+                        TextOperation operation = convertOperationData(opData, oderId);
+                        TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
+                        domainService.addOperation(collabSession, transformedOp, userContext);
+                    }
+                    sessionRepository.save(collabSession);
+
+                    for (OperationMessage.OperationData opData : opMsg.getOperations()) {
+                        TextOperation operation = convertOperationData(opData, oderId);
+                        sessionManager.broadcast(sessionId, OperationMessage.fromTextOperation(sessionId, operation), oderId);
+                    }
+                    sendMessage(session, OperationAckMessage.success(sessionId, collabSession.getVersion().getVersion()));
+                }
+                return;
+            }
+
             if ("cursor".equals(type)) {
                 CursorMessage cursorMsg = objectMapper.readValue(payload, CursorMessage.class);
                 CursorPosition cursor = CursorPosition.of(
@@ -191,11 +218,6 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                     UserContext userContext = UserContext.of(oderId, username, Role.NORMAL_USER);
                     domainService.leaveSession(collabSession, userContext);
                     sessionRepository.save(collabSession);
-
-                    if (collabSession.isEmpty()) {
-                        domainService.deleteSession(collabSession, sessionId, userContext);
-                        sessionRepository.delete(collabSession);
-                    }
                 }
             } catch (Exception e) {
                 log.warn("Error leaving session: {}", e.getMessage());
@@ -251,6 +273,32 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
             session.sendMessage(new TextMessage(json));
         } catch (IOException e) {
             log.error("Failed to send message: {}", e.getMessage());
+        }
+    }
+
+    private TextOperation convertOperationData(OperationMessage.OperationData opData, String oderId) {
+        TextOperationType opType = opData.getOperationType();
+        Integer pos = opData.getPosition();
+        String contentVal = opData.getContent();
+        Integer len = opData.getLength();
+        String userId = opData.getUserId() != null ? opData.getUserId() : oderId;
+        Long version = opData.getClientVersion();
+
+        if (opType == null) {
+            throw new IllegalArgumentException("operationType is required");
+        }
+        if (pos == null) {
+            throw new IllegalArgumentException("position is required");
+        }
+
+        long finalVersion = version != null ? version : 0L;
+
+        if (opType == TextOperationType.INSERT) {
+            return TextOperation.insert(userId, pos, contentVal, finalVersion);
+        } else if (opType == TextOperationType.DELETE) {
+            return TextOperation.delete(userId, pos, len != null ? len : 0, finalVersion);
+        } else {
+            return TextOperation.retain(userId, pos, len != null ? len : 0, finalVersion);
         }
     }
 

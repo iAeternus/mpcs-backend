@@ -24,12 +24,21 @@ public class SessionInfoResponse {
     private String parentFolderId;
     private long version;
     private long documentLength;
+    private long baseVersion;
     private int activeUserCount;
     private List<CollabUser> activeUsers;
     private Map<String, CursorPosition> cursors;
     private Instant createdAt;
     private Instant expiresAt;
     private boolean expired;
+
+    public long getBaseVersion() {
+        return baseVersion;
+    }
+
+    public void setBaseVersion(long baseVersion) {
+        this.baseVersion = baseVersion;
+    }
 
     public static SessionInfoResponse fromSession(CollaborationSession session) {
         return SessionInfoResponse.builder()
@@ -39,6 +48,7 @@ public class SessionInfoResponse {
                 .parentFolderId(session.getParentFolderId())
                 .version(session.getVersion().getVersion())
                 .documentLength(session.getVersion().getDocumentLength())
+                .baseVersion(session.getBaseVersion() != null ? session.getBaseVersion() : 0L)
                 .activeUserCount(session.getActiveUserCount())
                 .activeUsers(List.copyOf(session.getActiveUsers()))
                 .cursors(session.getCursors())

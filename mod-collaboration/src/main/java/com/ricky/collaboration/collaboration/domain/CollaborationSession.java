@@ -34,6 +34,7 @@ public class CollaborationSession extends AggregateRoot {
     private String documentTitle;
     private String parentFolderId;
     private SessionVersion version;
+    private Long baseVersion;
     private Set<CollabUser> activeUsers;
     private Map<String, CursorPosition> cursors;
     private List<TextOperation> operationHistory;
@@ -62,6 +63,7 @@ public class CollaborationSession extends AggregateRoot {
         this.documentTitle = documentTitle;
         this.parentFolderId = parentFolderId;
         this.version = SessionVersion.initial();
+        this.baseVersion = 0L;
         this.activeUsers = new HashSet<>();
         this.cursors = new HashMap<>();
         this.operationHistory = new ArrayList<>();
@@ -124,6 +126,14 @@ public class CollaborationSession extends AggregateRoot {
         this.operationHistory.add(operation);
         this.lastActivityAt = Instant.now();
         addOpsLog("用户[" + operation.getUserId() + "]提交操作[" + operation.getType() + "@" + operation.getPosition() + "]", userContext);
+    }
+
+    public void updateBaseVersion(long newBaseVersion, UserContext userContext) {
+        if (newBaseVersion > this.baseVersion) {
+            this.baseVersion = newBaseVersion;
+            this.lastActivityAt = Instant.now();
+            addOpsLog("更新基准版本 to " + newBaseVersion, userContext);
+        }
     }
 
     public void updateUserActivity(String oderId) {

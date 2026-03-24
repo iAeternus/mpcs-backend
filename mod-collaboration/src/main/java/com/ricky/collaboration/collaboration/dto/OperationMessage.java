@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -22,6 +24,9 @@ public class OperationMessage {
 
     @JsonProperty("operation")
     private OperationData operation;
+
+    @JsonProperty("operations")
+    private List<OperationData> operations;
 
     private TextOperationType operationType;
     private Integer position;
