@@ -129,6 +129,16 @@ public class GridFsStorageService implements StorageService {
         return nonNull(findGridFSFile(gridFsStorageId));
     }
 
+    @Override
+    public long getObjectSize(StorageId storageId) {
+        GridFsStorageId gridFsStorageId = (GridFsStorageId) storageId;
+        GridFSFile file = findGridFSFile(gridFsStorageId);
+        if (file == null) {
+            throw new IllegalStateException("GridFS file not found: " + storageId);
+        }
+        return file.getLength();
+    }
+
     private static class BoundedInputStream extends InputStream {
         private final InputStream in;
         private long remaining;

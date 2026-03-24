@@ -111,7 +111,16 @@ public class FileServiceImpl implements FileService {
         String contentType = mimeTypeResolver.resolve(extension);
 
         StorageId storageId = file.getStorageId();
-        long length = rangeEnd - rangeStart + 1;
+
+        long actualSize = storageService.getObjectSize(storageId);
+
+        if (rangeStart >= actualSize) {
+            throw new IllegalStateException("Range start " + rangeStart + " exceeds actual file size " + actualSize);
+        }
+
+        long effectiveRangeEnd = Math.min(rangeEnd, actualSize - 1);
+        long length = effectiveRangeEnd - rangeStart + 1;
+
         InputStream inputStream = storageService.getFileStream(storageId, rangeStart, length);
         InputStreamResource resource = new InputStreamResource(inputStream);
 

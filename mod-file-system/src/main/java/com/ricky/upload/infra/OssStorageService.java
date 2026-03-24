@@ -149,6 +149,12 @@ public class OssStorageService implements StorageService {
         return ossService.exists(ossStorageId.getBucket(), ossStorageId.getObjectKey());
     }
 
+    @Override
+    public long getObjectSize(StorageId storageId) {
+        OssStorageId ossStorageId = (OssStorageId) storageId;
+        return ossService.getObjectSize(ossStorageId.getBucket(), ossStorageId.getObjectKey());
+    }
+
     private String generateObjectKey(String filename) {
         return UuidGenerator.newShortUuid() + "/" + filename;
     }

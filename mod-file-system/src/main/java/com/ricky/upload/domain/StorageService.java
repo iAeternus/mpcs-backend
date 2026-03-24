@@ -31,4 +31,6 @@ public interface StorageService {
     void delete(List<StorageId> storageIds);
 
     boolean exists(StorageId storageId);
+
+    long getObjectSize(StorageId storageId);
 }

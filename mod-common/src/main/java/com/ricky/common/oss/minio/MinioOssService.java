@@ -136,4 +136,19 @@ public class MinioOssService implements OssService {
     public void abortMultipartUpload(String bucket, String objectKey, String uploadId) {
         // Not implemented for minio 8.3.3
     }
+
+    @Override
+    public long getObjectSize(String bucket, String objectKey) {
+        try {
+            StatObjectResponse stat = minioClient.statObject(
+                    StatObjectArgs.builder()
+                            .bucket(bucket)
+                            .object(objectKey)
+                            .build()
+            );
+            return stat.size();
+        } catch (Exception e) {
+            throw new IllegalStateException("MinIO getObjectSize failed", e);
+        }
+    }
 }
