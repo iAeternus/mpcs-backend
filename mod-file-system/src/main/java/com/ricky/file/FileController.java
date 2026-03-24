@@ -25,6 +25,9 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.ricky.file.domain.File;
+import com.ricky.file.domain.FileRepository;
+
 import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
 import static com.ricky.common.constants.ConfigConstants.FOLDER_ID_PREFIX;
 import static com.ricky.common.permission.Permission.*;

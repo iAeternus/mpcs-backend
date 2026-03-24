@@ -12,4 +12,6 @@ public interface UploadSessionRepository {
     UploadSession cachedById(String uploadId);
 
     UploadSession byId(String uploadId);
+
+    void deleteByFileHashAndOwnerId(String fileHash, String ownerId);
 }

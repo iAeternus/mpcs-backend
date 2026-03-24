@@ -1,9 +1,12 @@
 package com.ricky.upload.infra;
 
+import com.ricky.common.exception.ErrorCodeEnum;
+import com.ricky.common.exception.MyException;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.upload.domain.UploadSession;
 import com.ricky.upload.domain.UploadSessionRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+import static com.ricky.common.exception.ErrorCodeEnum.UPLOAD_SESSION_NOT_FOUND;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static com.ricky.upload.domain.UploadStatus.COMPLETED;
@@ -18,6 +22,7 @@ import static com.ricky.upload.domain.UploadStatus.UPLOADING;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class MongoUploadSessionRepository extends MongoBaseRepository<UploadSession> implements UploadSessionRepository {
@@ -64,5 +69,23 @@ public class MongoUploadSessionRepository extends MongoBaseRepository<UploadSess
     @Override
     public UploadSession byId(String id) {
         return super.byId(id);
+    }
+
+    @Override
+    public void deleteByFileHashAndOwnerId(String fileHash, String ownerId) {
+        requireNotBlank(fileHash, "FileHash must not be blank");
+        requireNotBlank(ownerId, "OwnerId must not be blank");
+
+        Query query = query(where("expectedHash").is(fileHash).and("ownerId").is(ownerId));
+        UploadSession uploadSession = mongoTemplate.findOne(query, UploadSession.class);
+        if(isNull(uploadSession)) {
+            throw new MyException(UPLOAD_SESSION_NOT_FOUND, "上传会话不存在",
+                    "fileHash", fileHash, "ownerId", ownerId);
+        }
+
+        mongoTemplate.remove(query, UploadSession.class);
+        cachedUploadSessionRepository.evictUploadSessionCache(uploadSession.getId());
+
+        log.info("Deleted upload sessions for fileHash[{}], ownerId[{}]", fileHash, ownerId);
     }
 }

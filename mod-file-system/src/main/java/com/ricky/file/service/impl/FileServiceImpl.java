@@ -11,13 +11,18 @@ import com.ricky.file.service.FileService;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.upload.domain.StorageService;
+import com.ricky.upload.domain.UploadSessionRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -30,6 +35,7 @@ public class FileServiceImpl implements FileService {
     private final FileDomainService fileDomainService;
     private final FileRepository fileRepository;
     private final FolderRepository folderRepository;
+    private final UploadSessionRepository userUploadSessionRepository;
 
     @Override
     @Transactional
@@ -49,6 +55,8 @@ public class FileServiceImpl implements FileService {
         rateLimiter.applyFor("File:DeleteFile", 10);
 
         File file = fileRepository.byId(fileId);
+        String fileHash = file.getHash();
+        String ownerId = file.getUserId();
         file.onDelete(userContext);
         fileRepository.delete(file);
         fileDomainService.deleteFileForce(file, userContext);
@@ -56,6 +64,10 @@ public class FileServiceImpl implements FileService {
         Folder folder = folderRepository.byId(file.getParentId());
         folder.removeFile(file.getId(), userContext);
         folderRepository.save(folder);
+
+        if (fileHash != null && ownerId != null) {
+            userUploadSessionRepository.deleteByFileHashAndOwnerId(fileHash, ownerId);
+        }
 
         log.info("Deleted File[{}] force", fileId);
     }
@@ -113,15 +125,15 @@ public class FileServiceImpl implements FileService {
         StorageId storageId = file.getStorageId();
 
         long actualSize = storageService.getObjectSize(storageId);
-
-        if (rangeStart >= actualSize) {
-            throw new IllegalStateException("Range start " + rangeStart + " exceeds actual file size " + actualSize);
+        if (actualSize != fileSize) {
+            log.warn("File[{}] size mismatch: db={}, storage={}", fileId, fileSize, actualSize);
         }
 
+        long effectiveRangeStart = Math.min(rangeStart, actualSize - 1);
         long effectiveRangeEnd = Math.min(rangeEnd, actualSize - 1);
-        long length = effectiveRangeEnd - rangeStart + 1;
+        long length = effectiveRangeEnd - effectiveRangeStart + 1;
 
-        InputStream inputStream = storageService.getFileStream(storageId, rangeStart, length);
+        InputStream inputStream = storageService.getFileStream(storageId, effectiveRangeStart, length);
         InputStreamResource resource = new InputStreamResource(inputStream);
 
         return DownloadFileResponse.builder()
