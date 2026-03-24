@@ -4,7 +4,8 @@ import com.ricky.common.websocket.UploadProgressHandler;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.servlet.server.AbstractServletWebServerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -32,6 +33,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     }
 
     @Bean
+    @ConditionalOnBean(ServletWebServerFactory.class)
     public ServletServerContainerFactoryBean servletServerContainerFactoryBean() {
         ServletServerContainerFactoryBean factory = new ServletServerContainerFactoryBean();
         factory.setMaxTextMessageBufferSize(16 * 1024 * 1024); // 16MB

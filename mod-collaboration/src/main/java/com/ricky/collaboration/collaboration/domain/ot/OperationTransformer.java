@@ -42,7 +42,7 @@ public class OperationTransformer {
 
         if (clientPos < serverPos) {
             return clientOp;
-        } else if (clientPos > serverPos + serverLen) {
+        } else if (clientPos > serverPos) {
             return TextOperation.insert(
                     clientOp.getUserId(),
                     clientPos + serverLen,

@@ -37,9 +37,21 @@ class OperationTransformerTest {
 
         TextOperation transformed = transformer.transform(clientOp, serverOp);
 
-        assertEquals(5, transformed.getPosition());
+        assertEquals(10, transformed.getPosition());
         assertEquals("!", transformed.getContent());
-        assertEquals("Hello!", apply("Hello", transformed));
+        assertEquals("Helloabcde!", apply("abcde", serverOp, transformed));
+    }
+
+    @Test
+    @DisplayName("insert at remote insert end boundary still shifts by inserted length")
+    void should_shift_insert_at_remote_insert_end_boundary() {
+        TextOperation clientOp = TextOperation.insert("user1", 5, "World", 1);
+        TextOperation serverOp = TextOperation.insert("user2", 0, "Hello", 0);
+
+        TextOperation transformed = transformer.transform(clientOp, serverOp);
+
+        assertEquals(10, transformed.getPosition());
+        assertEquals("HelloabcdeWorld", apply("abcde", serverOp, transformed));
     }
 
     @Test
