@@ -11,6 +11,8 @@ import com.ricky.collaboration.collaboration.dto.CursorMessage;
 import com.ricky.collaboration.collaboration.dto.OperationAckMessage;
 import com.ricky.collaboration.collaboration.dto.OperationMessage;
 import com.ricky.collaboration.collaboration.dto.SessionStateMessage;
+import com.ricky.collaboration.lock.dto.EditingLockStateMessage;
+import com.ricky.collaboration.lock.service.EditingLockService;
 import com.ricky.common.domain.user.Role;
 import com.ricky.common.domain.user.UserContext;
 import jakarta.annotation.PostConstruct;
@@ -36,6 +38,7 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
     private final CollaborationDomainService domainService;
     private final CollaborationSessionRepository sessionRepository;
     private final CollaborationSessionManager sessionManager;
+    private final EditingLockService editingLockService;
     private final ObjectMapper objectMapper;
 
     private static final String SESSION_ID_ATTR = "sessionId";
@@ -97,6 +100,10 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                     collabSession.getCursors()
             );
             sendMessage(session, stateMessage);
+            sendMessage(session, EditingLockStateMessage.of(
+                    sessionId,
+                    editingLockService.listLocks(sessionId, UserContext.of(oderId, username, Role.NORMAL_USER)).getLocks()
+            ));
 
             log.info("WebSocket connected successfully: session[{}], user[{}]", sessionId, oderId);
         } catch (Exception e) {
@@ -135,10 +142,12 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                 CollaborationSession collabSession = domainService.getSession(sessionId);
                 domainService.validateUserInSession(collabSession, oderId);
                 domainService.validateSessionNotExpired(collabSession);
+                editingLockService.validateOperationAllowed(collabSession.getId(), operation, oderId);
 
                 var serverOps = collabSession.getOperationsSince(operation.getClientVersion());
                 TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
                 domainService.addOperation(collabSession, transformedOp, userContext);
+                editingLockService.rebaseLocks(collabSession.getId(), collabSession.getDocumentId(), transformedOp, oderId, userContext);
                 sessionRepository.save(collabSession);
 
                 sessionManager.broadcast(
@@ -147,6 +156,14 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                                 sessionId,
                                 transformedOp,
                                 collabSession.getVersion().getVersion()
+                        ),
+                        oderId
+                );
+                sessionManager.broadcast(
+                        sessionId,
+                        EditingLockStateMessage.of(
+                                sessionId,
+                                editingLockService.listLocks(sessionId, userContext).getLocks()
                         ),
                         oderId
                 );
@@ -164,9 +181,11 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                 if (opMsg.getOperations() != null) {
                     for (OperationMessage.OperationData opData : opMsg.getOperations()) {
                         TextOperation operation = convertOperationData(opData, oderId);
+                        editingLockService.validateOperationAllowed(collabSession.getId(), operation, oderId);
                         var serverOps = collabSession.getOperationsSince(operation.getClientVersion());
                         TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
                         domainService.addOperation(collabSession, transformedOp, userContext);
+                        editingLockService.rebaseLocks(collabSession.getId(), collabSession.getDocumentId(), transformedOp, oderId, userContext);
                         sessionManager.broadcast(
                                 sessionId,
                                 OperationMessage.fromTextOperation(
@@ -178,6 +197,14 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                         );
                     }
                     sessionRepository.save(collabSession);
+                    sessionManager.broadcast(
+                            sessionId,
+                            EditingLockStateMessage.of(
+                                    sessionId,
+                                    editingLockService.listLocks(sessionId, userContext).getLocks()
+                            ),
+                            oderId
+                    );
                     sendMessage(session, OperationAckMessage.success(sessionId, collabSession.getVersion().getVersion()));
                 }
                 return;

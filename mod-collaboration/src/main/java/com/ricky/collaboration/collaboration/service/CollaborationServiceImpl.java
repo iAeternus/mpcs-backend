@@ -10,6 +10,7 @@ import com.ricky.collaboration.collaboration.domain.CursorPosition;
 import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
 import com.ricky.collaboration.collaboration.query.OperationHistoryResponse;
 import com.ricky.collaboration.collaboration.query.SessionInfoResponse;
+import com.ricky.collaboration.lock.service.EditingLockService;
 import com.ricky.common.domain.user.UserContext;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class CollaborationServiceImpl implements CollaborationService {
 
     private final CollaborationDomainService domainService;
     private final CollaborationSessionRepository sessionRepository;
+    private final EditingLockService editingLockService;
 
     @Override
     @Transactional
@@ -89,11 +91,13 @@ public class CollaborationServiceImpl implements CollaborationService {
         CollaborationSession session = domainService.getSession(command.getSessionId());
         domainService.validateUserInSession(session, userContext.getUid());
         domainService.validateSessionNotExpired(session);
+        editingLockService.validateOperationAllowed(session.getId(), operation, userContext.getUid());
 
         List<TextOperation> serverOps = session.getOperationsSince(operation.getClientVersion());
         TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
 
         domainService.addOperation(session, transformedOp, userContext);
+        editingLockService.rebaseLocks(session.getId(), session.getDocumentId(), transformedOp, userContext.getUid(), userContext);
         sessionRepository.save(session);
 
         return SessionInfoResponse.fromSession(session);
@@ -141,11 +145,13 @@ public class CollaborationServiceImpl implements CollaborationService {
         CollaborationSession session = domainService.getSession(sessionId);
         domainService.validateUserInSession(session, userContext.getUid());
         domainService.validateSessionNotExpired(session);
+        editingLockService.validateOperationAllowed(session.getId(), operation, userContext.getUid());
 
         List<TextOperation> serverOps = session.getOperationsSince(operation.getClientVersion());
         TextOperation transformedOp = domainService.transformOperation(operation, serverOps);
 
         domainService.addOperation(session, transformedOp, userContext);
+        editingLockService.rebaseLocks(session.getId(), session.getDocumentId(), transformedOp, userContext.getUid(), userContext);
         sessionRepository.save(session);
 
         return session;

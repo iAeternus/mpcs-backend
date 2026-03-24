@@ -10,6 +10,13 @@ import com.ricky.collaboration.collaboration.domain.ot.TextOperationType;
 import com.ricky.collaboration.collaboration.infra.CollaborationSessionManager;
 import com.ricky.collaboration.collaboration.query.OperationHistoryResponse;
 import com.ricky.collaboration.collaboration.query.SessionInfoResponse;
+import com.ricky.collaboration.lock.command.AcquireEditingLockCommand;
+import com.ricky.collaboration.lock.query.EditingLockResponse;
+import com.ricky.collaboration.lock.query.EditingLockStateResponse;
+import com.ricky.collaboration.revision.command.CreateRevisionCommand;
+import com.ricky.collaboration.revision.query.RevisionDetailResponse;
+import com.ricky.collaboration.revision.query.RevisionDiffResponse;
+import com.ricky.collaboration.revision.query.RevisionSummaryResponse;
 import com.ricky.common.domain.dto.resp.LoginResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -816,6 +823,197 @@ public class CollaborationControllerTest extends BaseApiTest {
             assertEquals(3L, s2Final.getBaseVersion());
             assertEquals(3L, s1Final.getVersion());
             assertEquals(3L, s2Final.getVersion());
+        }
+    }
+
+    @Nested
+    @DisplayName("Revision tests")
+    class RevisionTests {
+
+        @Test
+        void should_create_and_list_document_revisions() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            SessionInfoResponse session = CollaborationApi.createSession(manager.getJwt(), CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Revision Doc")
+                    .build());
+
+            RevisionDetailResponse first = CollaborationApi.createRevision(manager.getJwt(), documentId, CreateRevisionCommand.builder()
+                    .sessionId(session.getSessionId())
+                    .documentId(documentId)
+                    .documentTitle("Revision Doc")
+                    .baseVersion(1L)
+                    .content("Hello")
+                    .source("MANUAL_SAVE")
+                    .changeSummary("Initial save")
+                    .build());
+
+            RevisionDetailResponse second = CollaborationApi.createRevision(manager.getJwt(), documentId, CreateRevisionCommand.builder()
+                    .sessionId(session.getSessionId())
+                    .documentId(documentId)
+                    .documentTitle("Revision Doc")
+                    .baseVersion(2L)
+                    .content("Hello World")
+                    .source("MANUAL_SAVE")
+                    .changeSummary("Append world")
+                    .build());
+
+            assertEquals(1L, first.getRevisionNo());
+            assertEquals(2L, second.getRevisionNo());
+
+            java.util.List<RevisionSummaryResponse> revisions = CollaborationApi.listRevisions(manager.getJwt(), documentId);
+            assertEquals(2, revisions.size());
+            assertEquals(second.getRevisionId(), revisions.get(0).getRevisionId());
+            assertEquals(first.getRevisionId(), revisions.get(1).getRevisionId());
+        }
+
+        @Test
+        void should_return_revision_detail_and_diff() {
+            LoginResponse manager = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            SessionInfoResponse session = CollaborationApi.createSession(manager.getJwt(), CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Revision Doc")
+                    .build());
+
+            RevisionDetailResponse first = CollaborationApi.createRevision(manager.getJwt(), documentId, CreateRevisionCommand.builder()
+                    .sessionId(session.getSessionId())
+                    .documentId(documentId)
+                    .documentTitle("Revision Doc")
+                    .baseVersion(1L)
+                    .content("alpha")
+                    .source("MANUAL_SAVE")
+                    .build());
+
+            RevisionDetailResponse second = CollaborationApi.createRevision(manager.getJwt(), documentId, CreateRevisionCommand.builder()
+                    .sessionId(session.getSessionId())
+                    .documentId(documentId)
+                    .documentTitle("Revision Doc")
+                    .baseVersion(2L)
+                    .content("alpha\nbeta")
+                    .source("MANUAL_SAVE")
+                    .build());
+
+            RevisionDetailResponse detail = CollaborationApi.getRevision(manager.getJwt(), documentId, second.getRevisionId());
+            RevisionDiffResponse diff = CollaborationApi.getRevisionDiff(manager.getJwt(), documentId, second.getRevisionId(), first.getRevisionId());
+
+            assertEquals("alpha\nbeta", detail.getContentSnapshot());
+            assertEquals(first.getRevisionId(), diff.getCompareToRevisionId());
+            assertTrue(diff.getUnifiedDiffLines().stream().anyMatch(line -> line.contains("+beta")));
+        }
+    }
+
+    @Nested
+    @DisplayName("Editing lock tests")
+    class EditingLockTests {
+
+        @Test
+        void should_acquire_and_release_lock() {
+            LoginResponse user = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            SessionInfoResponse session = CollaborationApi.createSession(user.getJwt(), CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Lock Doc")
+                    .build());
+
+            EditingLockResponse lock = CollaborationApi.acquireLock(user.getJwt(), session.getSessionId(), AcquireEditingLockCommand.builder()
+                    .documentId(documentId)
+                    .start(2)
+                    .end(5)
+                    .build());
+
+            EditingLockStateResponse state = CollaborationApi.listLocks(user.getJwt(), session.getSessionId());
+            assertEquals(1, state.getLocks().size());
+            assertEquals(lock.getLockId(), state.getLocks().get(0).getLockId());
+
+            CollaborationApi.releaseLock(user.getJwt(), session.getSessionId(), lock.getLockId());
+            EditingLockStateResponse afterRelease = CollaborationApi.listLocks(user.getJwt(), session.getSessionId());
+            assertEquals(0, afterRelease.getLocks().size());
+        }
+
+        @Test
+        void should_reject_conflicting_lock_and_block_operations() {
+            LoginResponse user1 = setupApi.registerWithLogin();
+            LoginResponse user2 = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            SessionInfoResponse session = CollaborationApi.createSession(user1.getJwt(), CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Lock Doc")
+                    .build());
+            CollaborationApi.joinSession(user2.getJwt(), session.getSessionId());
+
+            CollaborationApi.acquireLock(user1.getJwt(), session.getSessionId(), AcquireEditingLockCommand.builder()
+                    .documentId(documentId)
+                    .start(0)
+                    .end(5)
+                    .build());
+
+            CollaborationApi.acquireLockRaw(user2.getJwt(), session.getSessionId(), AcquireEditingLockCommand.builder()
+                            .documentId(documentId)
+                            .start(3)
+                            .end(6)
+                            .build())
+                    .then()
+                    .statusCode(400);
+
+            CollaborationApi.submitOperationRaw(user2.getJwt(), SubmitOperationCommand.builder()
+                            .sessionId(session.getSessionId())
+                            .type(TextOperationType.INSERT)
+                            .position(3)
+                            .content("X")
+                            .clientVersion(0L)
+                            .build())
+                    .then()
+                    .statusCode(400);
+        }
+
+        @Test
+        void should_accept_lock_request_when_session_id_only_comes_from_path() {
+            LoginResponse user = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            SessionInfoResponse session = CollaborationApi.createSession(user.getJwt(), CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Lock Doc")
+                    .build());
+
+            EditingLockResponse lock = CollaborationApi.acquireLock(user.getJwt(), session.getSessionId(), AcquireEditingLockCommand.builder()
+                    .documentId(documentId)
+                    .start(1)
+                    .end(1)
+                    .build());
+
+            assertNotNull(lock.getLockId());
+            assertEquals(1, lock.getStart());
+            assertEquals(1, lock.getEnd());
+        }
+
+        @Test
+        void should_allow_releasing_same_lock_multiple_times() {
+            LoginResponse user = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            SessionInfoResponse session = CollaborationApi.createSession(user.getJwt(), CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Lock Doc")
+                    .build());
+
+            EditingLockResponse lock = CollaborationApi.acquireLock(user.getJwt(), session.getSessionId(), AcquireEditingLockCommand.builder()
+                    .documentId(documentId)
+                    .start(2)
+                    .end(2)
+                    .build());
+
+            CollaborationApi.releaseLock(user.getJwt(), session.getSessionId(), lock.getLockId());
+            CollaborationApi.releaseLock(user.getJwt(), session.getSessionId(), lock.getLockId());
+
+            EditingLockStateResponse state = CollaborationApi.listLocks(user.getJwt(), session.getSessionId());
+            assertEquals(0, state.getLocks().size());
         }
     }
 

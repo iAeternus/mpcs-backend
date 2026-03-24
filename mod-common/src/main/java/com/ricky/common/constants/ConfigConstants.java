@@ -50,6 +50,8 @@ public interface ConfigConstants {
     String PUBLISHING_DOMAIN_EVENT_COLLECTION = "publishing_domain_event";
     String CONSUMING_DOMAIN_EVENT_COLLECTION = "consuming_domain_event";
     String COLLABORATION_SESSION_COLLECTION = "collaboration_sessions";
+    String DOCUMENT_REVISION_COLLECTION = "document_revisions";
+    String EDITING_LOCK_COLLECTION = "editing_locks";
 
     // 数据库ID前缀
     String USER_ID_PREFIX = "USR";
@@ -64,6 +66,8 @@ public interface ConfigConstants {
     String COMMENT_ID_PREFIX = "CMT";
     String SENSITIVE_WORD_ID_PREFIX = "SST";
     String COLLAB_SESSION_ID_PREFIX = "CLS";
+    String DOCUMENT_REVISION_ID_PREFIX = "REV";
+    String EDITING_LOCK_ID_PREFIX = "LCK";
 
     // Redis
     String USER_CACHE = "USERS";
