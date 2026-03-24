@@ -86,7 +86,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
             return;
         }
 
-        checkSameUser(ars);
+//        checkSameUser(ars);
         List<DomainEvent> events = new ArrayList<>();
         List<LocalDomainEvent> localEvents = new ArrayList<>();
         ars.forEach(ar -> {
@@ -133,7 +133,7 @@ public abstract class MongoBaseRepository<AR extends AggregateRoot> {
             return;
         }
 
-        checkSameUser(ars);
+//        checkSameUser(ars);
         List<DomainEvent> events = new ArrayList<>();
         ars.forEach(ar -> {
             if (isNotEmpty(ar.getEvents())) {

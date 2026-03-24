@@ -1,7 +1,5 @@
 package com.ricky.upload.infra;
 
-import com.ricky.common.exception.ErrorCodeEnum;
-import com.ricky.common.exception.MyException;
 import com.ricky.common.mongo.MongoBaseRepository;
 import com.ricky.upload.domain.UploadSession;
 import com.ricky.upload.domain.UploadSessionRepository;
@@ -14,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-import static com.ricky.common.exception.ErrorCodeEnum.UPLOAD_SESSION_NOT_FOUND;
 import static com.ricky.common.utils.ValidationUtils.isNull;
 import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
 import static com.ricky.upload.domain.UploadStatus.COMPLETED;
@@ -78,9 +75,8 @@ public class MongoUploadSessionRepository extends MongoBaseRepository<UploadSess
 
         Query query = query(where("expectedHash").is(fileHash).and("ownerId").is(ownerId));
         UploadSession uploadSession = mongoTemplate.findOne(query, UploadSession.class);
-        if(isNull(uploadSession)) {
-            throw new MyException(UPLOAD_SESSION_NOT_FOUND, "上传会话不存在",
-                    "fileHash", fileHash, "ownerId", ownerId);
+        if (isNull(uploadSession)) {
+            return;
         }
 
         mongoTemplate.remove(query, UploadSession.class);

@@ -57,8 +57,8 @@ public class FileCollabServiceImpl implements FileCollabService {
 
         String newHash = fileHasherFactory.getFileHasher().hash(file);
 
-        StorageId currentStorageId = existingFile.getStorageId();
-        boolean hashChanged = !currentStorageId.getValue().equals(newHash);
+        String currentHash = existingFile.getHash();
+        boolean hashChanged = !currentHash.equals(newHash);
 
         if (hashChanged) {
             StorageId newStorageId = storageService.store(file);

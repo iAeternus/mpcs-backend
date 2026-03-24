@@ -4,11 +4,13 @@ import com.ricky.collaboration.collaboration.infra.CollaborationWebSocketHandler
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.server.HandshakeInterceptor;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 import java.util.Map;
 
@@ -24,6 +26,16 @@ public class CollaborationWebSocketConfig implements WebSocketConfigurer {
     public void init() {
         log.info("CollaborationWebSocketConfig initialized");
         log.info("webSocketHandler class: {}", webSocketHandler.getClass().getName());
+    }
+
+    @Bean
+    public ServletServerContainerFactoryBean collaborationWebSocketContainer() {
+        ServletServerContainerFactoryBean factory = new ServletServerContainerFactoryBean();
+        factory.setMaxTextMessageBufferSize(16 * 1024 * 1024); // 16MB
+        factory.setMaxBinaryMessageBufferSize(16 * 1024 * 1024);
+        factory.setMaxSessionIdleTimeout(60 * 60 * 1000L);
+        log.info("Configured collaboration WebSocket message buffer size: 16MB");
+        return factory;
     }
 
     @Override
