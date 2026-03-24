@@ -256,6 +256,25 @@ public class CollaborationWebSocketHandler extends TextWebSocketHandler {
                     UserContext userContext = UserContext.of(oderId, username, Role.NORMAL_USER);
                     domainService.leaveSession(collabSession, userContext);
                     sessionRepository.save(collabSession);
+                    editingLockService.releaseUserLocks(sessionId, oderId, userContext);
+                    sessionManager.broadcast(
+                            sessionId,
+                            SessionStateMessage.of(
+                                    sessionId,
+                                    collabSession.getVersion().getVersion(),
+                                    collabSession.getActiveUsers().stream().toList(),
+                                    collabSession.getCursors()
+                            ),
+                            oderId
+                    );
+                    sessionManager.broadcast(
+                            sessionId,
+                            EditingLockStateMessage.of(
+                                    sessionId,
+                                    editingLockService.listLocks(sessionId, userContext).getLocks()
+                            ),
+                            oderId
+                    );
                 }
             } catch (Exception e) {
                 log.warn("Error leaving session: {}", e.getMessage());

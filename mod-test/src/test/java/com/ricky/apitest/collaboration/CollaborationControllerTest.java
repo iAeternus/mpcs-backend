@@ -1015,6 +1015,28 @@ public class CollaborationControllerTest extends BaseApiTest {
             EditingLockStateResponse state = CollaborationApi.listLocks(user.getJwt(), session.getSessionId());
             assertEquals(0, state.getLocks().size());
         }
+
+        @Test
+        void should_release_user_locks_when_user_leaves_session() {
+            LoginResponse user = setupApi.registerWithLogin();
+            String documentId = rDocumentId();
+
+            SessionInfoResponse session = CollaborationApi.createSession(user.getJwt(), CreateSessionCommand.builder()
+                    .documentId(documentId)
+                    .documentTitle("Lock Doc")
+                    .build());
+
+            CollaborationApi.acquireLock(user.getJwt(), session.getSessionId(), AcquireEditingLockCommand.builder()
+                    .documentId(documentId)
+                    .start(2)
+                    .end(4)
+                    .build());
+
+            CollaborationApi.leaveSession(user.getJwt(), session.getSessionId());
+
+            EditingLockStateResponse state = CollaborationApi.listLocks(user.getJwt(), session.getSessionId());
+            assertEquals(0, state.getLocks().size());
+        }
     }
 
     private String replay(OperationHistoryResponse historyResponse) {

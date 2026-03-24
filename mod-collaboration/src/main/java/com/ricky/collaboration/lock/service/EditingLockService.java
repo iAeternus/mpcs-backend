@@ -15,6 +15,8 @@ public interface EditingLockService {
 
     void releaseLock(String sessionId, String lockId, UserContext userContext);
 
+    void releaseUserLocks(String sessionId, String userId, UserContext userContext);
+
     EditingLockResponse renewLock(RenewEditingLockCommand command, UserContext userContext);
 
     void validateOperationAllowed(String sessionId, TextOperation operation, String userId);

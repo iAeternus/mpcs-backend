@@ -73,6 +73,7 @@ public class CollaborationServiceImpl implements CollaborationService {
         CollaborationSession session = domainService.getSession(sessionId);
         domainService.leaveSession(session, userContext);
         sessionRepository.save(session);
+        editingLockService.releaseUserLocks(sessionId, userContext.getUid(), userContext);
     }
 
     @Override

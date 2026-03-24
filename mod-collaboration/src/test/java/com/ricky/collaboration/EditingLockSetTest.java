@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class EditingLockSetTest {
@@ -44,5 +45,15 @@ class EditingLockSetTest {
 
         assertThrows(RuntimeException.class, () ->
                 lockSet.validateOperationAllowed(TextOperation.delete("USR1", 3, 1, 0), "USR1"));
+    }
+
+    @Test
+    @DisplayName("should release all locks owned by leaving user")
+    void shouldReleaseAllLocksOwnedByLeavingUser() {
+        EditingLockSet lockSet = EditingLockSet.create("CLS1", "FIL1", USER_1);
+        lockSet.acquire("USR1", "Alice", 2, 5, USER_1);
+
+        assertTrue(lockSet.releaseAllByUser("USR1", USER_1));
+        assertEquals(0, lockSet.activeLocks(java.time.Instant.now()).size());
     }
 }

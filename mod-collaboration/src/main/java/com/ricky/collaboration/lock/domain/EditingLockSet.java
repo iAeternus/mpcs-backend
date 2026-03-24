@@ -87,6 +87,14 @@ public class EditingLockSet extends AggregateRoot {
         }
     }
 
+    public boolean releaseAllByUser(String userId, UserContext userContext) {
+        boolean removed = locks.removeIf(lock -> lock.getUserId().equals(userId));
+        if (removed) {
+            addOpsLog("用户[" + userContext.getUsername() + "]释放全部编辑锁", userContext);
+        }
+        return removed;
+    }
+
     public Optional<EditingLock> renew(String userId, String lockId, UserContext userContext) {
         Instant now = Instant.now();
         clearExpired(now);
@@ -123,7 +131,7 @@ public class EditingLockSet extends AggregateRoot {
             }
             locks.set(i, transform(lock, operation));
         }
-        addOpsLog("同步编辑锁位置到版本操作[" + operation.getType() + "@" + operation.getPosition() + "]", userContext);
+        addOpsLog("同步编辑锁位置到操作[" + operation.getType() + "@" + operation.getPosition() + "]", userContext);
     }
 
     private void clearExpired(Instant now) {

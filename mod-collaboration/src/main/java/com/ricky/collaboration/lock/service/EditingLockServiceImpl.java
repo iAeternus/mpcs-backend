@@ -27,11 +27,12 @@ public class EditingLockServiceImpl implements EditingLockService {
 
     @Override
     public EditingLockStateResponse listLocks(String sessionId, UserContext userContext) {
-        EditingLockSet lockSet = repository.findBySessionId(sessionId)
-                .orElse(null);
+        EditingLockSet lockSet = repository.findBySessionId(sessionId).orElse(null);
         return EditingLockStateResponse.builder()
                 .sessionId(sessionId)
-                .locks(lockSet == null ? java.util.List.of() : lockSet.activeLocks(java.time.Instant.now()).stream().map(EditingLockResponse::from).toList())
+                .locks(lockSet == null
+                        ? java.util.List.of()
+                        : lockSet.activeLocks(java.time.Instant.now()).stream().map(EditingLockResponse::from).toList())
                 .build();
     }
 
@@ -63,6 +64,18 @@ public class EditingLockServiceImpl implements EditingLockService {
     }
 
     @Override
+    public void releaseUserLocks(String sessionId, String userId, UserContext userContext) {
+        withWriteRetry(() -> {
+            repository.findBySessionId(sessionId).ifPresent(lockSet -> {
+                if (lockSet.releaseAllByUser(userId, userContext)) {
+                    repository.save(lockSet);
+                }
+            });
+            return null;
+        });
+    }
+
+    @Override
     public EditingLockResponse renewLock(RenewEditingLockCommand command, UserContext userContext) {
         return withWriteRetry(() -> {
             EditingLockSet lockSet = repository.findBySessionId(command.getSessionId())
@@ -83,8 +96,7 @@ public class EditingLockServiceImpl implements EditingLockService {
     @Override
     public void rebaseLocks(String sessionId, String documentId, TextOperation operation, String ownerUserId, UserContext userContext) {
         withWriteRetry(() -> {
-            EditingLockSet lockSet = repository.findBySessionId(sessionId)
-                    .orElse(null);
+            EditingLockSet lockSet = repository.findBySessionId(sessionId).orElse(null);
             if (lockSet == null) {
                 return null;
             }
