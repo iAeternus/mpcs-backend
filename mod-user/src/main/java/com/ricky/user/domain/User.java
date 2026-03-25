@@ -6,7 +6,12 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
 import com.ricky.common.utils.SnowflakeIdGenerator;
 import com.ricky.user.domain.event.UserCreatedEvent;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -14,10 +19,14 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.ricky.common.constants.ConfigConstants.*;
+import static com.ricky.common.constants.ConfigConstants.USER_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.USER_ID_PREFIX;
+import static com.ricky.common.constants.ConfigConstants.MAX_URL_LENGTH;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_ALREADY_LOCKED;
 import static com.ricky.common.exception.ErrorCodeEnum.USER_MOBILE_AND_EMAIL_BOTH_BLANK;
-import static com.ricky.common.utils.ValidationUtils.*;
+import static com.ricky.common.utils.ValidationUtils.isBlank;
+import static com.ricky.common.utils.ValidationUtils.requireNotBlank;
+import static com.ricky.common.utils.ValidationUtils.requireTrue;
 import static java.time.LocalDate.now;
 import static lombok.AccessLevel.PRIVATE;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -35,7 +44,7 @@ public class User extends AggregateRoot {
     private String mobile; // 手机号，全局唯一，与email不能同时为空
     private String email; // 邮箱，全局唯一，与mobile不能同时为空
     private String password;
-    private String avatarUrl; // TODO
+    private String avatarUrl;
     private Role role;
     private boolean mobileIdentified; // 是否已验证手机号
     private FailedLoginCount failedLoginCount; // 登录失败次数
@@ -102,7 +111,7 @@ public class User extends AggregateRoot {
 
     public void removeGroup(String groupId, UserContext userContext) {
         this.groupIds.remove(groupId);
-        addGroup("删除权限组", userContext);
+        addOpsLog("删除权限组", userContext);
     }
 
     public boolean containsGroup(String groupId) {

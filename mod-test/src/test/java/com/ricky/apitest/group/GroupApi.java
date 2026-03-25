@@ -176,11 +176,13 @@ public class GroupApi {
                 .statusCode(200);
     }
 
-    public static void addGrant(String token, String groupId, String folderId) {
+    public static void addGrant(String token, String groupId, String memberId, String folderId) {
         addGrant(token, AddGrantCommand.builder()
                 .groupId(groupId)
+                .memberId(memberId)
                 .folderId(folderId)
                 .permissions(Set.of(rEnumOf(Permission.class)))
+                .inheritancePolicy(com.ricky.group.domain.InheritancePolicy.NONE)
                 .build());
     }
 
@@ -199,6 +201,17 @@ public class GroupApi {
 
     public static GroupFoldersResponse fetchGroupFolders(String token, String groupId) {
         return BaseApiTest.given(token)
+                .when()
+                .get(ROOT_URL + "/{groupId}/folders", groupId)
+                .then()
+                .statusCode(200)
+                .extract()
+                .as(GroupFoldersResponse.class);
+    }
+
+    public static GroupFoldersResponse fetchGroupFolders(String token, String groupId, String memberId) {
+        return BaseApiTest.given(token)
+                .queryParam("memberId", memberId)
                 .when()
                 .get(ROOT_URL + "/{groupId}/folders", groupId)
                 .then()

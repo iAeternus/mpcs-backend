@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableList.toImmutableList;
@@ -73,7 +74,9 @@ public class GroupQueryServiceImpl implements GroupQueryService {
         CachedGroup group = groupRepository.cachedById(groupId);
         String targetMemberId = resolveTargetMemberId(group, memberId, userContext);
         Map<String, Set<Permission>> grants = grantsOf(group, targetMemberId);
-        List<Folder> folders = folderRepository.byIds(grants.keySet());
+        List<Folder> folders = folderRepository.byIds(grants.keySet()).stream()
+                .filter(folder -> ValidationUtils.equals(folder.getCustomId(), group.getCustomId()))
+                .collect(toImmutableList());
 
         List<GroupFoldersResponse.GroupFolder> groupFolders = folders.stream()
                 .map(folder -> GroupFoldersResponse.GroupFolder.builder()
@@ -220,6 +223,9 @@ public class GroupQueryServiceImpl implements GroupQueryService {
         if (SpaceType.fromCustomId(customId) != TEAM) {
             return permissionResponse(folderId, customId, "ADMIN", null, Set.of(), false);
         }
+        if (folderRepository.byIdOptional(customId, folderId).isEmpty()) {
+            return permissionResponse(folderId, customId, "ADMIN", null, Set.of(), false);
+        }
 
         List<String> ancestors = folderDomainService.withAllParentIdsRev(customId, folderId);
         CachedGroup cachedGroup = groupRepository.cachedByCustomId(customId);
@@ -237,6 +243,9 @@ public class GroupQueryServiceImpl implements GroupQueryService {
         if (SpaceType.fromCustomId(customId) != TEAM) {
             return permissionResponse(folderId, customId, "ORDINARY", userContext.getUid(), Set.of(), false);
         }
+        if (folderRepository.byIdOptional(customId, folderId).isEmpty()) {
+            return permissionResponse(folderId, customId, "ORDINARY", resolveRequestedMemberId(memberId, userContext), Set.of(), false);
+        }
 
         CachedGroup cachedGroup = groupRepository.cachedByCustomId(customId);
         if (cachedGroup == null || !cachedGroup.isActive()) {
@@ -248,7 +257,10 @@ public class GroupQueryServiceImpl implements GroupQueryService {
             return permissionResponse(folderId, customId, "ADMIN", targetMemberId, all(), true);
         }
 
-        Map<String, Set<Permission>> grants = grantsOf(cachedGroup, targetMemberId);
+        Map<String, Set<Permission>> grants = grantsOf(cachedGroup, targetMemberId).entrySet().stream()
+                .filter(entry -> folderRepository.byIdOptional(customId, entry.getKey()).isPresent())
+                .filter(entry -> Objects.nonNull(entry.getValue()) && !entry.getValue().isEmpty())
+                .collect(toMap(Map.Entry::getKey, Map.Entry::getValue));
         if (grants == null || grants.isEmpty()) {
             return permissionResponse(folderId, customId, "ORDINARY", targetMemberId, Set.of(), false);
         }

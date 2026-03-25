@@ -7,7 +7,6 @@ import com.ricky.collaboration.query.OperationHistoryResponse;
 import com.ricky.collaboration.query.SessionInfoResponse;
 import com.ricky.collaboration.service.CollaborationService;
 import com.ricky.common.domain.user.UserContext;
-import com.ricky.common.permission.PermissionRequired;
 import com.ricky.common.validation.id.Id;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,8 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.ricky.common.constants.ConfigConstants.COLLAB_SESSION_ID_PREFIX;
 import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
-import static com.ricky.common.permission.Permission.WRITE;
-import static com.ricky.common.permission.ResourceType.FILE;
 
 @Slf4j
 @Validated
@@ -43,7 +40,6 @@ public class CollaborationController {
 
     @PostMapping("/sessions")
     @Operation(summary = "create collaboration session")
-    @PermissionRequired(value = WRITE, resource = "#command.documentId", resourceType = FILE)
     public SessionInfoResponse createSession(
             @RequestBody @Valid CreateSessionCommand command,
             @AuthenticationPrincipal UserContext userContext
@@ -63,7 +59,6 @@ public class CollaborationController {
 
     @GetMapping("/sessions/document/{documentId}")
     @Operation(summary = "get session by document")
-    @PermissionRequired(value = WRITE, resource = "#documentId", resourceType = FILE)
     public SessionInfoResponse getSessionByDocument(
             @PathVariable @Id(FILE_ID_PREFIX) String documentId,
             @AuthenticationPrincipal UserContext userContext

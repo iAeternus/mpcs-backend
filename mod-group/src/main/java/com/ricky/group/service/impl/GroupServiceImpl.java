@@ -21,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Set;
 
+import static com.ricky.common.exception.ErrorCodeEnum.NOT_ALL_FOLDERS_EXIST;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -222,6 +224,7 @@ public class GroupServiceImpl implements GroupService {
 
         Group group = groupRepository.byId(command.getGroupId());
         managePermissionChecker.checkCanManageGroup(group, userContext);
+        ensureFoldersBelongToGroup(group, List.of(command.getFolderId()));
         group.addGrant(command.getMemberId(), command.getFolderId(), command.getPermissions(), command.getInheritancePolicy(), userContext);
         groupRepository.save(group);
 
@@ -236,9 +239,23 @@ public class GroupServiceImpl implements GroupService {
 
         Group group = groupRepository.byId(command.getGroupId());
         managePermissionChecker.checkCanManageGroup(group, userContext);
+        ensureFoldersBelongToGroup(group, command.getFolderIds());
         group.addGrants(command.getMemberId(), command.getFolderIds(), command.getPermissions(), command.getInheritancePolicy(), userContext);
         groupRepository.save(group);
 
         log.info("Add grants for group[{}]", command.getGroupId());
+    }
+
+    private void ensureFoldersBelongToGroup(Group group, List<String> folderIds) {
+        boolean allBelongToGroup = folderRepository.byIds(Set.copyOf(folderIds)).stream()
+                .allMatch(folder -> ValidationUtils.equals(folder.getCustomId(), group.getCustomId()));
+        if (!allBelongToGroup) {
+            throw new com.ricky.common.exception.MyException(
+                    NOT_ALL_FOLDERS_EXIST,
+                    "folders must belong to team space",
+                    "groupId", group.getId(),
+                    "customId", group.getCustomId()
+            );
+        }
     }
 }

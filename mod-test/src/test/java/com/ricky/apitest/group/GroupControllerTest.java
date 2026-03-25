@@ -7,6 +7,7 @@ import com.ricky.common.permission.Permission;
 import com.ricky.folder.domain.Folder;
 import com.ricky.group.command.*;
 import com.ricky.group.domain.Group;
+import com.ricky.group.domain.InheritancePolicy;
 import com.ricky.group.domain.event.GroupDeletedEvent;
 import com.ricky.group.domain.event.GroupMembersChangedEvent;
 import com.ricky.group.query.GroupFoldersResponse;
@@ -21,7 +22,6 @@ import java.util.Set;
 
 import static com.ricky.apitest.RandomTestFixture.rFolderName;
 import static com.ricky.apitest.RandomTestFixture.rGroupName;
-import static com.ricky.common.domain.SpaceType.personalCustomId;
 import static com.ricky.common.event.DomainEventType.GROUP_DELETED;
 import static com.ricky.common.event.DomainEventType.GROUP_MEMBERS_CHANGED;
 import static com.ricky.common.exception.ErrorCodeEnum.*;
@@ -156,6 +156,8 @@ public class GroupControllerTest extends BaseApiTest {
         Group group = groupRepository.byId(groupId);
         assertTrue(group.containsMember(member1.getUserId()));
         assertTrue(group.containsMember(member2.getUserId()));
+        assertTrue(userRepository.byId(member1.getUserId()).containsGroup(groupId));
+        assertTrue(userRepository.byId(member2.getUserId()).containsGroup(groupId));
     }
 
     @Test
@@ -192,6 +194,10 @@ public class GroupControllerTest extends BaseApiTest {
         Group dbGroup = groupRepository.byId(groupId);
         assertTrue(dbGroup.containsMember(member2.getUserId()));
         assertFalse(dbGroup.containsMember(member1.getUserId()));
+
+        User removedMember = userRepository.byId(member1.getUserId());
+        assertFalse(removedMember.containsGroup(groupId));
+        assertFalse(removedMember.getGroupIds().contains("删除权限组"));
     }
 
     @Test
@@ -438,25 +444,29 @@ public class GroupControllerTest extends BaseApiTest {
     void should_add_grant() {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
 
         String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
 
-        String customId = personalCustomId(manager.getUserId());
+        String customId = groupRepository.byId(groupId).getCustomId();
         String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         Set<Permission> permissions = Set.of(READ, WRITE);
 
         // When
         GroupApi.addGrant(manager.getJwt(), AddGrantCommand.builder()
                 .groupId(groupId)
+                .memberId(member.getUserId())
                 .folderId(folderId)
                 .permissions(permissions)
+                .inheritancePolicy(InheritancePolicy.NONE)
                 .build());
 
         // Then
         Group group = groupRepository.byId(groupId);
-        assertTrue(group.containsFolder(folderId));
+        assertTrue(group.appliesTo(member.getUserId(), folderId));
 
-        Set<Permission> dbPermissions = group.permissionsOf(List.of(folderId));
+        Set<Permission> dbPermissions = group.permissionsOf(member.getUserId(), List.of(folderId));
         assertEquals(permissions, dbPermissions);
     }
 
@@ -464,14 +474,18 @@ public class GroupControllerTest extends BaseApiTest {
     void should_fail_to_add_grant_if_folder_not_exists() {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
         String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
         Set<Permission> permissions = Set.of(READ, WRITE);
 
         // When & Then
         assertError(() -> GroupApi.addGrantRaw(manager.getJwt(), AddGrantCommand.builder()
                 .groupId(groupId)
+                .memberId(member.getUserId())
                 .folderId(Folder.newFolderId())
                 .permissions(permissions)
+                .inheritancePolicy(InheritancePolicy.NONE)
                 .build()), NOT_ALL_FOLDERS_EXIST);
     }
 
@@ -479,10 +493,12 @@ public class GroupControllerTest extends BaseApiTest {
     void should_add_grants() {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
 
         String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
 
-        String customId = personalCustomId(manager.getUserId());
+        String customId = groupRepository.byId(groupId).getCustomId();
         String folderId1 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         String folderId2 = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         Set<Permission> permissions = Set.of(READ, WRITE);
@@ -490,19 +506,21 @@ public class GroupControllerTest extends BaseApiTest {
         // When
         GroupApi.addGrants(manager.getJwt(), AddGrantsCommand.builder()
                 .groupId(groupId)
+                .memberId(member.getUserId())
                 .folderIds(List.of(folderId1, folderId2))
                 .permissions(permissions)
+                .inheritancePolicy(InheritancePolicy.NONE)
                 .build());
 
         // Then
         Group group = groupRepository.byId(groupId);
-        assertTrue(group.containsFolder(folderId1));
-        assertTrue(group.containsFolder(folderId2));
+        assertTrue(group.appliesTo(member.getUserId(), folderId1));
+        assertTrue(group.appliesTo(member.getUserId(), folderId2));
 
-        Set<Permission> dbPermissions1 = group.permissionsOf(List.of(folderId1));
+        Set<Permission> dbPermissions1 = group.permissionsOf(member.getUserId(), List.of(folderId1));
         assertEquals(permissions, dbPermissions1);
 
-        Set<Permission> dbPermissions2 = group.permissionsOf(List.of(folderId2));
+        Set<Permission> dbPermissions2 = group.permissionsOf(member.getUserId(), List.of(folderId2));
         assertEquals(permissions, dbPermissions2);
     }
 
@@ -510,17 +528,21 @@ public class GroupControllerTest extends BaseApiTest {
     void should_fail_to_add_grants_if_folder_not_all_exists() {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
         String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
 
-        String customId = personalCustomId(manager.getUserId());
+        String customId = groupRepository.byId(groupId).getCustomId();
         String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
         Set<Permission> permissions = Set.of(READ, WRITE);
 
         // When & Then
         assertError(() -> GroupApi.addGrantsRaw(manager.getJwt(), AddGrantsCommand.builder()
                 .groupId(groupId)
+                .memberId(member.getUserId())
                 .folderIds(List.of(folderId, Folder.newFolderId()))
                 .permissions(permissions)
+                .inheritancePolicy(InheritancePolicy.NONE)
                 .build()), NOT_ALL_FOLDERS_EXIST);
     }
 
@@ -528,15 +550,23 @@ public class GroupControllerTest extends BaseApiTest {
     void should_fetch_group_folders() {
         // Given
         LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
 
         String groupId = GroupApi.createGroup(manager.getJwt());
-        String customId = personalCustomId(manager.getUserId());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
+        String customId = groupRepository.byId(groupId).getCustomId();
         String folderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
 
-        GroupApi.addGrant(manager.getJwt(), groupId, folderId);
+        GroupApi.addGrant(manager.getJwt(), AddGrantCommand.builder()
+                .groupId(groupId)
+                .memberId(member.getUserId())
+                .folderId(folderId)
+                .permissions(Set.of(READ, WRITE))
+                .inheritancePolicy(InheritancePolicy.NONE)
+                .build());
 
         // When
-        GroupFoldersResponse response = GroupApi.fetchGroupFolders(manager.getJwt(), groupId);
+        GroupFoldersResponse response = GroupApi.fetchGroupFolders(manager.getJwt(), groupId, member.getUserId());
 
         // Then
         var groupFolders = response.getGroupFolders();
