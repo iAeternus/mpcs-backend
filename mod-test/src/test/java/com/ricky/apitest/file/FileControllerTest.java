@@ -28,6 +28,7 @@ import static com.ricky.apitest.RandomTestFixture.rFilename;
 import static com.ricky.apitest.RandomTestFixture.rFolderName;
 import static com.ricky.common.constants.ConfigConstants.NODE_ID_SEPARATOR;
 import static com.ricky.common.domain.SpaceType.personalCustomId;
+import static com.ricky.common.exception.ErrorCodeEnum.ACCESS_DENIED;
 import static com.ricky.common.exception.ErrorCodeEnum.FILE_NAME_DUPLICATES;
 import static com.ricky.common.utils.CommonUtils.instantToLocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;
@@ -109,6 +110,56 @@ public class FileControllerTest extends BaseApiTest {
 
         Folder parentFolder = folderRepository.byId(teamFolderId);
         assertFalse(parentFolder.containsFile(dbFile.getId()));
+    }
+
+    @Test
+    void should_allow_member_with_create_permission_to_upload_file_in_team_space() throws IOException {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
+        String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
+
+        String customId = groupRepository.byId(groupId).getCustomId();
+        String teamFolderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+
+        GroupApi.addGrant(manager.getJwt(), AddGrantCommand.builder()
+                .groupId(groupId)
+                .memberId(member.getUserId())
+                .folderId(teamFolderId)
+                .permissions(Set.of(Permission.CREATE))
+                .inheritancePolicy(InheritancePolicy.NONE)
+                .build());
+
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        setupApi.deleteFileWithSameHash(file);
+
+        // When
+        String fileId = FileUploadApi.upload(member.getJwt(), file, teamFolderId).getFileId();
+
+        // Then
+        File uploaded = fileRepository.byId(fileId);
+        assertEquals(teamFolderId, uploaded.getParentId());
+    }
+
+    @Test
+    void should_forbid_member_without_create_permission_to_upload_file_in_team_space() throws IOException {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
+        String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
+
+        String customId = groupRepository.byId(groupId).getCustomId();
+        String teamFolderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        setupApi.deleteFileWithSameHash(file);
+
+        // When & Then
+        assertError(() -> FileUploadApi.uploadRaw(member.getJwt(), file, teamFolderId), ACCESS_DENIED);
     }
 
     @Test

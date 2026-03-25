@@ -45,7 +45,7 @@ public class FileController {
 
     @PutMapping("/{fileId}/name")
     @Operation(summary = "重命名文件")
-    @PermissionRequired(value = {MANAGE, WRITE}, resource = "#fileId", resourceType = FILE)
+    @PermissionRequired(value = WRITE, resource = "#fileId", resourceType = FILE)
     public void renameFile(@PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
                            @RequestBody @Valid RenameFileCommand command,
                            @AuthenticationPrincipal UserContext userContext) {

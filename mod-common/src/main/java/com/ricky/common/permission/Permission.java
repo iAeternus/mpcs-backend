@@ -11,13 +11,12 @@ import java.util.Set;
 @Getter
 public enum Permission {
 
-    CREATE("创建"),
+    CREATE("新建"),
     READ("读取"),
     WRITE("写入"),
     DELETE("删除"),
     MOVE("移动"),
     PUBLIC("公开"),
-    MANAGE("管理"),
     ;
 
     private final String desc;

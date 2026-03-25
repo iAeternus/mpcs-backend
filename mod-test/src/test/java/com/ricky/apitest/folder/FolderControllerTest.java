@@ -1,14 +1,18 @@
 package com.ricky.apitest.folder;
 
 import com.ricky.apitest.BaseApiTest;
+import com.ricky.apitest.group.GroupApi;
 import com.ricky.apitest.upload.FileUploadApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
+import com.ricky.common.permission.Permission;
 import com.ricky.file.domain.File;
 import com.ricky.folder.command.*;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.event.FolderCreatedEvent;
 import com.ricky.folder.domain.event.FolderDeletedEvent;
 import com.ricky.folder.domain.event.FolderHierarchyChangedEvent;
+import com.ricky.group.command.AddGrantCommand;
+import com.ricky.group.domain.InheritancePolicy;
 import com.ricky.folder.query.FolderContentResponse;
 import com.ricky.upload.domain.event.FileUploadedLocalEvent;
 import org.junit.jupiter.api.Test;
@@ -16,6 +20,7 @@ import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import static com.ricky.apitest.RandomTestFixture.rFolderName;
 import static com.ricky.common.domain.SpaceType.personalCustomId;
@@ -76,6 +81,56 @@ public class FolderControllerTest extends BaseApiTest {
 
         assertTrue(folderDomainService.containsId(customId, subFolderId));
         assertTrue(folderDomainService.containsId(customId, parentFolderId));
+    }
+
+    @Test
+    void should_allow_member_with_create_permission_to_create_folder_in_team_space() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
+        String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
+
+        String customId = groupRepository.byId(groupId).getCustomId();
+        String parentFolderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+
+        GroupApi.addGrant(manager.getJwt(), AddGrantCommand.builder()
+                .groupId(groupId)
+                .memberId(member.getUserId())
+                .folderId(parentFolderId)
+                .permissions(Set.of(Permission.CREATE))
+                .inheritancePolicy(InheritancePolicy.NONE)
+                .build());
+
+        // When
+        String subFolderId = FolderApi.createFolder(member.getJwt(), CreateFolderCommand.builder()
+                .customId(customId)
+                .folderName(rFolderName())
+                .parentId(parentFolderId)
+                .build());
+
+        // Then
+        Folder subFolder = folderRepository.byId(subFolderId);
+        assertEquals(parentFolderId, subFolder.getParentId());
+    }
+
+    @Test
+    void should_forbid_member_without_create_permission_to_create_folder_in_team_space() {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
+        String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
+
+        String customId = groupRepository.byId(groupId).getCustomId();
+        String parentFolderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+
+        // When & Then
+        assertError(() -> FolderApi.createFolderRaw(member.getJwt(), CreateFolderCommand.builder()
+                .customId(customId)
+                .folderName(rFolderName())
+                .parentId(parentFolderId)
+                .build()), ACCESS_DENIED);
     }
 
     @Test

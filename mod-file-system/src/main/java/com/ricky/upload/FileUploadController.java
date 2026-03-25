@@ -1,6 +1,7 @@
 package com.ricky.upload;
 
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.permission.PermissionRequired;
 import com.ricky.common.validation.id.Id;
 import com.ricky.common.validation.index.NonNegIndex;
 import com.ricky.upload.command.*;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import static com.ricky.common.constants.ConfigConstants.FOLDER_ID_PREFIX;
 import static com.ricky.common.constants.ConfigConstants.UPLOAD_SESSION_ID_PREFIX;
+import static com.ricky.common.permission.Permission.CREATE;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
@@ -34,6 +36,7 @@ public class FileUploadController {
     @ResponseStatus(CREATED)
     @Operation(summary = "普通上传")
     @PostMapping(consumes = MULTIPART_FORM_DATA_VALUE)
+    @PermissionRequired(value = CREATE, resource = "#parentId")
     public FileUploadResponse upload(@RequestParam("file") @NotNull MultipartFile file,
                                      @RequestParam("parentId") @Id(FOLDER_ID_PREFIX) @NotBlank String parentId,
                                      @AuthenticationPrincipal UserContext userContext) {
@@ -41,6 +44,7 @@ public class FileUploadController {
     }
 
     @PostMapping("/init")
+    @PermissionRequired(value = CREATE, resource = "#command.parentId")
     @Operation(summary = "初始化分片上传")
     public InitUploadResponse initUpload(@RequestBody @Valid InitUploadCommand command,
                                          @AuthenticationPrincipal UserContext userContext) {
@@ -63,6 +67,7 @@ public class FileUploadController {
     @ResponseStatus(CREATED)
     @Operation(summary = "分片上传完成")
     @PostMapping("/complete")
+    @PermissionRequired(value = CREATE, resource = "#command.parentId")
     public FileUploadResponse completeUpload(@RequestBody @Valid CompleteUploadCommand command,
                                              @AuthenticationPrincipal UserContext userContext) {
         return fileUploadService.completeUpload(command, userContext);
