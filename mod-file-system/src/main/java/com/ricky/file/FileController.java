@@ -56,7 +56,7 @@ public class FileController {
 
     @Operation(summary = "强制删除文件")
     @DeleteMapping("/{fileId}/delete-force")
-    @PermissionRequired(value = MANAGE, resource = "#fileId", resourceType = FILE)
+    @PermissionRequired(value = DELETE, resource = "#fileId", resourceType = FILE)
     public void deleteFileForce(@PathVariable @NotBlank @Id(FILE_ID_PREFIX) String fileId,
                                 @AuthenticationPrincipal UserContext userContext) {
         fileService.deleteFileForce(fileId, userContext);

@@ -24,7 +24,6 @@ public class FakeGroupBuilder {
 
     private final Set<String> members = new HashSet<>();
     private final Set<String> managers = new HashSet<>();
-    private final Map<String, Set<Permission>> grants = new HashMap<>();
     private final Map<String, Map<String, Set<Permission>>> memberGrants = new HashMap<>();
 
     private FakeGroupBuilder(String id) {
@@ -71,11 +70,6 @@ public class FakeGroupBuilder {
         return this;
     }
 
-    public FakeGroupBuilder permission(String folderId, Permission... permissions) {
-        grants.put(folderId, Set.of(permissions));
-        return this;
-    }
-
     public FakeGroupBuilder permission(String userId, String folderId, Permission... permissions) {
         memberGrants.computeIfAbsent(userId, key -> new HashMap<>())
                 .put(folderId, Set.of(permissions));
@@ -91,7 +85,6 @@ public class FakeGroupBuilder {
                 .thenAnswer(inv -> members.contains(inv.getArgument(0)));
         when(group.containsManager(any()))
                 .thenAnswer(inv -> managers.contains(inv.getArgument(0)));
-        when(group.getGrants()).thenReturn(grants);
         when(group.getMemberAuthorizations()).thenReturn(memberGrants.entrySet().stream()
                 .map(entry -> MemberAuthorization.builder()
                         .userId(entry.getKey())
@@ -100,8 +93,6 @@ public class FakeGroupBuilder {
                         .build())
                 .toList());
 
-        when(group.appliesTo(any()))
-                .thenReturn(true);
         when(group.appliesTo(any(), any()))
                 .thenAnswer(inv -> {
                     String userId = inv.getArgument(0);
@@ -112,8 +103,6 @@ public class FakeGroupBuilder {
         when(group.grantsOf(any()))
                 .thenAnswer(inv -> resolvedGrants(inv.getArgument(0)));
 
-        when(group.permissionsOf(any()))
-                .thenAnswer(inv -> resolve(resolvedGrants(null), inv.getArgument(0)));
         when(group.permissionsOf(any(), any()))
                 .thenAnswer(inv -> resolve(resolvedGrants(inv.getArgument(0)), inv.getArgument(1)));
 
@@ -121,10 +110,7 @@ public class FakeGroupBuilder {
     }
 
     private Map<String, Set<Permission>> resolvedGrants(String userId) {
-        if (userId != null && memberGrants.containsKey(userId)) {
-            return memberGrants.get(userId);
-        }
-        return grants;
+        return memberGrants.getOrDefault(userId, Map.of());
     }
 
     private Set<Permission> resolve(Map<String, Set<Permission>> resolved, List<String> ancestors) {

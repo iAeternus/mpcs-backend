@@ -16,7 +16,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -47,8 +46,6 @@ public class Group extends AggregateRoot {
     private List<Member> members;
     private String customId;
     private List<MemberAuthorization> memberAuthorizations;
-    private Map<String, Set<Permission>> grants;
-    private InheritancePolicy inheritancePolicy;
 
     public Group(String name, UserContext userContext) {
         super(newGroupId(), userContext);
@@ -61,8 +58,6 @@ public class Group extends AggregateRoot {
         this.members = new ArrayList<>();
         this.customId = teamCustomId(getId());
         this.memberAuthorizations = new ArrayList<>();
-        this.grants = new HashMap<>();
-        this.inheritancePolicy = InheritancePolicy.NONE;
         addOpsLog("create-group", userContext);
     }
 
@@ -278,14 +273,6 @@ public class Group extends AggregateRoot {
                 .collect(toImmutableSet());
     }
 
-    public boolean appliesTo(String folderId) {
-        return grants.containsKey(folderId);
-    }
-
-    public Set<Permission> permissionsOf(List<String> ancestors) {
-        return PermissionInheritanceResolver.resolve(inheritancePolicy, grants, ancestors);
-    }
-
     public boolean hasExplicitAuthorization(String userId) {
         return authorizationOf(userId).isPresent();
     }
@@ -293,13 +280,13 @@ public class Group extends AggregateRoot {
     public Map<String, Set<Permission>> grantsOf(String userId) {
         return authorizationOf(userId)
                 .map(MemberAuthorization::getGrants)
-                .orElse(grants);
+                .orElse(Map.of());
     }
 
     public InheritancePolicy inheritancePolicyOf(String userId) {
         return authorizationOf(userId)
                 .map(MemberAuthorization::getInheritancePolicy)
-                .orElse(inheritancePolicy);
+                .orElse(InheritancePolicy.NONE);
     }
 
     public boolean appliesTo(String userId, String folderId) {
@@ -310,7 +297,7 @@ public class Group extends AggregateRoot {
     public Set<Permission> permissionsOf(String userId, List<String> ancestors) {
         return authorizationOf(userId)
                 .map(authorization -> authorization.permissionsOf(ancestors))
-                .orElseGet(() -> PermissionInheritanceResolver.resolve(inheritancePolicy, grants, ancestors));
+                .orElse(Set.of());
     }
 
     public void addGrant(String targetMemberId, String folderId, Set<Permission> permissions,
@@ -329,15 +316,6 @@ public class Group extends AggregateRoot {
         ensureAuthorizableOrdinaryMember(targetMemberId);
         upsertAuthorization(targetMemberId, policy, authorization -> authorization.grant(folderIds, permissions));
         addOpsLog("grant-member-folders:" + targetMemberId, userContext);
-    }
-
-    public boolean containsFolder(String folderId) {
-        return grants.containsKey(folderId);
-    }
-
-    public void revoke(String folderId, UserContext userContext) {
-        grants.remove(folderId);
-        addOpsLog("revoke-folder:" + folderId, userContext);
     }
 
     public void onDelete(UserContext userContext) {

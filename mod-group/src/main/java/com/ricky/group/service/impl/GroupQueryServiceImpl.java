@@ -182,7 +182,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
 
                     return by(direction, sortedBy).and(by(DESC, "createdAt"));
                 })
-                .project("_id", "name", "active", "customId", "inheritancePolicy", "createdAt", "updatedAt")
+                .project("_id", "name", "active", "customId", "createdAt", "updatedAt")
                 .fetchAs(GroupResponse.class, mongoTemplate);
     }
 
@@ -212,7 +212,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
 
                     return by(direction, sortedBy).and(by(DESC, "createdAt"));
                 })
-                .project("_id", "name", "active", "customId", "inheritancePolicy", "createdAt", "updatedAt")
+                .project("_id", "name", "active", "customId", "createdAt", "updatedAt")
                 .fetchAs(GroupResponse.class, mongoTemplate);
     }
 
@@ -309,7 +309,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
         if (authorization != null && authorization.getGrants() != null) {
             return authorization.getGrants();
         }
-        return group.getGrants() == null ? Map.of() : group.getGrants();
+        return Map.of();
     }
 
     private InheritancePolicy inheritancePolicyOf(CachedGroup group, String memberId) {
@@ -317,6 +317,6 @@ public class GroupQueryServiceImpl implements GroupQueryService {
         if (authorization != null) {
             return authorization.getInheritancePolicy();
         }
-        return group.getInheritancePolicy() == null ? InheritancePolicy.NONE : group.getInheritancePolicy();
+        return InheritancePolicy.NONE;
     }
 }

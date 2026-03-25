@@ -1,7 +1,6 @@
 package com.ricky.group.domain;
 
 import com.ricky.common.domain.marker.ValueObject;
-import com.ricky.common.permission.Permission;
 import com.ricky.common.utils.ValidationUtils;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -9,7 +8,6 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
@@ -23,8 +21,6 @@ public class CachedGroup implements ValueObject {
     boolean active;
     List<Member> members;
     List<MemberAuthorization> memberAuthorizations;
-    Map<String, Set<Permission>> grants;
-    InheritancePolicy inheritancePolicy;
     String customId;
 
     public Set<String> managerIds() {

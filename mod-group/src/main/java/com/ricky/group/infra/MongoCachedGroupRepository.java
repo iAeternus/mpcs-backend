@@ -31,7 +31,7 @@ public class MongoCachedGroupRepository extends MongoBaseRepository<Group> {
         requireNotBlank(userId, "User ID must not be blank.");
 
         Query query = query(where("userId").is(userId));
-        query.fields().include("name", "active", "userId", "members", "memberAuthorizations", "grants", "inheritancePolicy");
+        query.fields().include("name", "active", "userId", "members", "memberAuthorizations");
         List<UserCachedGroup> groups = mongoTemplate.find(query, UserCachedGroup.class, GROUP_COLLECTION);
         return UserCachedGroups.builder()
                 .groups(groups)
@@ -50,7 +50,7 @@ public class MongoCachedGroupRepository extends MongoBaseRepository<Group> {
         requireNotBlank(groupId, "Group ID must not be blank.");
 
         Query query = query(where("_id").is(groupId));
-        query.fields().include("name", "active", "members", "memberAuthorizations", "grants", "inheritancePolicy", "customId");
+        query.fields().include("name", "active", "members", "memberAuthorizations", "customId");
         CachedGroup cachedGroup = mongoTemplate.findOne(query, CachedGroup.class, GROUP_COLLECTION);
         if (isNull(cachedGroup)) {
             throw new MyException(GROUP_NOT_FOUND, "权限组不存在", "groupId", groupId);
@@ -78,7 +78,7 @@ public class MongoCachedGroupRepository extends MongoBaseRepository<Group> {
         requireNotBlank(customId, "Custom ID must not be blank.");
 
         Query query = query(where("customId").is(customId));
-        query.fields().include("name", "active", "members", "memberAuthorizations", "grants", "inheritancePolicy", "customId");
+        query.fields().include("name", "active", "members", "memberAuthorizations", "customId");
         return mongoTemplate.findOne(query, CachedGroup.class, GROUP_COLLECTION);
     }
 }

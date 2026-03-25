@@ -2,9 +2,11 @@ package com.ricky.apitest.file;
 
 import com.ricky.apitest.BaseApiTest;
 import com.ricky.apitest.TestFileContext;
+import com.ricky.apitest.group.GroupApi;
 import com.ricky.apitest.folder.FolderApi;
 import com.ricky.apitest.upload.FileUploadApi;
 import com.ricky.common.domain.dto.resp.LoginResponse;
+import com.ricky.common.permission.Permission;
 import com.ricky.file.command.MoveFileCommand;
 import com.ricky.file.command.RenameFileCommand;
 import com.ricky.file.domain.File;
@@ -13,11 +15,14 @@ import com.ricky.file.query.FilePathResponse;
 import com.ricky.file.query.SearchPageQuery;
 import com.ricky.file.query.SearchResponse;
 import com.ricky.folder.domain.Folder;
+import com.ricky.group.command.AddGrantCommand;
+import com.ricky.group.domain.InheritancePolicy;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.IOException;
+import java.util.Set;
 
 import static com.ricky.apitest.RandomTestFixture.rFilename;
 import static com.ricky.apitest.RandomTestFixture.rFolderName;
@@ -65,6 +70,44 @@ public class FileControllerTest extends BaseApiTest {
         assertFalse(fileExtraRepository.existsByFileId(dbFile.getId()));
 
         Folder parentFolder = folderRepository.byId(dbFile.getParentId());
+        assertFalse(parentFolder.containsFile(dbFile.getId()));
+    }
+
+    @Test
+    void should_allow_member_with_delete_permission_to_delete_file_in_team_space() throws IOException {
+        // Given
+        LoginResponse manager = setupApi.registerWithLogin();
+        LoginResponse member = setupApi.registerWithLogin();
+        String groupId = GroupApi.createGroup(manager.getJwt());
+        GroupApi.addGroupMembers(manager.getJwt(), groupId, member.getUserId());
+
+        String customId = groupRepository.byId(groupId).getCustomId();
+        String teamFolderId = setupApi.createFolderUnderRoot(manager.getJwt(), customId, rFolderName());
+
+        ClassPathResource resource = new ClassPathResource("testdata/plain-text-file.txt");
+        java.io.File file = resource.getFile();
+        setupApi.deleteFileWithSameHash(file);
+        String fileId = FileUploadApi.upload(manager.getJwt(), file, teamFolderId).getFileId();
+
+        GroupApi.addGrant(manager.getJwt(), AddGrantCommand.builder()
+                .groupId(groupId)
+                .memberId(member.getUserId())
+                .folderId(teamFolderId)
+                .permissions(Set.of(Permission.DELETE))
+                .inheritancePolicy(InheritancePolicy.NONE)
+                .build());
+
+        File dbFile = fileRepository.byId(fileId);
+
+        // When
+        FileApi.deleteFileForce(member.getJwt(), fileId);
+
+        // Then
+        assertFalse(fileRepository.exists(dbFile.getId()));
+        assertFalse(storageService.exists(dbFile.getStorageId()));
+        assertFalse(fileExtraRepository.existsByFileId(dbFile.getId()));
+
+        Folder parentFolder = folderRepository.byId(teamFolderId);
         assertFalse(parentFolder.containsFile(dbFile.getId()));
     }
 
