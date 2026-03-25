@@ -10,8 +10,21 @@ import com.ricky.common.utils.ValidationUtils;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderDomainService;
 import com.ricky.folder.domain.FolderRepository;
-import com.ricky.group.domain.*;
-import com.ricky.group.query.*;
+import com.ricky.group.domain.CachedGroup;
+import com.ricky.group.domain.Group;
+import com.ricky.group.domain.GroupRepository;
+import com.ricky.group.domain.InheritancePolicy;
+import com.ricky.group.domain.Member;
+import com.ricky.group.domain.MemberAuthorization;
+import com.ricky.group.domain.MemberRole;
+import com.ricky.group.domain.PermissionInheritanceResolver;
+import com.ricky.group.query.FolderPermissionResponse;
+import com.ricky.group.query.GroupFoldersResponse;
+import com.ricky.group.query.GroupManagersResponse;
+import com.ricky.group.query.GroupOrdinaryMembersResponse;
+import com.ricky.group.query.GroupResponse;
+import com.ricky.group.query.MyGroupsAsForManagerPageQuery;
+import com.ricky.group.query.MyGroupsAsForMemberPageQuery;
 import com.ricky.group.service.GroupQueryService;
 import com.ricky.user.domain.User;
 import com.ricky.user.domain.UserRepository;
@@ -29,7 +42,6 @@ import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static com.ricky.common.constants.ConfigConstants.GROUP_COLLECTION;
 import static com.ricky.common.constants.ConfigConstants.GROUP_ID_PREFIX;
 import static com.ricky.common.domain.SpaceType.TEAM;
-import static com.ricky.common.permission.Permission.READ;
 import static com.ricky.common.permission.Permission.all;
 import static com.ricky.common.utils.MongoCriteriaUtils.regexSearch;
 import static com.ricky.common.utils.ValidationUtils.isBlank;
@@ -45,7 +57,8 @@ import static org.springframework.data.mongodb.core.query.Criteria.where;
 @RequiredArgsConstructor
 public class GroupQueryServiceImpl implements GroupQueryService {
 
-    private final static Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "createdAt", "active");
+    private static final Set<String> ALLOWED_SORT_FIELDS = Set.of("name", "createdAt", "active");
+
     private final RateLimiter rateLimiter;
     private final MongoTemplate mongoTemplate;
     private final GroupRepository groupRepository;
@@ -54,11 +67,13 @@ public class GroupQueryServiceImpl implements GroupQueryService {
     private final UserRepository userRepository;
 
     @Override
-    public GroupFoldersResponse fetchGroupFolders(String groupId) {
+    public GroupFoldersResponse fetchGroupFolders(String groupId, String memberId, UserContext userContext) {
         rateLimiter.applyFor("Group:FetchGroupFolders", 50);
 
         CachedGroup group = groupRepository.cachedById(groupId);
-        List<Folder> folders = folderRepository.byIds(group.getGrants().keySet());
+        String targetMemberId = resolveTargetMemberId(group, memberId, userContext);
+        Map<String, Set<Permission>> grants = grantsOf(group, targetMemberId);
+        List<Folder> folders = folderRepository.byIds(grants.keySet());
 
         List<GroupFoldersResponse.GroupFolder> groupFolders = folders.stream()
                 .map(folder -> GroupFoldersResponse.GroupFolder.builder()
@@ -92,6 +107,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
                 .map(user -> {
                     Member member = memberById.get(user.getId());
                     return GroupOrdinaryMembersResponse.OrdinaryMember.builder()
+                            .userId(user.getId())
                             .username(user.getUsername())
                             .mobileOrEmail(user.getMobileOrEmail())
                             .joinedAt(member == null ? null : member.getJoinedAt())
@@ -123,6 +139,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
                 .map(user -> {
                     Member member = managerById.get(user.getId());
                     return GroupManagersResponse.Manager.builder()
+                            .userId(user.getId())
                             .username(user.getUsername())
                             .mobileOrEmail(user.getMobileOrEmail())
                             .joinedAt(member == null ? null : member.getJoinedAt())
@@ -142,13 +159,12 @@ public class GroupQueryServiceImpl implements GroupQueryService {
         return MongoPageQuery.of(Group.class, GROUP_COLLECTION)
                 .pageQuery(pageQuery)
                 .where(c -> c.and("members").elemMatch(where("userId").is(userContext.getUid())
-                        .and("role").is(MemberRole.ADMIN))) // 我管理的
+                        .and("role").is(MemberRole.ADMIN)))
                 .search((search, c, q) -> {
                     if (isId(search, GROUP_ID_PREFIX)) {
                         return c.and("_id").is(search);
-                    } else {
-                        return c.andOperator(regexSearch("name", search));
                     }
+                    return c.andOperator(regexSearch("name", search));
                 })
                 .sort(q -> {
                     String sortedBy = pageQuery.getSortedBy();
@@ -156,7 +172,7 @@ public class GroupQueryServiceImpl implements GroupQueryService {
                         return by(DESC, "createdAt");
                     }
 
-                    var direction = pageQuery.getAscSort() ? ASC : DESC;
+                    Sort.Direction direction = pageQuery.getAscSort() ? ASC : DESC;
                     if (ValidationUtils.equals(sortedBy, "createdAt")) {
                         return by(direction, "createdAt");
                     }
@@ -173,13 +189,12 @@ public class GroupQueryServiceImpl implements GroupQueryService {
 
         return MongoPageQuery.of(Group.class, GROUP_COLLECTION)
                 .pageQuery(pageQuery)
-                .where(c -> c.and("members").elemMatch(where("userId").is(userContext.getUid()))) // 我加入的
+                .where(c -> c.and("members").elemMatch(where("userId").is(userContext.getUid())))
                 .search((search, c, q) -> {
                     if (isId(search, GROUP_ID_PREFIX)) {
                         return c.and("_id").is(search);
-                    } else {
-                        return c.andOperator(regexSearch("name", search));
                     }
+                    return c.andOperator(regexSearch("name", search));
                 })
                 .sort(q -> {
                     String sortedBy = pageQuery.getSortedBy();
@@ -203,99 +218,93 @@ public class GroupQueryServiceImpl implements GroupQueryService {
         rateLimiter.applyFor("Group:FetchAdminPermission", 50);
 
         if (SpaceType.fromCustomId(customId) != TEAM) {
-            return FolderPermissionResponse.builder()
-                    .folderId(folderId)
-                    .customId(customId)
-                    .permissions(Set.of())
-                    .roleType("ADMIN")
-                    .inherited(false)
-                    .build();
+            return permissionResponse(folderId, customId, "ADMIN", null, Set.of(), false);
         }
 
         List<String> ancestors = folderDomainService.withAllParentIdsRev(customId, folderId);
         CachedGroup cachedGroup = groupRepository.cachedByCustomId(customId);
-
         if (cachedGroup == null || !cachedGroup.isActive()) {
-            return FolderPermissionResponse.builder()
-                    .folderId(folderId)
-                    .customId(customId)
-                    .permissions(Set.of())
-                    .roleType("ADMIN")
-                    .inherited(false)
-                    .build();
+            return permissionResponse(folderId, customId, "ADMIN", null, Set.of(), false);
         }
 
-        Set<Permission> permissions = all();
-        boolean inherited = ancestors.size() > 1;
+        return permissionResponse(folderId, customId, "ADMIN", null, all(), ancestors.size() > 1);
+    }
 
+    @Override
+    public FolderPermissionResponse fetchMemberPermission(String customId, String folderId, String memberId, UserContext userContext) {
+        rateLimiter.applyFor("Group:FetchMemberPermission", 50);
+
+        if (SpaceType.fromCustomId(customId) != TEAM) {
+            return permissionResponse(folderId, customId, "ORDINARY", userContext.getUid(), Set.of(), false);
+        }
+
+        CachedGroup cachedGroup = groupRepository.cachedByCustomId(customId);
+        if (cachedGroup == null || !cachedGroup.isActive()) {
+            return permissionResponse(folderId, customId, "ORDINARY", resolveRequestedMemberId(memberId, userContext), Set.of(), false);
+        }
+
+        String targetMemberId = resolveTargetMemberId(cachedGroup, memberId, userContext);
+        if (cachedGroup.managerIds().contains(targetMemberId)) {
+            return permissionResponse(folderId, customId, "ADMIN", targetMemberId, all(), true);
+        }
+
+        Map<String, Set<Permission>> grants = grantsOf(cachedGroup, targetMemberId);
+        if (grants == null || grants.isEmpty()) {
+            return permissionResponse(folderId, customId, "ORDINARY", targetMemberId, Set.of(), false);
+        }
+
+        List<String> ancestors = folderDomainService.withAllParentIdsRev(customId, folderId);
+        InheritancePolicy policy = inheritancePolicyOf(cachedGroup, targetMemberId);
+        Set<Permission> permissions = PermissionInheritanceResolver.resolve(policy, grants, ancestors);
+        if (permissions.isEmpty()) {
+            return permissionResponse(folderId, customId, "ORDINARY", targetMemberId, Set.of(), false);
+        }
+        boolean inherited = ancestors.size() > 1 && permissions.size() > grants.getOrDefault(folderId, Set.of()).size();
+
+        return permissionResponse(folderId, customId, "ORDINARY", targetMemberId, permissions, inherited);
+    }
+
+    private FolderPermissionResponse permissionResponse(String folderId, String customId, String roleType,
+                                                        String memberId, Set<Permission> permissions, boolean inherited) {
         return FolderPermissionResponse.builder()
                 .folderId(folderId)
                 .customId(customId)
+                .roleType(roleType)
+                .memberId(memberId)
                 .permissions(permissions)
-                .roleType("ADMIN")
                 .inherited(inherited)
                 .build();
     }
 
-    @Override
-    public FolderPermissionResponse fetchMemberPermission(String customId, String folderId) {
-        rateLimiter.applyFor("Group:FetchMemberPermission", 50);
-
-        if (SpaceType.fromCustomId(customId) != TEAM) {
-            return FolderPermissionResponse.builder()
-                    .folderId(folderId)
-                    .customId(customId)
-                    .permissions(Set.of(READ))
-                    .roleType("ORDINARY")
-                    .inherited(false)
-                    .build();
+    private String resolveTargetMemberId(CachedGroup group, String memberId, UserContext userContext) {
+        if (!isBlank(memberId)) {
+            if (group.managerIds().contains(userContext.getUid())) {
+                return memberId;
+            }
+            if (ValidationUtils.equals(memberId, userContext.getUid())) {
+                return memberId;
+            }
         }
+        return userContext.getUid();
+    }
 
-        List<String> ancestors = folderDomainService.withAllParentIdsRev(customId, folderId);
-        CachedGroup cachedGroup = groupRepository.cachedByCustomId(customId);
+    private String resolveRequestedMemberId(String memberId, UserContext userContext) {
+        return isBlank(memberId) ? userContext.getUid() : memberId;
+    }
 
-        if (cachedGroup == null || !cachedGroup.isActive()) {
-            return FolderPermissionResponse.builder()
-                    .folderId(folderId)
-                    .customId(customId)
-                    .permissions(Set.of())
-                    .roleType("ORDINARY")
-                    .inherited(false)
-                    .build();
+    private Map<String, Set<Permission>> grantsOf(CachedGroup group, String memberId) {
+        MemberAuthorization authorization = group.authorizationOf(memberId);
+        if (authorization != null && authorization.getGrants() != null) {
+            return authorization.getGrants();
         }
+        return group.getGrants() == null ? Map.of() : group.getGrants();
+    }
 
-        Map<String, Set<Permission>> grants = cachedGroup.getGrants();
-        if (grants == null || grants.isEmpty()) {
-            return FolderPermissionResponse.builder()
-                    .folderId(folderId)
-                    .customId(customId)
-                    .permissions(Set.of(READ))
-                    .roleType("ORDINARY")
-                    .inherited(false)
-                    .build();
+    private InheritancePolicy inheritancePolicyOf(CachedGroup group, String memberId) {
+        MemberAuthorization authorization = group.authorizationOf(memberId);
+        if (authorization != null) {
+            return authorization.getInheritancePolicy();
         }
-
-        boolean appliesTo = grants.containsKey(folderId);
-        if (!appliesTo) {
-            return FolderPermissionResponse.builder()
-                    .folderId(folderId)
-                    .customId(customId)
-                    .permissions(Set.of())
-                    .roleType("ORDINARY")
-                    .inherited(false)
-                    .build();
-        }
-
-        Set<Permission> permissions = PermissionInheritanceResolver.resolve(
-                cachedGroup.getInheritancePolicy(), grants, ancestors);
-        boolean inherited = ancestors.size() > 1 && permissions.size() > grants.getOrDefault(folderId, Set.of()).size();
-
-        return FolderPermissionResponse.builder()
-                .folderId(folderId)
-                .customId(customId)
-                .permissions(permissions)
-                .roleType("ORDINARY")
-                .inherited(inherited)
-                .build();
+        return group.getInheritancePolicy() == null ? InheritancePolicy.NONE : group.getInheritancePolicy();
     }
 }

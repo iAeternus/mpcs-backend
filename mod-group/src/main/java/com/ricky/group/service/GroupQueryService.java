@@ -5,7 +5,7 @@ import com.ricky.common.domain.user.UserContext;
 import com.ricky.group.query.*;
 
 public interface GroupQueryService {
-    GroupFoldersResponse fetchGroupFolders(String groupId);
+    GroupFoldersResponse fetchGroupFolders(String groupId, String memberId, UserContext userContext);
 
     GroupOrdinaryMembersResponse fetchGroupOrdinaryMembers(String groupId, UserContext userContext);
 
@@ -17,5 +17,5 @@ public interface GroupQueryService {
 
     FolderPermissionResponse fetchAdminPermission(String customId, String folderId);
 
-    FolderPermissionResponse fetchMemberPermission(String customId, String folderId);
+    FolderPermissionResponse fetchMemberPermission(String customId, String folderId, String memberId, UserContext userContext);
 }

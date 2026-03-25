@@ -85,15 +85,15 @@ public class GroupDomainService {
             return Permission.all();
         }
 
-        if (isEmpty(group.getGrants())) {
-            return Set.of(Permission.READ);
-        }
-
-        if (!group.appliesTo(folderId)) {
+        if (!group.containsMember(userId)) {
             return Set.of();
         }
 
-        return group.permissionsOf(ancestors);
+        if (isEmpty(group.grantsOf(userId))) {
+            return Set.of();
+        }
+
+        return group.permissionsOf(userId, ancestors);
     }
 
     public void rename(Group group, String newName, UserContext userContext) {

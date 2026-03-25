@@ -22,6 +22,7 @@ public class UserCachedGroup implements ValueObject {
     boolean active;
     String userId;
     List<Member> members;
+    List<MemberAuthorization> memberAuthorizations;
     Map<String, Set<Permission>> grants;
     InheritancePolicy inheritancePolicy;
 

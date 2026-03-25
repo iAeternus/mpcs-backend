@@ -16,7 +16,7 @@ public enum Permission {
     WRITE("写入"),
     DELETE("删除"),
     MOVE("移动"),
-    SHARE("分享"),
+    PUBLIC("公开"),
     MANAGE("管理"),
     ;
 

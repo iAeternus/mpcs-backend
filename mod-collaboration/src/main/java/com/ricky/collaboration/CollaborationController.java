@@ -7,6 +7,7 @@ import com.ricky.collaboration.query.OperationHistoryResponse;
 import com.ricky.collaboration.query.SessionInfoResponse;
 import com.ricky.collaboration.service.CollaborationService;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.permission.PermissionRequired;
 import com.ricky.common.validation.id.Id;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -15,15 +16,25 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import static com.ricky.common.constants.ConfigConstants.COLLAB_SESSION_ID_PREFIX;
 import static com.ricky.common.constants.ConfigConstants.FILE_ID_PREFIX;
+import static com.ricky.common.permission.Permission.WRITE;
+import static com.ricky.common.permission.ResourceType.FILE;
 
 @Slf4j
 @Validated
 @RestController
-@Tag(name = "协同编辑模块")
+@Tag(name = "collaboration")
 @RequiredArgsConstructor
 @RequestMapping("/collaboration")
 public class CollaborationController {
@@ -31,7 +42,8 @@ public class CollaborationController {
     private final CollaborationService collaborationService;
 
     @PostMapping("/sessions")
-    @Operation(summary = "创建协同会话")
+    @Operation(summary = "create collaboration session")
+    @PermissionRequired(value = WRITE, resource = "#command.documentId", resourceType = FILE)
     public SessionInfoResponse createSession(
             @RequestBody @Valid CreateSessionCommand command,
             @AuthenticationPrincipal UserContext userContext
@@ -41,7 +53,7 @@ public class CollaborationController {
     }
 
     @GetMapping("/sessions/{sessionId}")
-    @Operation(summary = "获取会话信息")
+    @Operation(summary = "get session info")
     public SessionInfoResponse getSessionInfo(
             @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @AuthenticationPrincipal UserContext userContext
@@ -50,7 +62,8 @@ public class CollaborationController {
     }
 
     @GetMapping("/sessions/document/{documentId}")
-    @Operation(summary = "通过文档ID获取会话")
+    @Operation(summary = "get session by document")
+    @PermissionRequired(value = WRITE, resource = "#documentId", resourceType = FILE)
     public SessionInfoResponse getSessionByDocument(
             @PathVariable @Id(FILE_ID_PREFIX) String documentId,
             @AuthenticationPrincipal UserContext userContext
@@ -59,7 +72,7 @@ public class CollaborationController {
     }
 
     @PostMapping("/sessions/{sessionId}/join")
-    @Operation(summary = "加入协同会话")
+    @Operation(summary = "join collaboration session")
     public SessionInfoResponse joinSession(
             @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @AuthenticationPrincipal UserContext userContext
@@ -69,7 +82,7 @@ public class CollaborationController {
     }
 
     @PostMapping("/sessions/{sessionId}/leave")
-    @Operation(summary = "离开协同会话")
+    @Operation(summary = "leave collaboration session")
     public void leaveSession(
             @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @AuthenticationPrincipal UserContext userContext
@@ -79,7 +92,7 @@ public class CollaborationController {
     }
 
     @DeleteMapping("/sessions/{sessionId}")
-    @Operation(summary = "删除协同会话")
+    @Operation(summary = "delete collaboration session")
     public void deleteSession(
             @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @AuthenticationPrincipal UserContext userContext
@@ -89,7 +102,7 @@ public class CollaborationController {
     }
 
     @PostMapping("/operations")
-    @Operation(summary = "提交操作")
+    @Operation(summary = "submit operation")
     public SessionInfoResponse submitOperation(
             @RequestBody @Valid SubmitOperationCommand command,
             @AuthenticationPrincipal UserContext userContext
@@ -98,7 +111,7 @@ public class CollaborationController {
     }
 
     @PostMapping("/cursors")
-    @Operation(summary = "更新光标位置")
+    @Operation(summary = "update cursor")
     public SessionInfoResponse updateCursor(
             @RequestBody @Valid UpdateCursorCommand command,
             @AuthenticationPrincipal UserContext userContext
@@ -107,7 +120,7 @@ public class CollaborationController {
     }
 
     @GetMapping("/sessions/{sessionId}/history")
-    @Operation(summary = "获取操作历史")
+    @Operation(summary = "get operation history")
     public OperationHistoryResponse getOperationHistory(
             @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @RequestParam(defaultValue = "0") long fromVersion,
@@ -117,7 +130,7 @@ public class CollaborationController {
     }
 
     @PutMapping("/sessions/{sessionId}/base-version")
-    @Operation(summary = "更新基准版本")
+    @Operation(summary = "update base version")
     public SessionInfoResponse updateBaseVersion(
             @PathVariable @Id(COLLAB_SESSION_ID_PREFIX) String sessionId,
             @RequestParam(defaultValue = "0") long baseVersion,
@@ -128,7 +141,7 @@ public class CollaborationController {
     }
 
     @GetMapping("/ws-test")
-    @Operation(summary = "WebSocket配置测试")
+    @Operation(summary = "websocket test")
     public String wsTest() {
         return "WebSocket endpoint: /ws/collaboration/{sessionId}";
     }

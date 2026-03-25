@@ -20,6 +20,7 @@ public class GroupOrdinaryMembersResponse implements Response {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class OrdinaryMember {
+        String userId;
         String username;
         String mobileOrEmail;
         Instant joinedAt;

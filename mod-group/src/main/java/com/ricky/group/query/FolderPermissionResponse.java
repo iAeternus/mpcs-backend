@@ -18,4 +18,5 @@ public class FolderPermissionResponse {
     Set<Permission> permissions;
     String roleType;
     boolean inherited;
+    String memberId;
 }

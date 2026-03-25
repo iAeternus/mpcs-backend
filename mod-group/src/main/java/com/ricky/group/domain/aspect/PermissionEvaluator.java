@@ -1,6 +1,7 @@
 package com.ricky.group.domain.aspect;
 
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.file.domain.FileRepository;
 import com.ricky.folder.domain.Folder;
 import com.ricky.folder.domain.FolderRepository;
 import com.ricky.group.domain.GroupDomainService;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Component;
 public class PermissionEvaluator {
 
     private final GroupDomainService groupDomainService;
+    private final FileRepository fileRepository;
     private final FolderRepository folderRepository;
 
     public boolean allowed(UserContext user, PermissionMetadata metadata, PermissionResource resource) {
@@ -29,6 +31,7 @@ public class PermissionEvaluator {
         }
 
         if (resource instanceof FilePermissionResource file) {
+            fileRepository.byId(file.getFileId());
             Folder folder = folderRepository.byFileId(file.getFileId());
             return groupDomainService.hasPermission(
                     user.getUid(),

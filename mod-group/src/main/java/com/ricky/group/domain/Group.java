@@ -15,32 +15,40 @@ import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 import static com.google.common.collect.ImmutableSet.toImmutableSet;
-import static com.ricky.common.constants.ConfigConstants.*;
+import static com.ricky.common.constants.ConfigConstants.GROUP_COLLECTION;
+import static com.ricky.common.constants.ConfigConstants.GROUP_ID_PREFIX;
+import static com.ricky.common.constants.ConfigConstants.MAX_GROUP_MANAGER_SIZE;
 import static com.ricky.common.domain.SpaceType.teamCustomId;
+import static com.ricky.common.exception.ErrorCodeEnum.ACCESS_DENIED;
 import static com.ricky.common.exception.ErrorCodeEnum.MAX_GROUP_MANAGER_REACHED;
+import static com.ricky.common.exception.ErrorCodeEnum.NOT_FOUND;
 import static com.ricky.common.utils.ValidationUtils.isEmpty;
 import static com.ricky.group.domain.MemberRole.ADMIN;
 import static com.ricky.group.domain.MemberRole.ORDINARY;
 
-/**
- * 权限组，描述用户集合对资源集合的权限集合，用来映射真实团队组织结构。
- * TODO 优化为更细粒度的权限控制，例如对不同Member有不同的权限
- */
 @Getter
 @TypeAlias("group")
 @Document(GROUP_COLLECTION)
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class Group extends AggregateRoot {
 
-    private String name; // 名称
-    private boolean active; // 是否启用
-    private List<Member> members; // 成员列表（含角色）
-    private String customId; // 文件夹层次结构自定义ID
-    private Map<String, Set<Permission>> grants; // 资源ID -> 权限集合
-    private InheritancePolicy inheritancePolicy; // 继承策略 TODO 修改继承策略接口
+    private String name;
+    private boolean active;
+    private List<Member> members;
+    private String customId;
+    private List<MemberAuthorization> memberAuthorizations;
+    private Map<String, Set<Permission>> grants;
+    private InheritancePolicy inheritancePolicy;
 
     public Group(String name, UserContext userContext) {
         super(newGroupId(), userContext);
@@ -52,9 +60,10 @@ public class Group extends AggregateRoot {
         this.active = true;
         this.members = new ArrayList<>();
         this.customId = teamCustomId(getId());
+        this.memberAuthorizations = new ArrayList<>();
         this.grants = new HashMap<>();
         this.inheritancePolicy = InheritancePolicy.NONE;
-        addOpsLog("新建", userContext);
+        addOpsLog("create-group", userContext);
     }
 
     public static String newGroupId() {
@@ -67,7 +76,7 @@ public class Group extends AggregateRoot {
         }
 
         this.name = newName;
-        addOpsLog("重命名为:" + name, userContext);
+        addOpsLog("rename-group:" + name, userContext);
     }
 
     public void addMembers(List<String> userIds, UserContext userContext) {
@@ -93,7 +102,7 @@ public class Group extends AggregateRoot {
             raiseEvent(new GroupMembersChangedEvent(getId(), addedMemberIds, userContext));
         }
 
-        addOpsLog("设置成员", userContext);
+        addOpsLog("add-members", userContext);
     }
 
     public void removeMember(String userId, UserContext userContext) {
@@ -101,12 +110,13 @@ public class Group extends AggregateRoot {
         this.members = members.stream()
                 .filter(member -> !ValidationUtils.equals(member.getUserId(), userId))
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        removeAuthorization(userId);
 
         if (beforeSize != members.size()) {
             raiseEvent(new GroupMembersChangedEvent(getId(), List.of(userId), userContext));
         }
 
-        addOpsLog("移除成员", userContext);
+        addOpsLog("remove-member", userContext);
     }
 
     public void removeMembers(List<String> userIds, UserContext userContext) {
@@ -119,12 +129,13 @@ public class Group extends AggregateRoot {
         this.members = members.stream()
                 .filter(member -> !removedUserIds.contains(member.getUserId()))
                 .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+        removedUserIds.forEach(this::removeAuthorization);
 
         if (beforeSize != members.size()) {
             raiseEvent(new GroupMembersChangedEvent(getId(), userIds, userContext));
         }
 
-        addOpsLog("移除成员(批量)", userContext);
+        addOpsLog("remove-members", userContext);
     }
 
     public void addManager(String userId, UserContext userContext) {
@@ -134,13 +145,14 @@ public class Group extends AggregateRoot {
 
         if (adminCount() + 1 > MAX_GROUP_MANAGER_SIZE) {
             throw new MyException(MAX_GROUP_MANAGER_REACHED,
-                    "无法添加管理员，管理员数量已达所允许的最大值:" + MAX_GROUP_MANAGER_SIZE + "。", "groupId", this.getId());
+                    "max group manager reached: " + MAX_GROUP_MANAGER_SIZE, "groupId", this.getId());
         }
 
         int index = indexOfMember(userId);
         if (index >= 0) {
             promoteToAdmin(index);
-            addOpsLog("添加管理员", userContext);
+            removeAuthorization(userId);
+            addOpsLog("add-manager", userContext);
             return;
         }
 
@@ -150,7 +162,7 @@ public class Group extends AggregateRoot {
                 .joinedAt(Instant.now())
                 .build());
         raiseEvent(new GroupMembersChangedEvent(getId(), List.of(userId), userContext));
-        addOpsLog("添加管理员", userContext);
+        addOpsLog("add-manager", userContext);
     }
 
     public void addManagers(List<String> userIds, UserContext userContext) {
@@ -162,7 +174,7 @@ public class Group extends AggregateRoot {
         long newAdmins = distinctUserIds.stream().filter(id -> !containsManager(id)).count();
         if (adminCount() + newAdmins > MAX_GROUP_MANAGER_SIZE) {
             throw new MyException(MAX_GROUP_MANAGER_REACHED,
-                    "无法添加管理员，管理员数量已达所允许的最大值:" + MAX_GROUP_MANAGER_SIZE + "。", "groupId", this.getId());
+                    "max group manager reached: " + MAX_GROUP_MANAGER_SIZE, "groupId", this.getId());
         }
 
         List<String> addedMemberIds = new ArrayList<>();
@@ -174,6 +186,7 @@ public class Group extends AggregateRoot {
             int index = indexOfMember(userId);
             if (index >= 0) {
                 promoteToAdmin(index);
+                removeAuthorization(userId);
                 continue;
             }
 
@@ -189,7 +202,7 @@ public class Group extends AggregateRoot {
             raiseEvent(new GroupMembersChangedEvent(getId(), addedMemberIds, userContext));
         }
 
-        addOpsLog("添加管理员(批量)", userContext);
+        addOpsLog("add-managers", userContext);
     }
 
     public void removeManager(String userId, UserContext userContext) {
@@ -204,7 +217,7 @@ public class Group extends AggregateRoot {
         }
 
         demoteToNormal(index);
-        addOpsLog("移除管理员", userContext);
+        addOpsLog("remove-manager", userContext);
     }
 
     public void removeManagers(List<String> userIds, UserContext userContext) {
@@ -226,7 +239,7 @@ public class Group extends AggregateRoot {
         }
 
         if (changed) {
-            addOpsLog("移除管理员(批量)", userContext);
+            addOpsLog("remove-managers", userContext);
         }
     }
 
@@ -236,7 +249,7 @@ public class Group extends AggregateRoot {
         }
 
         this.active = true;
-        addOpsLog("启用", userContext);
+        addOpsLog("activate-group", userContext);
     }
 
     public void deactivate(UserContext userContext) {
@@ -245,7 +258,7 @@ public class Group extends AggregateRoot {
         }
 
         this.active = false;
-        addOpsLog("禁用", userContext);
+        addOpsLog("deactivate-group", userContext);
     }
 
     public boolean containsManager(String userId) {
@@ -269,29 +282,53 @@ public class Group extends AggregateRoot {
         return grants.containsKey(folderId);
     }
 
-    /**
-     * 获取当前文件夹的权限集合。
-     *
-     * @param ancestors 当前文件夹的祖先集合，包含自身
-     * @return 权限集合
-     */
     public Set<Permission> permissionsOf(List<String> ancestors) {
         return PermissionInheritanceResolver.resolve(inheritancePolicy, grants, ancestors);
     }
 
-    public void addGrant(String folderId, Set<Permission> permissions, UserContext userContext) {
-        grants.put(folderId, new HashSet<>(permissions));
-        addOpsLog("设置资源权限:" + folderId, userContext);
+    public boolean hasExplicitAuthorization(String userId) {
+        return authorizationOf(userId).isPresent();
     }
 
-    public void addGrants(List<String> folderIds, Set<Permission> permissions, UserContext userContext) {
+    public Map<String, Set<Permission>> grantsOf(String userId) {
+        return authorizationOf(userId)
+                .map(MemberAuthorization::getGrants)
+                .orElse(grants);
+    }
+
+    public InheritancePolicy inheritancePolicyOf(String userId) {
+        return authorizationOf(userId)
+                .map(MemberAuthorization::getInheritancePolicy)
+                .orElse(inheritancePolicy);
+    }
+
+    public boolean appliesTo(String userId, String folderId) {
+        Map<String, Set<Permission>> resolvedGrants = grantsOf(userId);
+        return resolvedGrants != null && resolvedGrants.containsKey(folderId);
+    }
+
+    public Set<Permission> permissionsOf(String userId, List<String> ancestors) {
+        return authorizationOf(userId)
+                .map(authorization -> authorization.permissionsOf(ancestors))
+                .orElseGet(() -> PermissionInheritanceResolver.resolve(inheritancePolicy, grants, ancestors));
+    }
+
+    public void addGrant(String targetMemberId, String folderId, Set<Permission> permissions,
+                         InheritancePolicy policy, UserContext userContext) {
+        ensureAuthorizableOrdinaryMember(targetMemberId);
+        upsertAuthorization(targetMemberId, policy, authorization -> authorization.grant(folderId, permissions));
+        addOpsLog("grant-member-folder:" + targetMemberId + ":" + folderId, userContext);
+    }
+
+    public void addGrants(String targetMemberId, List<String> folderIds, Set<Permission> permissions,
+                          InheritancePolicy policy, UserContext userContext) {
         if (isEmpty(folderIds)) {
             return;
         }
-        for (String folderId : folderIds) {
-            grants.put(folderId, new HashSet<>(permissions));
-        }
-        addOpsLog("批量设置资源权限", userContext);
+
+        ensureAuthorizableOrdinaryMember(targetMemberId);
+        upsertAuthorization(targetMemberId, policy, authorization -> authorization.grant(folderIds, permissions));
+        addOpsLog("grant-member-folders:" + targetMemberId, userContext);
     }
 
     public boolean containsFolder(String folderId) {
@@ -300,7 +337,7 @@ public class Group extends AggregateRoot {
 
     public void revoke(String folderId, UserContext userContext) {
         grants.remove(folderId);
-        addOpsLog("移除资源权限:" + folderId, userContext);
+        addOpsLog("revoke-folder:" + folderId, userContext);
     }
 
     public void onDelete(UserContext userContext) {
@@ -336,5 +373,48 @@ public class Group extends AggregateRoot {
 
     private long adminCount() {
         return members.stream().filter(member -> member.getRole() == ADMIN).count();
+    }
+
+    private Optional<MemberAuthorization> authorizationOf(String userId) {
+        if (ValidationUtils.isEmpty(memberAuthorizations)) {
+            return Optional.empty();
+        }
+        return memberAuthorizations.stream()
+                .filter(authorization -> ValidationUtils.equals(authorization.getUserId(), userId))
+                .findFirst();
+    }
+
+    private void upsertAuthorization(String userId, InheritancePolicy policy,
+                                     Function<MemberAuthorization, MemberAuthorization> updater) {
+        MemberAuthorization base = authorizationOf(userId)
+                .map(existing -> existing.toBuilder().inheritancePolicy(policy).build())
+                .orElse(MemberAuthorization.builder()
+                        .userId(userId)
+                        .inheritancePolicy(policy)
+                        .build());
+        MemberAuthorization updated = updater.apply(base);
+        removeAuthorization(userId);
+        memberAuthorizations.add(updated);
+    }
+
+    private void removeAuthorization(String userId) {
+        if (memberAuthorizations == null) {
+            memberAuthorizations = new ArrayList<>();
+            return;
+        }
+        memberAuthorizations = memberAuthorizations.stream()
+                .filter(authorization -> !ValidationUtils.equals(authorization.getUserId(), userId))
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+    }
+
+    private void ensureAuthorizableOrdinaryMember(String userId) {
+        int index = indexOfMember(userId);
+        if (index < 0) {
+            throw new MyException(NOT_FOUND, "member not found in group", "memberId", userId, "groupId", getId());
+        }
+
+        if (members.get(index).getRole() == ADMIN) {
+            throw new MyException(ACCESS_DENIED, "admin has implicit full permissions", "memberId", userId, "groupId", getId());
+        }
     }
 }

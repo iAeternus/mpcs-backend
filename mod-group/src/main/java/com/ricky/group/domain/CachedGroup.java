@@ -22,8 +22,10 @@ public class CachedGroup implements ValueObject {
     String name;
     boolean active;
     List<Member> members;
+    List<MemberAuthorization> memberAuthorizations;
     Map<String, Set<Permission>> grants;
     InheritancePolicy inheritancePolicy;
+    String customId;
 
     public Set<String> managerIds() {
         if (ValidationUtils.isEmpty(members)) {
@@ -42,5 +44,15 @@ public class CachedGroup implements ValueObject {
         return members.stream()
                 .map(Member::getUserId)
                 .collect(toImmutableSet());
+    }
+
+    public MemberAuthorization authorizationOf(String userId) {
+        if (ValidationUtils.isEmpty(memberAuthorizations)) {
+            return null;
+        }
+        return memberAuthorizations.stream()
+                .filter(authorization -> ValidationUtils.equals(authorization.getUserId(), userId))
+                .findFirst()
+                .orElse(null);
     }
 }

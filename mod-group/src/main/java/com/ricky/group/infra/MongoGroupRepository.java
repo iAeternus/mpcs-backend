@@ -39,6 +39,7 @@ public class MongoGroupRepository extends MongoBaseRepository<Group> implements 
         super.save(group);
         cachedGroupRepository.evictUserGroupsCache(group.getUserId());
         cachedGroupRepository.evictGroupCache(group.getId());
+        cachedGroupRepository.evictGroupCacheByCustomId(group.getCustomId());
     }
 
     @Override
@@ -46,6 +47,7 @@ public class MongoGroupRepository extends MongoBaseRepository<Group> implements 
         super.delete(group);
         cachedGroupRepository.evictUserGroupsCache(group.getUserId());
         cachedGroupRepository.evictGroupCache(group.getId());
+        cachedGroupRepository.evictGroupCacheByCustomId(group.getCustomId());
     }
 
     @Override

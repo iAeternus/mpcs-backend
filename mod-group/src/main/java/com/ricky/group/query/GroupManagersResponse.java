@@ -20,6 +20,7 @@ public class GroupManagersResponse implements Response {
     @Builder
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     public static class Manager {
+        String userId;
         String username;
         String mobileOrEmail;
         Instant joinedAt;

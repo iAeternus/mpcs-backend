@@ -2,6 +2,7 @@ package com.ricky.publicfile;
 
 import com.ricky.common.domain.page.PagedList;
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.permission.PermissionRequired;
 import com.ricky.common.validation.id.Id;
 import com.ricky.publicfile.command.EditDescriptionCommand;
 import com.ricky.publicfile.command.ModifyTitleCommand;
@@ -23,6 +24,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import static com.ricky.common.constants.ConfigConstants.POST_ID_PREFIX;
+import static com.ricky.common.permission.Permission.PUBLIC;
+import static com.ricky.common.permission.ResourceType.FILE;
 
 @Validated
 @CrossOrigin
@@ -37,6 +40,7 @@ public class PublicFileController {
 
     @PostMapping
     @Operation(summary = "发布到社区")
+    @PermissionRequired(value = PUBLIC, resource = "#command.fileId", resourceType = FILE)
     public PostResponse post(@RequestBody @Valid PostCommand command,
                              @AuthenticationPrincipal UserContext userContext) {
         return publicFileService.post(command, userContext);

@@ -18,7 +18,7 @@ public class GroupDomainServiceTest {
                         group("g1")
                                 .member("u1")
                                 .fullInheritance()
-                                .permission("parent", READ)
+                                .permission("u1", "parent", READ)
                 )
                 .givenHierarchy("c1", path("parent", "child"))
                 .whenResolve("u1", "c1", "child")
@@ -33,7 +33,7 @@ public class GroupDomainServiceTest {
                         group("g1")
                                 .member("u1")
                                 .noInheritance()
-                                .permission("parent", READ)
+                                .permission("u1", "parent", READ)
                 )
                 .givenHierarchy("c1", path("parent", "child"))
                 .whenResolve("u1", "c1", "child")
@@ -48,8 +48,8 @@ public class GroupDomainServiceTest {
                         group("g1")
                                 .member("u1")
                                 .overridable()
-                                .permission("parent", READ)
-                                .permission("child", WRITE)
+                                .permission("u1", "parent", READ)
+                                .permission("u1", "child", WRITE)
                 )
                 .givenHierarchy("c1", path("parent", "child"))
                 .whenResolve("u1", "c1", "child")
@@ -64,7 +64,7 @@ public class GroupDomainServiceTest {
                         group("g1")
                                 .member("u1")
                                 .overridable()
-                                .permission("parent", READ)
+                                .permission("u1", "parent", READ)
                 )
                 .givenHierarchy("c1", path("parent", "child"))
                 .whenResolve("u1", "c1", "child")
@@ -78,12 +78,12 @@ public class GroupDomainServiceTest {
                 .givenGroup(
                         group("g1")
                                 .member("u1")
-                                .permission("f1", READ)
+                                .permission("u1", "f1", READ)
                 )
                 .givenGroup(
                         group("g2")
                                 .member("u1")
-                                .permission("f1", WRITE)
+                                .permission("u1", "f1", WRITE)
                 )
                 .givenHierarchy("c1", path("f1"))
                 .whenResolve("u1", "c1", "f1")
@@ -98,7 +98,7 @@ public class GroupDomainServiceTest {
                         group("g1")
                                 .inactive()
                                 .member("u1")
-                                .permission("f1", DELETE)
+                                .permission("u1", "f1", DELETE)
                 )
                 .givenHierarchy("c1", path("f1"))
                 .whenResolve("u1", "c1", "f1")
@@ -112,7 +112,7 @@ public class GroupDomainServiceTest {
                 .givenGroup(
                         group("g1")
                                 .member("u2")
-                                .permission("f1", READ)
+                                .permission("u2", "f1", READ)
                 )
                 .givenHierarchy("c1", path("f1"))
                 .whenResolve("u1", "c1", "f1")
@@ -133,7 +133,7 @@ public class GroupDomainServiceTest {
     }
 
     @Test
-    void member_should_have_read_permission_when_no_grants() {
+    void member_should_have_no_permission_when_no_grants() {
         scenario()
                 .givenUser("u1", "g1")
                 .givenGroup(
@@ -142,7 +142,7 @@ public class GroupDomainServiceTest {
                 )
                 .givenHierarchy("c1", path("f1"))
                 .whenResolve("u1", "c1", "f1")
-                .thenPermissionsAre(READ);
+                .thenEmpty();
     }
 
 }

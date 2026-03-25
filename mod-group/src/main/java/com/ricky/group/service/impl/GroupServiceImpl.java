@@ -87,6 +87,12 @@ public class GroupServiceImpl implements GroupService {
         group.addMembers(command.getMemberIds(), userContext);
         groupRepository.save(group);
 
+        for (String memberId : command.getMemberIds()) {
+            User member = userRepository.byId(memberId);
+            member.addGroup(groupId, userContext);
+            userRepository.save(member);
+        }
+
         log.info("Added members{} to group[{}].", command.getMemberIds(), groupId);
     }
 
@@ -120,6 +126,10 @@ public class GroupServiceImpl implements GroupService {
         managePermissionChecker.checkCanManageGroup(group, userContext);
         group.removeMember(memberId, userContext);
         groupRepository.save(group);
+
+        User member = userRepository.byId(memberId);
+        member.removeGroup(groupId, userContext);
+        userRepository.save(member);
 
         log.info("Removed member[{}] from group[{}].", memberId, groupId);
     }
@@ -211,7 +221,8 @@ public class GroupServiceImpl implements GroupService {
         folderDomainService.checkFoldersAllExists(List.of(command.getFolderId()));
 
         Group group = groupRepository.byId(command.getGroupId());
-        group.addGrant(command.getFolderId(), command.getPermissions(), userContext);
+        managePermissionChecker.checkCanManageGroup(group, userContext);
+        group.addGrant(command.getMemberId(), command.getFolderId(), command.getPermissions(), command.getInheritancePolicy(), userContext);
         groupRepository.save(group);
 
         log.info("Add grant for group[{}]", command.getGroupId());
@@ -224,7 +235,8 @@ public class GroupServiceImpl implements GroupService {
         folderDomainService.checkFoldersAllExists(command.getFolderIds());
 
         Group group = groupRepository.byId(command.getGroupId());
-        group.addGrants(command.getFolderIds(), command.getPermissions(), userContext);
+        managePermissionChecker.checkCanManageGroup(group, userContext);
+        group.addGrants(command.getMemberId(), command.getFolderIds(), command.getPermissions(), command.getInheritancePolicy(), userContext);
         groupRepository.save(group);
 
         log.info("Add grants for group[{}]", command.getGroupId());
