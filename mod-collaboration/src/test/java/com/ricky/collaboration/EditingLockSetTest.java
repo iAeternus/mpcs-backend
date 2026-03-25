@@ -1,7 +1,7 @@
 package com.ricky.collaboration;
 
-import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
-import com.ricky.collaboration.lock.domain.EditingLockSet;
+import com.ricky.collaboration.domain.ot.TextOperation;
+import com.ricky.lock.domain.EditingLockSet;
 import com.ricky.common.domain.user.Role;
 import com.ricky.common.domain.user.UserContext;
 import org.junit.jupiter.api.DisplayName;

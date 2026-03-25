@@ -1,7 +1,7 @@
 package com.ricky.collaboration;
 
-import com.ricky.collaboration.collaboration.domain.ot.OperationTransformer;
-import com.ricky.collaboration.collaboration.domain.ot.TextOperation;
+import com.ricky.collaboration.domain.ot.OperationTransformer;
+import com.ricky.collaboration.domain.ot.TextOperation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

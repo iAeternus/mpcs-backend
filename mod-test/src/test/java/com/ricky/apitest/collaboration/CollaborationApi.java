@@ -1,17 +1,17 @@
 package com.ricky.apitest.collaboration;
 
-import com.ricky.collaboration.collaboration.command.CreateSessionCommand;
-import com.ricky.collaboration.collaboration.command.SubmitOperationCommand;
-import com.ricky.collaboration.collaboration.command.UpdateCursorCommand;
-import com.ricky.collaboration.collaboration.query.OperationHistoryResponse;
-import com.ricky.collaboration.collaboration.query.SessionInfoResponse;
-import com.ricky.collaboration.lock.command.AcquireEditingLockCommand;
-import com.ricky.collaboration.lock.query.EditingLockResponse;
-import com.ricky.collaboration.lock.query.EditingLockStateResponse;
-import com.ricky.collaboration.revision.command.CreateRevisionCommand;
-import com.ricky.collaboration.revision.query.RevisionDetailResponse;
-import com.ricky.collaboration.revision.query.RevisionDiffResponse;
-import com.ricky.collaboration.revision.query.RevisionSummaryResponse;
+import com.ricky.collaboration.command.CreateSessionCommand;
+import com.ricky.collaboration.command.SubmitOperationCommand;
+import com.ricky.collaboration.command.UpdateCursorCommand;
+import com.ricky.collaboration.query.OperationHistoryResponse;
+import com.ricky.collaboration.query.SessionInfoResponse;
+import com.ricky.lock.command.AcquireEditingLockCommand;
+import com.ricky.lock.query.EditingLockResponse;
+import com.ricky.lock.query.EditingLockStateResponse;
+import com.ricky.revision.command.CreateRevisionCommand;
+import com.ricky.revision.query.RevisionDetailResponse;
+import com.ricky.revision.query.RevisionDiffResponse;
+import com.ricky.revision.query.RevisionSummaryResponse;
 import io.restassured.response.Response;
 
 import java.util.List;
