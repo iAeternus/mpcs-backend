@@ -2,6 +2,7 @@ package com.ricky.folder.service.impl;
 
 import com.ricky.common.domain.user.UserContext;
 import com.ricky.common.exception.MyException;
+import com.ricky.common.mongo.MongoRetryable;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.file.domain.File;
 import com.ricky.file.domain.FileDomainService;
@@ -34,6 +35,7 @@ public class FolderServiceImpl implements FolderService {
     private final FolderRepository folderRepository;
 
     @Override
+    @MongoRetryable
     @Transactional
     public String createFolder(CreateFolderCommand command, UserContext userContext) {
         rateLimiter.applyFor("Folder:CreateFolder", 10);

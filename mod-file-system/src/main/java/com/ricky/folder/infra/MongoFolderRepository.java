@@ -11,6 +11,8 @@ import com.ricky.folder.domain.FolderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -32,13 +34,26 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
     @Override
     public void save(Folder folder) {
         super.save(folder);
-        cachedFolderRepository.evictAll();
+        evictCacheAfterCommit(() -> cachedFolderRepository.evictAll());
     }
 
     @Override
     public void save(List<Folder> folders) {
         super.save(folders);
-        cachedFolderRepository.evictAll();
+        evictCacheAfterCommit(() -> cachedFolderRepository.evictAll());
+    }
+
+    private void evictCacheAfterCommit(Runnable evictRunnable) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    evictRunnable.run();
+                }
+            });
+        } else {
+            evictRunnable.run();
+        }
     }
 
     @Override
@@ -49,8 +64,10 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
     @Override
     public void delete(Folder folder) {
         super.delete(folder);
-        cachedFolderRepository.evictFolderHierarchyCache(folder.getCustomId());
-        cachedFolderRepository.evictFolderCache(folder.getId());
+        evictCacheAfterCommit(() -> {
+            cachedFolderRepository.evictFolderHierarchyCache(folder.getCustomId());
+            cachedFolderRepository.evictFolderCache(folder.getId());
+        });
     }
 
     @Override
@@ -60,7 +77,7 @@ public class MongoFolderRepository extends MongoHierarchyRepository<Folder> impl
         }
 
         super.delete(folders);
-        cachedFolderRepository.evictAll();
+        evictCacheAfterCommit(() -> cachedFolderRepository.evictAll());
     }
 
     @Override

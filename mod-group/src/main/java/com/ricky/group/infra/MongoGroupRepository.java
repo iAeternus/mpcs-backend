@@ -8,6 +8,8 @@ import com.ricky.group.domain.GroupRepository;
 import com.ricky.group.domain.UserCachedGroup;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +39,23 @@ public class MongoGroupRepository extends MongoBaseRepository<Group> implements 
     @Override
     public void save(Group group) {
         super.save(group);
+        evictCacheAfterCommit(group);
+    }
+
+    private void evictCacheAfterCommit(Group group) {
+        if (TransactionSynchronizationManager.isSynchronizationActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    evictCache(group);
+                }
+            });
+        } else {
+            evictCache(group);
+        }
+    }
+
+    private void evictCache(Group group) {
         cachedGroupRepository.evictUserGroupsCache(group.getUserId());
         cachedGroupRepository.evictGroupCache(group.getId());
         cachedGroupRepository.evictGroupCacheByCustomId(group.getCustomId());
@@ -45,9 +64,7 @@ public class MongoGroupRepository extends MongoBaseRepository<Group> implements 
     @Override
     public void delete(Group group) {
         super.delete(group);
-        cachedGroupRepository.evictUserGroupsCache(group.getUserId());
-        cachedGroupRepository.evictGroupCache(group.getId());
-        cachedGroupRepository.evictGroupCacheByCustomId(group.getCustomId());
+        evictCacheAfterCommit(group);
     }
 
     @Override

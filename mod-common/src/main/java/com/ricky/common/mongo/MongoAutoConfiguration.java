@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.MongoManagedTypes;
 import org.springframework.data.mongodb.MongoTransactionManager;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoConverter;
+import org.springframework.retry.annotation.EnableRetry;
 
 import static com.mongodb.ReadPreference.secondaryPreferred;
 import static com.mongodb.WriteConcern.MAJORITY;
@@ -29,6 +30,7 @@ import static org.springframework.data.mongodb.core.WriteResultChecking.EXCEPTIO
  * @desc
  */
 @AutoConfiguration
+@EnableRetry
 public class MongoAutoConfiguration {
 
     /**

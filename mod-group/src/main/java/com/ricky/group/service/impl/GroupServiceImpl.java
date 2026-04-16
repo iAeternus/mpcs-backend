@@ -1,6 +1,7 @@
 package com.ricky.group.service.impl;
 
 import com.ricky.common.domain.user.UserContext;
+import com.ricky.common.mongo.MongoRetryable;
 import com.ricky.common.ratelimit.RateLimiter;
 import com.ricky.common.utils.ValidationUtils;
 import com.ricky.folder.domain.Folder;
@@ -40,6 +41,7 @@ public class GroupServiceImpl implements GroupService {
     private final FolderRepository folderRepository;
 
     @Override
+    @MongoRetryable
     @Transactional
     public String createGroup(CreateGroupCommand command, UserContext userContext) {
         rateLimiter.applyFor("Group:CreateGroup", 10);
@@ -78,6 +80,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @MongoRetryable
     @Transactional
     public void addGroupMembers(String groupId, AddGroupMembersCommand command, UserContext userContext) {
         rateLimiter.applyFor("Group:AddGroupMembers", 10);
@@ -167,6 +170,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @MongoRetryable
     @Transactional
     public void deleteGroup(String groupId, UserContext userContext) {
         rateLimiter.applyFor("Group:DeleteGroup", 10);
